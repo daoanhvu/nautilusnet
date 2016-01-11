@@ -1,16 +1,28 @@
 package nautilus.ai.model;
 
-public abstract class NNetLayer {
+public class NNetLayer {
 	private NNeuron[] mNeurons;
 	
-	public void forward(NNetLayer nextLayer) {
+	public NNetLayer(int numOfNeuron) {
 		int i;
-		int ns = nextLayer.length;
-		
-		for(i=0; i<mNeurons.length; i++) {
-			for(j=0; j<ns; j++) {
-				
-			}
+		mNeurons = new NNeuron[numOfNeuron];
+		for(i=0; i<numOfNeuron; i++) {
+			mNeurons[i] = new NNeuron();
 		}
+	}
+	
+	public void forward(NNetLayer preLayer) {
+		int i;
+		for(i=0; i<mNeurons.length; i++) {
+			mNeurons[i].onActivated(preLayer);
+		}
+	}
+	
+	public NNeuron getNeuron(int index) {
+		return mNeurons[index];
+	}
+	
+	public int size() {
+		return mNeurons.length;
 	}
 }

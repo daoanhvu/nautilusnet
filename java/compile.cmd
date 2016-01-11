@@ -1,0 +1,1 @@
+javac -d bin src/nautilus/ai/model/*.java src/nautilus/ai/app/*.java
