@@ -84,12 +84,26 @@ public class NautilusNet {
 		
 		//calculate the errors
 		for(i=0; i<mOutput.length; i++) {
-			mErrors[i] = mOutput[i] - mLayers.get(mOutput.length - 1).getOutput();
+			mErrors[i] = mOutput[i] - mLayers.get(mOutput.length - 1).getNeuron(i).getOutput();
 		}
 	}
 	
+	/**
+	*	
+	*/
 	public void backward() {
+		int i, j;
+		int l = mLayers.size();
+		NNetLayer layer;
+		NNeuron neuron;
+		double tmp;
 		
+		for(i=l-1; i>0; i--) {
+			layer = mLayers.get(i);
+			for(j=0; j<layer.size(); j++) {
+				//tmp = mLearningRate * 
+			}
+		}
 	}
 	
 	@Override
