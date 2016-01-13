@@ -85,7 +85,7 @@ public class NautilusNet {
 		
 		//calculate the errors
 		for(i=0; i<mTargets.length; i++) {
-			mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1.0).getNeuron(i).getOutput();
+			mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1).getNeuron(i).getOutput();
 			totalError += (mErrors[i] * mErrors[i]) / 2.0;
 		}
 	}
@@ -95,19 +95,33 @@ public class NautilusNet {
 	*/
 	public void backward() {
 		int i, j;
-		int l = mLayers.size();
-		NNetLayer layer;
+		int wn, l = mLayers.size();
+		NNetLayer layer, hlayer;
 		NNeuron neuron;
-		double tmpOut, out;
+		double tmpOut, out, w, dw, deltaout;
 		
 		//Calculate for the output layer
 		layer = mLayers.get(mLayers.size() - 1);
+		hlayer = mLayers.get(mLayers.size() - 2);
 		for(j=0; j<layer.size(); j++) {
+			neuron = layer.getNeuron(j);
+			tmpOut = neuron.getOutput();
+			
 			/*  d(E)/D(out) */
-			tmpOut = layer.getNeuron(j).getOutput();
-			out  = tmpOut * (1.0 - tmpOut);
+			deltaout = - (mTargets[j] - tmpOut);
 			
 			/*  d(out)/D(input) */
+			out  = tmpOut * (1.0 - tmpOut);
+			
+			tmpOut = deltaout * out ;
+			
+			wn = neuron.getWeightCount();
+			for(i=0; i<wn; i++) {
+				dw = tmpOut * hlayer.getNeuron(i).getOutput();
+				w = neuron.getWeight(i);
+				w = w - mLearningRate * dw;
+				neuron.setWeight(w, i);
+			}
 		}
 	}
 	

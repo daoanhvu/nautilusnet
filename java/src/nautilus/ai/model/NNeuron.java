@@ -6,13 +6,17 @@ package nautilus.ai.model;
 */
 public class NNeuron {
 	/**
-	*	Remember that a weight is the connecting value from a neuron in the next layer to this neuron,
+	*	Remember that a weight is the connecting value from a neuron in the previous layer to this neuron,
 	*	thus, neurons of the input layer have no weight
 	*/
 	private double mInput;
 	private double mOutput;
 	private double[] mWeights;
 	private double mBias;
+	
+	public int getWeightCount() {
+		return mWeights.length;
+	}
 	
 	public double getWeight(int index) {
 		return mWeights[index];
