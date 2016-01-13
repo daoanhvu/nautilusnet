@@ -8,7 +8,7 @@ public class NautilusNet {
 	private double[] biases;
 	
 	private double[] mInput;
-	private double[] mOutput;
+	private double[] mTargets;
 	private double[] mErrors;
 	
 	private List<NNetLayer> mLayers = new ArrayList<NNetLayer>();
@@ -29,7 +29,7 @@ public class NautilusNet {
 		mLearningRate = rate;
 		
 		//mInput = new double[inputs.length];
-		//mOutput = new double[outputs.length];
+		//mTargets = new double[outputs.length];
 	}
 	
 	public void setInputOutput(double[] inputs, double[] outputs) {
@@ -43,8 +43,8 @@ public class NautilusNet {
 			n.setInput(inputs[i]);
 		}
 		
-		mOutput = new double[outputs.length];
-		System.arraycopy(outputs, 0, mOutput, 0, outputs.length);
+		mTargets = new double[outputs.length];
+		System.arraycopy(outputs, 0, mTargets, 0, outputs.length);
 	}
 		
 	//Setup hidden layer
@@ -75,7 +75,8 @@ public class NautilusNet {
 		int i;
 		int j;
 		NNetLayer layer;
-		//int outputSize = mOutput.length;
+		double totalError = 0.0;
+		//int outputSize = mTargets.length;
 		
 		for(i=1; i<mLayers.size(); i++) {
 			layer = mLayers.get(i);
@@ -83,8 +84,9 @@ public class NautilusNet {
 		}
 		
 		//calculate the errors
-		for(i=0; i<mOutput.length; i++) {
-			mErrors[i] = mOutput[i] - mLayers.get(mOutput.length - 1).getNeuron(i).getOutput();
+		for(i=0; i<mTargets.length; i++) {
+			mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1.0).getNeuron(i).getOutput();
+			totalError += (mErrors[i] * mErrors[i]) / 2.0;
 		}
 	}
 	
@@ -96,13 +98,16 @@ public class NautilusNet {
 		int l = mLayers.size();
 		NNetLayer layer;
 		NNeuron neuron;
-		double tmp;
+		double tmpOut, out;
 		
-		for(i=l-1; i>0; i--) {
-			layer = mLayers.get(i);
-			for(j=0; j<layer.size(); j++) {
-				//tmp = mLearningRate * 
-			}
+		//Calculate for the output layer
+		layer = mLayers.get(mLayers.size() - 1);
+		for(j=0; j<layer.size(); j++) {
+			/*  d(E)/D(out) */
+			tmpOut = layer.getNeuron(j).getOutput();
+			out  = tmpOut * (1.0 - tmpOut);
+			
+			/*  d(out)/D(input) */
 		}
 	}
 	
