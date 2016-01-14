@@ -94,15 +94,15 @@ public class NautilusNet {
 	*	
 	*/
 	public void backward() {
-		int i, j;
+		int i, j, k;
 		int wn, l = mLayers.size();
-		NNetLayer layer, hlayer;
+		NNetLayer layer, hiddenLayer;
 		NNeuron neuron;
 		double tmpOut, out, w, dw, deltaout;
 		
 		//Calculate for the output layer
-		layer = mLayers.get(mLayers.size() - 1);
-		hlayer = mLayers.get(mLayers.size() - 2);
+		layer = mLayers.get(l - 1);
+		hiddenLayer = mLayers.get(l - 2);
 		for(j=0; j<layer.size(); j++) {
 			neuron = layer.getNeuron(j);
 			tmpOut = neuron.getOutput();
@@ -116,11 +116,26 @@ public class NautilusNet {
 			tmpOut = deltaout * out ;
 			
 			wn = neuron.getWeightCount();
-			for(i=0; i<wn; i++) {
-				dw = tmpOut * hlayer.getNeuron(i).getOutput();
-				w = neuron.getWeight(i);
+			for(k=0; k<wn; k++) {
+				dw = tmpOut * hiddenLayer.getNeuron(k).getOutput();
+				w = neuron.getWeight(k);
 				w = w - mLearningRate * dw;
-				neuron.setWeight(w, i);
+				neuron.setWeight(w, k);
+			}
+		}
+		
+		//Calculate for hidden
+		for(i=; i<hiddenLayer.size(); i++) {
+			neuron = layer.getNeuron(i);
+			
+			//TODO:
+			//dE/d(out(h[i]))
+			for(j=0; j<mErrors.length; j++) {
+			}
+			
+			wn = neuron.getWeightCount();
+			for(k=0; k<wn; k++) {
+				
 			}
 		}
 	}
