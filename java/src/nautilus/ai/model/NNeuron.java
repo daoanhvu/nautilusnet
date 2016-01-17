@@ -1,11 +1,17 @@
 package nautilus.ai.model;
 
+import java.io.PrintStream;
+
 /**
 * Dao Anh Vu
 *
 */
 public class NNeuron {
-	private double mInput; //Some documents call this value is the net value
+	/**
+		At input layer, this value is called input value.
+		At hidden layer, this value is call net value.
+	*/
+	private double mInput;
 	private double mOutput;
 	
 	/**
@@ -15,6 +21,14 @@ public class NNeuron {
 	private double[] mWeights;
 	
 	private double mBias;
+	
+	public NNeuron() {
+	}
+	
+	public NNeuron(double[] initWeights) {
+		mWeights = new double[initWeights.length];
+		System.arraycopy(initWeights, 0, mWeights, 0, initWeights.length);
+	}
 	
 	public int getWeightCount() {
 		return mWeights.length;
@@ -28,8 +42,19 @@ public class NNeuron {
 		mWeights[index] = w;
 	}
 	
+	public void setWeightArray(double[] initWeights) {
+		if(intWeights.length < mWeights.length)
+			throw new RuntimeException("List weight not enough");
+		
+		System.arraycopy(initWeights, 0, mWeights, 0, mWeights.length);
+	}
+	
 	public void setInput(double input) {
 		mInput = input;
+	}
+	
+	public double getInput() {
+		return mInput;
 	}
 	
 	public double getOutput() {
@@ -50,5 +75,12 @@ public class NNeuron {
 		mOutput = 1.0 / (1.0 + Math.exp(-s));
 		
 		return mOutput;
+	}
+	
+	public void print(PrintStream out) {
+		out.print(mOutput + "");
+		//for(i=0; i<mWeights.length; i++) {
+		//	out.print();
+		//}
 	}
 }

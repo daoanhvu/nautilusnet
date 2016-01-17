@@ -1,5 +1,6 @@
 package nautilus.ai.model;
 
+import java.io.PrintStream;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -10,6 +11,7 @@ public class NautilusNet {
 	private double[] mInput;
 	private double[] mTargets;
 	private double[] mErrors;
+	private double[] mDeltaE;
 	
 	private List<NNetLayer> mLayers = new ArrayList<NNetLayer>();
 	
@@ -75,7 +77,7 @@ public class NautilusNet {
 		int i;
 		int j;
 		NNetLayer layer;
-		double totalError = 0.0;
+		//double totalError = 0.0;
 		//int outputSize = mTargets.length;
 		
 		for(i=1; i<mLayers.size(); i++) {
@@ -85,8 +87,10 @@ public class NautilusNet {
 		
 		//calculate the errors
 		for(i=0; i<mTargets.length; i++) {
-			mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1).getNeuron(i).getOutput();
-			totalError += (mErrors[i] * mErrors[i]) / 2.0;
+			//mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1).getNeuron(i).getOutput();
+			//Now we calculate deltaErro = d(E)/d(output) = - ( target - output) = output - target
+			mErrors[i] = mLayers.get(mTargets.length - 1).getNeuron(i).getOutput() - mTargets[i];
+			//totalError += (mErrors[i] * mErrors[i]) / 2.0;
 		}
 	}
 	
@@ -96,47 +100,89 @@ public class NautilusNet {
 	public void backward() {
 		int i, j, k;
 		int wn, l = mLayers.size();
-		NNetLayer layer, hiddenLayer;
+		NNetLayer outLayer, hiddenLayer, inputLayer;
 		NNeuron neuron;
-		double tmpOut, out, w, dw, deltaout;
+		double tmpOut, out, w, dw;
+		double dOutHidden, dEttNet, inputValue;
+		double dOut[] = new double[mErrors.length];
+		double dEdNetHidden[] = new double[mErrors.length];
+		double dOutDNet[] = new double[mErrors.length];
 		
 		//Calculate for the output layer
-		layer = mLayers.get(l - 1);
+		outLayer = mLayers.get(l - 1);
 		hiddenLayer = mLayers.get(l - 2);
-		for(j=0; j<layer.size(); j++) {
-			neuron = layer.getNeuron(j);
+		for(j=0; j<outLayer.size(); j++) {
+			neuron = outLayer.getNeuron(j);
 			tmpOut = neuron.getOutput();
 			
-			/*  d(E)/D(out) */
-			deltaout = - (mTargets[j] - tmpOut);
-			
 			/*  d(out)/D(input) */
-			out  = tmpOut * (1.0 - tmpOut);
+			dOut[j]  = tmpOut * (1.0 - tmpOut);
 			
-			tmpOut = deltaout * out ;
+			tmpOut = mErrors[j] * dOut[j] ;
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
 				dw = tmpOut * hiddenLayer.getNeuron(k).getOutput();
 				w = neuron.getWeight(k);
 				w = w - mLearningRate * dw;
-				neuron.setWeight(w, k);
+				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 			}
 		}
 		
 		//Calculate for hidden
-		for(i=; i<hiddenLayer.size(); i++) {
-			neuron = layer.getNeuron(i);
+		for(i=0; i<hiddenLayer.size(); i++) {
+			neuron = hiddenLayer.getNeuron(i);
 			
 			//TODO:
-			//dE/d(out(h[i]))
-			for(j=0; j<mErrors.length; j++) {
-			}
 			
-			wn = neuron.getWeightCount();
-			for(k=0; k<wn; k++) {
+			//d(outHidden)/d(netHidden) = outHidden (1 - outHidden)
+			dOutHidden = neuron.getOutput() * (1 - neuron.getOutput());
+			
+			/**
+				d(E)/d(out(h[i])) = d(E) / d(netOut) * d(netOut) / d(outHidden)
+				
+				d(E) / d(net) = d(E)/d(out) * d(out)/d(net)
+			*/
+			dEttNet = 0;
+			for(j=0; j<mErrors.length; j++) {
+				dEdNetHidden[j] = mErrors[j] * dOut[j];
+				dOutDNet[j] =  outLayer.getNeuron(j).getWeight(i);
+				dEttNet += dEdNetHidden[j] * dOutDNet[j];
+				
 				
 			}
+			
+			inputLayer = mLayers.get(0);
+			wn = neuron.getWeightCount();
+			for(k=0; k<wn; k++) {
+				inputValue = inputLayer.getNeuron(k).getInput();
+				dw = dEttNet * dOutHidden * inputValue;
+				w = neuron.getWeight(k);
+				w = w - mLearningRate * dw;
+				neuron.setWeight(w, k); // <- Should we update weight of output right here?
+			}
+		}
+	}
+	
+	/**
+		This is for testing purpose
+	*/
+	public void printNetwork(PrintStream out)  {
+		int i;
+		out.println("*************************************************************************");
+		out.println("Learning rate: " + mLearningRate);
+		out.println("Input: ");
+		for(i = 0; i<mInput.length; i++) {
+			out.print(mInput[i] + " | ");
+		}
+		
+		for(i = 0; i<mLayers.size(); i++) {
+			mLayers.get(i).print(out);
+		}
+		
+		out.println("Target: ");
+		for(i = 0; i<mTargets.length; i++) {
+			out.print(mTargets[i] + " | ");
 		}
 	}
 	
