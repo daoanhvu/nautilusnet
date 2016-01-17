@@ -1,24 +1,20 @@
 package nautilus.ai.model;
 
 import java.io.PrintStream;
-import java.util.List;
-import java.util.ArrayList;
 
 public class NautilusNet {
 	private double mLearningRate;
-	private double[] biases;
 	
-	private double[] mInput;
+	private NNeuron[] mInputLayer;
+	private NNeuron[] mHiddenLayer;
+	private NNeuron[] mOutputLayer;
+	
 	private double[] mTargets;
 	private double[] mErrors;
 	private double[] mDeltaE;
 	
-	private List<NNetLayer> mLayers = new ArrayList<NNetLayer>();
-	
 	public NautilusNet() {
-		mLayers = null;
 		mLearningRate = 0.0;
-		biases = null;
 	}
 	
 	/**
@@ -26,23 +22,25 @@ public class NautilusNet {
 			rate this is learning rate of the network
 			l number of layer in the net
 	*/
-	public NautilusNet(double rate, int l) {
-		biases = new double[l];
+	public NautilusNet(double rate, int inputCount, int hiddenCount, int outputCount) {
 		mLearningRate = rate;
 		
-		//mInput = new double[inputs.length];
-		//mTargets = new double[outputs.length];
+		mInputLayer = new NNeuron[inputCount];
+		mHiddenLayer = new NNeuron[hiddenCount];
+		mOutputLayer = new NNeuron[outputCount];
+		
+		mTargets = new double[outputCount];
 	}
 	
 	public void setInputOutput(double[] inputs, double[] outputs) {
 		
-		if( (mLayers.size()==0) || (inputs.length != mLayers.get(0).size()) ) {
-			throw new RuntimeException("");
+		if( (mInputLayer==null) || (inputs.length != mInputLayer.length)
+			|| (mOutputLayer==null ) ) {
+			throw new RuntimeException("Data does not match the network structure!!!!!!");
 		}
 		NNeuron n;
-		for(int i=0; i<mLayers.get(0).size(); i++) {
-			n = mLayers.get(0).getNeuron(i);
-			n.setInput(inputs[i]);
+		for(int i=0; i<mInputLayer.length; i++) {
+			mInputLayer[i].setInput(inputs[i]);
 		}
 		
 		mTargets = new double[outputs.length];
@@ -50,19 +48,23 @@ public class NautilusNet {
 	}
 		
 	//Setup hidden layer
-	public void addLayer(NNetLayer layer) {
-		mLayers.add(layer);
+	public void setInputLayer(NNeuron[] inputLayer) {
+		mInputLayer = inputLayer;
+	}
+	
+	public void setHiddenLayer(NNeuron[] hLayer) {
+		mHiddenLayer = hLayer;
+	}
+	
+	public void setOutputLayer(NNeuron[] oLayer) {
+		mOutputLayer = oLayer;
 	}
 	
 	/**
 	*	Get the ith layer from the net
 	*/
-	public NNetLayer getLayer(int i) {
-		return mLayers.get(i);
-	}
-	
-	public int size() {
-		return mLayers.size();
+	public NNeuron[] getInputLayer() {
+		return mInputLayer;
 	}
 	
 	public void setLearningRate(double rate) {
@@ -76,20 +78,23 @@ public class NautilusNet {
 	public void forward() {
 		int i;
 		int j;
-		NNetLayer layer;
-		//double totalError = 0.0;
-		//int outputSize = mTargets.length;
 		
-		for(i=1; i<mLayers.size(); i++) {
-			layer = mLayers.get(i);
-			layer.forward(mLayers.get(i-1));
+		//calculate net and ouput values for the hidden layer
+		//The last neuron of input layer is a bias
+		for(i=0; i<mHiddenLayer.length-1; i++) {
+			mHiddenLayer[i].onActivated(mInputLayer);
+		}
+		
+		//calculate net and ouput values for the output layer
+		for(i=0; i<mOutputLayer.length; i++) {
+			mOutputLayer[i].onActivated(mHiddenLayer);
 		}
 		
 		//calculate the errors
 		for(i=0; i<mTargets.length; i++) {
 			//mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1).getNeuron(i).getOutput();
 			//Now we calculate deltaErro = d(E)/d(output) = - ( target - output) = output - target
-			mErrors[i] = mLayers.get(mTargets.length - 1).getNeuron(i).getOutput() - mTargets[i];
+			mErrors[i] = mOutputLayer[i].getOutput() - mTargets[i];
 			//totalError += (mErrors[i] * mErrors[i]) / 2.0;
 		}
 	}
@@ -99,8 +104,7 @@ public class NautilusNet {
 	*/
 	public void backward() {
 		int i, j, k;
-		int wn, l = mLayers.size();
-		NNetLayer outLayer, hiddenLayer, inputLayer;
+		int wn;
 		NNeuron neuron;
 		double tmpOut, out, w, dw;
 		double dOutHidden, dEttNet, inputValue;
@@ -109,10 +113,8 @@ public class NautilusNet {
 		double dOutDNet[] = new double[mErrors.length];
 		
 		//Calculate for the output layer
-		outLayer = mLayers.get(l - 1);
-		hiddenLayer = mLayers.get(l - 2);
-		for(j=0; j<outLayer.size(); j++) {
-			neuron = outLayer.getNeuron(j);
+		for(j=0; j<mOutputLayer.length; j++) {
+			neuron = mOutputLayer[j];
 			tmpOut = neuron.getOutput();
 			
 			/*  d(out)/D(input) */
@@ -122,7 +124,7 @@ public class NautilusNet {
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
-				dw = tmpOut * hiddenLayer.getNeuron(k).getOutput();
+				dw = tmpOut * mHiddenLayer[k].getOutput();
 				w = neuron.getWeight(k);
 				w = w - mLearningRate * dw;
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
@@ -130,8 +132,8 @@ public class NautilusNet {
 		}
 		
 		//Calculate for hidden
-		for(i=0; i<hiddenLayer.size(); i++) {
-			neuron = hiddenLayer.getNeuron(i);
+		for(i=0; i<mHiddenLayer.length-1; i++) {
+			neuron = mHiddenLayer[i];
 			
 			//TODO:
 			
@@ -146,16 +148,13 @@ public class NautilusNet {
 			dEttNet = 0;
 			for(j=0; j<mErrors.length; j++) {
 				dEdNetHidden[j] = mErrors[j] * dOut[j];
-				dOutDNet[j] =  outLayer.getNeuron(j).getWeight(i);
+				dOutDNet[j] =  mOutputLayer[j].getWeight(i);
 				dEttNet += dEdNetHidden[j] * dOutDNet[j];
-				
-				
 			}
 			
-			inputLayer = mLayers.get(0);
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
-				inputValue = inputLayer.getNeuron(k).getInput();
+				inputValue = mInputLayer[k].getInput();
 				dw = dEttNet * dOutHidden * inputValue;
 				w = neuron.getWeight(k);
 				w = w - mLearningRate * dw;
@@ -172,12 +171,20 @@ public class NautilusNet {
 		out.println("*************************************************************************");
 		out.println("Learning rate: " + mLearningRate);
 		out.println("Input: ");
-		for(i = 0; i<mInput.length; i++) {
-			out.print(mInput[i] + " | ");
+		for(i = 0; i<mInputLayer.length; i++) {
+			out.print(mInputLayer[i].getInput() + " | ");
 		}
 		
-		for(i = 0; i<mLayers.size(); i++) {
-			mLayers.get(i).print(out);
+		for(i = 0; i<mInputLayer.length; i++) {
+			mInputLayer[i].print(out);
+		}
+		
+		for(i = 0; i<mHiddenLayer.length; i++) {
+			mHiddenLayer[i].print(out);
+		}
+		
+		for(i = 0; i<mOutputLayer.length; i++) {
+			mOutputLayer[i].print(out);
 		}
 		
 		out.println("Target: ");
@@ -188,6 +195,6 @@ public class NautilusNet {
 	
 	@Override
 	public String toString() {
-		return "Size: " + mLayers.size() + "; Learning rate: " + mLearningRate;
+		return "Size: ; Learning rate: " + mLearningRate;
 	}
 }
