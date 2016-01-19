@@ -52,19 +52,24 @@ public class NautilusNet {
 		mInputLayer = inputLayer;
 	}
 	
+	public NNeuron[] getInputLayer() {
+		return mInputLayer;
+	}
+	
 	public void setHiddenLayer(NNeuron[] hLayer) {
 		mHiddenLayer = hLayer;
+	}
+	
+	public NNeuron[] getHiddenLayer() {
+		return mHiddenLayer;
 	}
 	
 	public void setOutputLayer(NNeuron[] oLayer) {
 		mOutputLayer = oLayer;
 	}
 	
-	/**
-	*	Get the ith layer from the net
-	*/
-	public NNeuron[] getInputLayer() {
-		return mInputLayer;
+	public NNeuron[] getOutputLayer() {
+		return mOutputLayer;
 	}
 	
 	public void setLearningRate(double rate) {

@@ -1,33 +1,57 @@
 package nautilus.ai.app;
 
 import nautilus.ai.model.NautilusNet;
+import nautilus.ai.model.NNeuron;
 
 public class MainApp {
 	public static void main(String[] agrs) {
+		/*
+			Now we test a ANN with properties below:
+				- learning rate: 0.5
+				- Input: 2 + bias
+				- Hidden: 2 + bias
+				- output: 2
+		*/
 		NautilusNet aNet = new NautilusNet(0.5, 3, 3, 2);
+		int i, j;
+		NNeuron neuron;
 		
-		//Setup input layer
-		//2 input layer + 1 bias
-		//NNetLayer inputLayer = new NNetLayer(3);
-		//aNet.addLayer(inputLayer);
+		double[][] initW1 = {
+							{0.15, 0.25, 0.35},
+							{0.20, 0.30, 0.35}
+							};
+							
+		double[][] initW2 = {
+							{0.40, 0.50, 0.35},
+							{0.45, 0.55, 0.35}
+							};
 		
-		//Setup hidden layer
-		//NNetLayer hiddenLayer = new NNetLayer(2);
-		//hiddenLayer.getNeuron(0).setWeightArray(new double[] {0.15, 0.25, 0.35} );
-		//hiddenLayer.getNeuron(1).setWeightArray(new double[] {} );
-		//hiddenLayer.getNeuron(0).setWeightArray(new double[] {} ); // <- this is bias
-		//aNet.addLayer(hiddenLayer);
+		//Setup hidden layer		
+		for(i=0; i<2; i++) {
+			neuron = aNet.getHiddenLayer()[i];
+			for(j=0; j<2; i++) {
+				neuron.setWeight(initW1[1][j], j);
+			}
+			
+			//set bias
+			neuron.setWeight(initW1[1][2], 2);
+		}
 		
 		//Setup output layer
-		//2 node + 1 bias
-		//NNetLayer outputLayer = new NNetLayer(1);
-		//outputLayer.getNeuron(0).setWeightArray(new double[] {} );
-		//outputLayer.getNeuron(1).setWeightArray(new double[] {} );
-		//outputLayer.getNeuron(0).setWeightArray(new double[] {} ); // <- this is bias
-		//aNet.addLayer(outputLayer);
+		for(i=0; i<2; i++) {
+			neuron = aNet.getOutputLayer()[i];
+			for(j=0; j<2; i++) {
+				neuron.setWeight(initW2[1][j], j);
+			}
+			
+			//set bias
+			neuron.setWeight(initW2[1][2], 2);
+		}
 		
 		//train the net
 		double[] inputs = new double[] {0.05, 0.1, 1};
 		double[] targets = new double[] {0.01, 0.99};
+		
+		aNet.setInputOutput(inputs, targets);
 	}
 }
