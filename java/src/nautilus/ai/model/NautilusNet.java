@@ -29,6 +29,18 @@ public class NautilusNet {
 		mHiddenLayer = new NNeuron[hiddenCount];
 		mOutputLayer = new NNeuron[outputCount];
 		
+		for(int i=0; i<mInputLayer.length; i++) {
+			mInputLayer[i] = new NNeuron();
+		}
+		
+		for(int i=0; i<mHiddenLayer.length; i++) {
+			mHiddenLayer[i] = new NNeuron(inputCount);
+		}
+		
+		for(int i=0; i<mOutputLayer.length; i++) {
+			mOutputLayer[i] = new NNeuron(hiddenCount);
+		}
+		
 		mTargets = new double[outputCount];
 	}
 	
@@ -38,12 +50,14 @@ public class NautilusNet {
 			|| (mOutputLayer==null ) ) {
 			throw new RuntimeException("Data does not match the network structure!!!!!!");
 		}
-		NNeuron n;
+		
 		for(int i=0; i<mInputLayer.length; i++) {
 			mInputLayer[i].setInput(inputs[i]);
+			mInputLayer[i].setOutput(inputs[i]);
 		}
 		
 		mTargets = new double[outputs.length];
+		mErrors = new double[outputs.length];
 		System.arraycopy(outputs, 0, mTargets, 0, outputs.length);
 	}
 		
@@ -179,23 +193,30 @@ public class NautilusNet {
 		for(i = 0; i<mInputLayer.length; i++) {
 			out.print(mInputLayer[i].getInput() + " | ");
 		}
+		out.println();
 		
 		for(i = 0; i<mInputLayer.length; i++) {
 			mInputLayer[i].print(out);
 		}
+		out.println();
 		
 		for(i = 0; i<mHiddenLayer.length; i++) {
 			mHiddenLayer[i].print(out);
+			out.println();
 		}
+		out.println();
 		
 		for(i = 0; i<mOutputLayer.length; i++) {
 			mOutputLayer[i].print(out);
+			out.println();
 		}
+		out.println();
 		
 		out.println("Target: ");
 		for(i = 0; i<mTargets.length; i++) {
 			out.print(mTargets[i] + " | ");
 		}
+		out.println();
 	}
 	
 	@Override

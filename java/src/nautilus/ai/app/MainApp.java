@@ -17,8 +17,8 @@ public class MainApp {
 		NNeuron neuron;
 		
 		double[][] initW1 = {
-							{0.15, 0.25, 0.35},
-							{0.20, 0.30, 0.35}
+							{0.15, 0.20, 0.35},
+							{0.25, 0.30, 0.35}
 							};
 							
 		double[][] initW2 = {
@@ -29,8 +29,8 @@ public class MainApp {
 		//Setup hidden layer		
 		for(i=0; i<2; i++) {
 			neuron = aNet.getHiddenLayer()[i];
-			for(j=0; j<2; i++) {
-				neuron.setWeight(initW1[1][j], j);
+			for(j=0; j<2; j++) {
+				neuron.setWeight(initW1[i][j], j);
 			}
 			
 			//set bias
@@ -40,8 +40,8 @@ public class MainApp {
 		//Setup output layer
 		for(i=0; i<2; i++) {
 			neuron = aNet.getOutputLayer()[i];
-			for(j=0; j<2; i++) {
-				neuron.setWeight(initW2[1][j], j);
+			for(j=0; j<2; j++) {
+				neuron.setWeight(initW2[i][j], j);
 			}
 			
 			//set bias
@@ -53,5 +53,11 @@ public class MainApp {
 		double[] targets = new double[] {0.01, 0.99};
 		
 		aNet.setInputOutput(inputs, targets);
+		
+		aNet.forward();
+		aNet.printNetwork(System.out);
+		
+		aNet.backward();
+		aNet.printNetwork(System.out);
 	}
 }

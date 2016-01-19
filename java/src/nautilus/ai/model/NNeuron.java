@@ -25,6 +25,10 @@ public class NNeuron {
 	public NNeuron() {
 	}
 	
+	public NNeuron(int weightLength) {
+		mWeights = new double[weightLength];
+	}
+	
 	public NNeuron(double[] initWeights) {
 		mWeights = new double[initWeights.length];
 		System.arraycopy(initWeights, 0, mWeights, 0, initWeights.length);
@@ -53,6 +57,10 @@ public class NNeuron {
 		mInput = input;
 	}
 	
+	public void setOutput(double v) {
+		mOutput = v;
+	}
+	
 	public double getInput() {
 		return mInput;
 	}
@@ -66,21 +74,25 @@ public class NNeuron {
 	*/
 	public double onActivated(final NNeuron[] preLayer) {
 		int i;
-		double[] inputValues = new double[mWeights.length];
-		double s = 0;
+		//double[] inputValues = new double[mWeights.length];
+		mInput = 0;
 		for(i=0; i<mWeights.length; i++) {
-			s += preLayer[i].getOutput() * mWeights[i];
+			mInput += preLayer[i].getOutput() * mWeights[i];
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-s));
+		mOutput = 1.0 / (1.0 + Math.exp(-mInput));
 		
 		return mOutput;
 	}
 	
 	public void print(PrintStream out) {
-		out.print(mOutput + "");
-		//for(i=0; i<mWeights.length; i++) {
-		//	out.print();
-		//}
+		int i;
+		out.print(" [net= " + mInput + ", ouput=" + mOutput + " weights(");
+		if(mWeights != null) {
+			for(i=0; i<mWeights.length; i++) {
+				out.print(mWeights[i] +", ");
+			}
+		}
+		out.print(")] ");
 	}
 }
