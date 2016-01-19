@@ -98,13 +98,13 @@ public class NautilusNet {
 		int i;
 		int j;
 		
-		//calculate net and ouput values for the hidden layer
+		//calculate net and output values for the hidden layer
 		//The last neuron of input layer is a bias
 		for(i=0; i<mHiddenLayer.length-1; i++) {
 			mHiddenLayer[i].onActivated(mInputLayer);
 		}
 		
-		//calculate net and ouput values for the output layer
+		//calculate net and output values for the output layer
 		for(i=0; i<mOutputLayer.length; i++) {
 			mOutputLayer[i].onActivated(mHiddenLayer);
 		}
@@ -195,17 +195,21 @@ public class NautilusNet {
 		}
 		out.println();
 		
+		out.println("***INPUT LAYER: ");
 		for(i = 0; i<mInputLayer.length; i++) {
 			mInputLayer[i].print(out);
+			out.println();
 		}
 		out.println();
 		
+		out.println("***HIDDEN LAYER: ");
 		for(i = 0; i<mHiddenLayer.length; i++) {
 			mHiddenLayer[i].print(out);
 			out.println();
 		}
 		out.println();
 		
+		out.println("***OUTPUT LAYER: ");
 		for(i = 0; i<mOutputLayer.length; i++) {
 			mOutputLayer[i].print(out);
 			out.println();

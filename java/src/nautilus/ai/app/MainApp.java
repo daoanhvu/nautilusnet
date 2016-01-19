@@ -22,8 +22,8 @@ public class MainApp {
 							};
 							
 		double[][] initW2 = {
-							{0.40, 0.50, 0.35},
-							{0.45, 0.55, 0.35}
+							{0.40, 0.45, 0.60},
+							{0.50, 0.55, 0.60}
 							};
 		
 		//Setup hidden layer		
@@ -36,6 +36,7 @@ public class MainApp {
 			//set bias
 			neuron.setWeight(initW1[1][2], 2);
 		}
+		aNet.getHiddenLayer()[2].setOutput(1.0);
 		
 		//Setup output layer
 		for(i=0; i<2; i++) {
