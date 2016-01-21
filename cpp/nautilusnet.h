@@ -3,12 +3,20 @@
 
 class NautilusNet {
 	private:
-		double* mWeights1;
-		double* mWeights2;
-		
+		/* Input layer */
 		double* mInputs;
+		
+		/* hidden layer */
+		double* mNet1s;
+		double* mWeights1;
+		double* mOutput1s;
+		
+		/* output layer */
+		double* mNet2s;
+		double* mWeights2;
+		double* mOutput2s;
+		
 		double* mTargets;
-		double* mOutputs;
 		double* mDErrors;
 		
 	public:

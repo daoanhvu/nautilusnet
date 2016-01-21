@@ -20,8 +20,6 @@ public class NNeuron {
 	*/
 	private double[] mWeights;
 	
-	private double mBias;
-	
 	public NNeuron() {
 	}
 	
@@ -72,6 +70,19 @@ public class NNeuron {
 	/**
 	*	return output
 	*/
+	public double onActivated(final double[] preLayerOutput) {
+		int i;
+		//double[] inputValues = new double[mWeights.length];
+		mInput = 0;
+		for(i=0; i<mWeights.length; i++) {
+			mInput += preLayerOutput[i] * mWeights[i];
+		}
+		
+		mOutput = 1.0 / (1.0 + Math.exp(-mInput));
+		
+		return mOutput;
+	}
+	
 	public double onActivated(final NNeuron[] preLayer) {
 		int i;
 		//double[] inputValues = new double[mWeights.length];
