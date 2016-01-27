@@ -13,14 +13,17 @@ import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 
 public class ImageForm extends JFrame {
@@ -33,6 +36,8 @@ public class ImageForm extends JFrame {
 	private JButton mRecognize;
 	private JTextField mInputImagePath;
 	private JButton mBrowse;
+	
+	private JCheckBox chkHighPassFilter;
 	
 	public ImageForm() {
 		super("Nautilus ANN Demo v1.0");
@@ -58,9 +63,13 @@ public class ImageForm extends JFrame {
 		GridLayout glayout = new GridLayout(1, 2, 10, 10);
 		JPanel imagePane = new JPanel(glayout);
 		mInputImagePane = new JImagePanel();
-		mInputImagePane.setBorder(new EmptyBorder(10, 10, 10, 10));
-		mTargetmagePane = new JImagePanel();
+		Border border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		mInputImagePane.setBorder(border);
 		imagePane.add(mInputImagePane);
+		
+		mTargetmagePane = new JImagePanel();
+		border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		mTargetmagePane.setBorder(border);
 		imagePane.add(mTargetmagePane);
 		c.add(imagePane, BorderLayout.CENTER);
 		
@@ -99,6 +108,13 @@ public class ImageForm extends JFrame {
 		        }
 			}
 		});
+		
+		mStartLearning.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+			}
+		});
 	}
 	
 	private void openInputImage(final File file) {
@@ -114,7 +130,6 @@ public class ImageForm extends JFrame {
 				}
 				
 				return bimage;
-				
 			}
 			
 			protected void done() {
@@ -131,7 +146,7 @@ public class ImageForm extends JFrame {
 		worker.execute();
 	}
 	
-	/* ImageFilter.java is used by FileChooserDemo2.java. */
+	
 	static class ImageFilter extends FileFilter {
 		
 		public final static String jpeg = "jpeg";

@@ -29,8 +29,12 @@ public class GraphicsUtil {
 	 * to convert RGB color to grayscale value
 	 * @param inColor input color save as 4-bytes in
 	 * @param tmp[] this is a byte array length >= 4, it's just used temporaly to prevent re-create the array
+	 * 
+	 * http://developer.bostjan-cigan.com/java-color-image-to-grayscale-conversion-algorithm/
+	 * http://www.johndcook.com/blog/2009/08/24/algorithms-convert-color-grayscale/
+	 * http://codesquire.com/post/GrayScaleJava
 	 */
-	public static double intRGBColor2Grayscale(int inColor, double[] tmp) {
+	public static float intRGBColor2Grayscale(int inColor, float[] tmp) {
 		int alpha = (inColor >> 24) & 0x000000ff;
 		int red = (inColor >> 16) & 0x000000ff;
 		int green = (inColor >> 8) & 0x000000ff;
@@ -41,6 +45,6 @@ public class GraphicsUtil {
 		tmp[2] = blue / 255.0f;
 		tmp[3] = alpha / 255.0f;
 		
-		return (0.2126 * tmp[0] + 0.7152 * tmp[1] + 0.0722 * tmp[2]); 
+		return (0.2126f * tmp[0] + 0.7152f * tmp[1] + 0.0722f * tmp[2]); 
 	}
 }

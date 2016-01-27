@@ -31,6 +31,8 @@ public class JImagePanel extends JPanel {
 		int w = getWidth();
         int h = getHeight();
         double canvasAspect = (h * 1.0) / w;
+        
+        super.paintComponent(g);
 		
 		if(mImage != null) {
 			imageW = mImage.getWidth(null);

@@ -52,8 +52,8 @@ public class HWRNet {
 			int w = bImage.getWidth();
 			int h = bImage.getHeight();
 			
-			double[] value = new double[w * h];
-			double[] tmp = new double[4];
+			float[] value = new float[w * h];
+			float[] tmp = new float[4];
 			
 			for(i=0; i<h; i++) {
 				for(j=0; j<w; j++) {
