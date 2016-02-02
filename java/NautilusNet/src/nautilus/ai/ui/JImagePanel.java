@@ -2,6 +2,7 @@ package nautilus.ai.ui;
 
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
 
@@ -9,18 +10,18 @@ public class JImagePanel extends JPanel {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Image mImage;
+	private BufferedImage mImage;
 	
 	public JImagePanel() {
 		mImage = null;
 	}
 	
-	public void setImage(Image img) {
+	public void setImage(BufferedImage img) {
 		mImage = img;
 		repaint();
 	}
 	
-	public Image getImage() {
+	public BufferedImage getImage() {
 		return mImage;
 	}
 	

@@ -26,6 +26,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 
+import nautilus.ai.app.util.ImageFilter;
+
 public class ImageForm extends JFrame {
 	
 	private static final long serialVersionUID = 1L;
@@ -98,7 +100,7 @@ public class ImageForm extends JFrame {
 				JFileChooser fc = new JFileChooser();
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				fc.addChoosableFileFilter(new ImageFilter());
+				fc.addChoosableFileFilter(new ImageOpenFilter());
 				int returnVal = fc.showOpenDialog(ImageForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 		            File file = fc.getSelectedFile();
@@ -112,16 +114,44 @@ public class ImageForm extends JFrame {
 		mStartLearning.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
+
+					@Override
+					protected BufferedImage doInBackground() throws Exception {
+						BufferedImage bimage = null;
+						BufferedImage result = null;
+						try {
+							bimage = mInputImagePane.getImage();
+							result = ImageFilter.lowpassFilter(bimage);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+							return null;
+						}
+						
+						return result;
+					}
+					
+					protected void done() {
+						BufferedImage result;
+						try {
+							result = get();
+							mTargetmagePane.setImage(result);
+						} catch (InterruptedException | ExecutionException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				};
+				worker.execute();
 			}
 		});
 	}
 	
 	private void openInputImage(final File file) {
-		SwingWorker<Image, Void> worker = new SwingWorker<Image, Void>() {
+		SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
 
 			@Override
-			protected Image doInBackground() throws Exception {
+			protected BufferedImage doInBackground() throws Exception {
 				BufferedImage bimage = null;
 				try {
 					bimage = ImageIO.read(file);
@@ -133,7 +163,7 @@ public class ImageForm extends JFrame {
 			}
 			
 			protected void done() {
-				Image result;
+				BufferedImage result;
 				try {
 					result = get();
 					mInputImagePane.setImage(result);
@@ -147,7 +177,7 @@ public class ImageForm extends JFrame {
 	}
 	
 	
-	static class ImageFilter extends FileFilter {
+	static class ImageOpenFilter extends FileFilter {
 		
 		public final static String jpeg = "jpeg";
 	    public final static String jpg = "jpg";

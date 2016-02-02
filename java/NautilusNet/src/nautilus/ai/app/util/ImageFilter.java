@@ -3,8 +3,6 @@ package nautilus.ai.app.util;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 
-import com.sun.prism.paint.Color;
-
 /**
  * 
  * @author vdao5
@@ -13,16 +11,14 @@ import com.sun.prism.paint.Color;
  */
 public class ImageFilter {
 	
-	public static Image lowpassFilter(final BufferedImage inputImage) {
+	public static BufferedImage lowpassFilter(final BufferedImage inputImage) {
 		int inputH = inputImage.getHeight();
 		int inputW = inputImage.getWidth();
 		int i, j;
 		
-		BufferedImage grayImage = new BufferedImage(inputH, inputW, BufferedImage.TYPE_BYTE_GRAY);
-		float[][] grayValues = new float[inputH][inputW];
-		float[] tmp = new float[4];
+		BufferedImage grayImage = new BufferedImage(inputW,inputH, BufferedImage.TYPE_BYTE_GRAY);
 		int inColor, grayColor;
-		int alpha, red, green, blue;
+		int alpha, red, green, blue, gray;
 		
 		for(i=0; i<inputH; i++) {
 			for(j=0; j<inputW; j++) {
@@ -31,9 +27,8 @@ public class ImageFilter {
 				red = (inColor >> 16) & 0x000000ff;
 				green = (inColor >> 8) & 0x000000ff;
 				blue = inColor & 0x000000ff;
-				grayValues[i][j] = (0.2126f * tmp[0] + 0.7152f * tmp[1] + 0.0722f * tmp[2]);
-				grayColor = (int) (grayValues[i][j] * 255.0f);
-				grayImage.setRGB(j, i, grayColor);
+				gray = (red + green + blue)/3;
+				grayImage.setRGB(j, i, gray);
 			}
 		}
 		
