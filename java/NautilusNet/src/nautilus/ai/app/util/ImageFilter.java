@@ -1,5 +1,6 @@
 package nautilus.ai.app.util;
 
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 
@@ -19,6 +20,7 @@ public class ImageFilter {
 		BufferedImage grayImage = new BufferedImage(inputW,inputH, BufferedImage.TYPE_BYTE_GRAY);
 		int inColor, grayColor;
 		int alpha, red, green, blue, gray;
+		Color color;
 		
 		for(i=0; i<inputH; i++) {
 			for(j=0; j<inputW; j++) {
@@ -28,6 +30,8 @@ public class ImageFilter {
 				green = (inColor >> 8) & 0x000000ff;
 				blue = inColor & 0x000000ff;
 				gray = (red + green + blue)/3;
+//				color = new Color();
+				
 				grayImage.setRGB(j, i, gray);
 			}
 		}
