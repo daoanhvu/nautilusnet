@@ -34,10 +34,12 @@ public class ImageForm extends JFrame {
 	private JImagePanel mInputImagePane;
 	private JImagePanel mTargetmagePane;
 	private JPanel mButtonPane;
+	private JPanel mInfoPane;
 	private JButton mStartLearning;
 	private JButton mRecognize;
 	private JTextField mInputImagePath;
 	private JButton mBrowse;
+	JLabel mImageSizeLabel;
 	
 	private JCheckBox chkHighPassFilter;
 	
@@ -75,6 +77,17 @@ public class ImageForm extends JFrame {
 		imagePane.add(mTargetmagePane);
 		c.add(imagePane, BorderLayout.CENTER);
 		
+		//Info pane
+		glayout = new GridLayout(5, 1, 10, 10);
+		mInfoPane = new JPanel(glayout);
+		border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+		mInfoPane.setBorder(border);
+		JLabel lb = new JLabel("Image size:   ");
+		mImageSizeLabel = new JLabel("N/A");
+		mInfoPane.add(lb);
+		mInfoPane.add(mImageSizeLabel);
+		c.add(mInfoPane, BorderLayout.EAST);
+		
 		//Button pane
 		mButtonPane = new JPanel();
 		
@@ -101,6 +114,7 @@ public class ImageForm extends JFrame {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
+				fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
 				int returnVal = fc.showOpenDialog(ImageForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 		            File file = fc.getSelectedFile();
@@ -164,9 +178,14 @@ public class ImageForm extends JFrame {
 			
 			protected void done() {
 				BufferedImage result;
+				int width;
+				int height;
 				try {
 					result = get();
 					mInputImagePane.setImage(result);
+					width = result.getWidth();
+					height = result.getHeight();
+					mImageSizeLabel.setText("W: " + width + "; H: " + height);
 				} catch (InterruptedException | ExecutionException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
