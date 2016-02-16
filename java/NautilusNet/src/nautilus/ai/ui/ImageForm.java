@@ -137,6 +137,8 @@ public class ImageForm extends JFrame {
 						try {
 							bimage = mInputImagePane.getImage();
 							result = ImageFilter.lowpassFilter(bimage);
+							result = ImageFilter.fixImage(result);
+							result = ImageFilter.resize2(result, 54, 72);
 						} catch (Exception ex) {
 							ex.printStackTrace();
 							return null;

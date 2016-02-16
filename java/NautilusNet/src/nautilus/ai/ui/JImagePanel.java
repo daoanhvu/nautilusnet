@@ -28,6 +28,7 @@ public class JImagePanel extends JPanel {
 	@Override
 	public void paintComponent(Graphics g) {
 		int imageW, imageH;
+		int x = 0, y = 0;
 		double imageAspect;
 		int w = getWidth();
         int h = getHeight();
@@ -38,21 +39,26 @@ public class JImagePanel extends JPanel {
 		if(mImage != null) {
 			imageW = mImage.getWidth(null);
 			imageH = mImage.getHeight(null);
-			imageAspect = (1.0 * imageH) / imageW;
 			
-			int x = 0, y = 0;
-			
-			if(imageAspect < canvasAspect) {
-				y = h;
-	            h = (int) (w * imageAspect);
-	            y = (y - h) / 2; // center it along vertical
+			//TODO: Implement this please
+			if( (imageW <= w) && (imageH <= h) ) {
+				x = (w - imageW) / 2; // center it along horizontal
+				y = (h - imageH) / 2; // center it along vertical
+				g.drawImage(mImage, x, y, imageW, imageH, null);
 			} else {
-				x = w;
-	            w = (int) (h / imageAspect);
-	            x = (x - w) / 2; // center it along horizontal
+				imageAspect = (1.0 * imageH) / imageW;
+				
+				if(imageAspect < canvasAspect) {
+					y = h;
+		            h = (int) (w * imageAspect);
+		            y = (y - h) / 2; // center it along vertical
+				} else {
+					x = w;
+		            w = (int) (h / imageAspect);
+		            x = (x - w) / 2; // center it along horizontal
+				}
+				g.drawImage(mImage, x, y, w + x, h + y, 0, 0, imageW, imageH, null);
 			}
-			
-	        g.drawImage(mImage, x, y, w + x, h + y, 0, 0, imageW, imageH, null);
 		}
 		
 	}
