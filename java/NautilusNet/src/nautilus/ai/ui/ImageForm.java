@@ -114,7 +114,8 @@ public class ImageForm extends JFrame {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
-				fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
+				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
+				fc.setCurrentDirectory(new File("D:\\data"));
 				int returnVal = fc.showOpenDialog(ImageForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 		            File file = fc.getSelectedFile();

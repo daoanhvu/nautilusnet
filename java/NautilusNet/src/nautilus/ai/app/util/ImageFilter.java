@@ -84,43 +84,67 @@ public class ImageFilter {
 		int w, h;
 		BufferedImage outImage;
 		int type = inputImage.getType();
+		boolean stop = false;
 		top = 0;
-		for(i=0; (i<inputW) && (top<inputH); i++) {
-			inColor = inputImage.getRGB(i, top);
-			if(inColor < Color.WHITE.getRGB()) {
-				break;
+		while( (top<inputH) && !stop ) {
+			for(i=0; i<inputW; i++) {
+				inColor = inputImage.getRGB(i, top);
+				if(inColor != Color.WHITE.getRGB()) {
+					stop = true;
+					break;
+				}
 			}
-			top++;
+			if(!stop)
+				top++;
 		}
 		
 		left = 0;
-		for(i=0; (i<inputH) && (left<inputW); i++) {
-			inColor = inputImage.getRGB(left, i);
-			if(inColor < Color.WHITE.getRGB()) {
-				break;
+		stop = false;
+		while((left<inputW) && !stop) {
+			for(i=0; i<inputH; i++) {
+				inColor = inputImage.getRGB(left, i);
+				if(inColor != Color.WHITE.getRGB()) {
+					stop = true;
+					break;
+				}
 			}
-			left++;
+			if(!stop)
+				left++;
 		}
 		
+		stop = false;
 		bottom = inputH - 1;
-		for(i=0; (i<inputW) && (bottom>=0); i++) {
-			inColor = inputImage.getRGB(i, bottom);
-			if(inColor < Color.WHITE.getRGB()) {
-				break;
+		while( (bottom>=0) && !stop ) {
+			for(i=0; i<inputW; i++) {
+				inColor = inputImage.getRGB(i, bottom);
+				if(inColor != Color.WHITE.getRGB()) {
+					stop = true;
+					break;
+				}
 			}
-			bottom--;
+			if(!stop)
+				bottom--;
 		}
 		
+		stop = false;
 		right = inputW - 1;
-		for(i=0; (i<inputH) && (right>=0); i++) {
-			inColor = inputImage.getRGB(right, i);
-			if(inColor < Color.WHITE.getRGB()) {
-				break;
+		while((right > 0) && !stop ) {
+			for(i=0; i<inputH; i++) {
+				inColor = inputImage.getRGB(right, i);
+				if(inColor != Color.WHITE.getRGB()) {
+					stop = true;
+					break;
+				}
+				
 			}
-			right--;
+			if(!stop)
+				right--;
 		}
 		h = bottom - top + 1;
 		w = right - left + 1;
+		System.out.println(" Left: " + left + "; Top: " + 
+				top + "; Right: " + right + "; Bottom: " + bottom);
+		System.out.println(" new H: " + h + "; new W " + w);
 		outImage = new BufferedImage(w, h, type);
 		Graphics2D g2 = outImage.createGraphics();
 		g2.drawImage(inputImage, 0, 0, w, h, 
@@ -128,6 +152,7 @@ public class ImageFilter {
 				left + w,
 				top + h,
 				null);
+		
 		g2.dispose();
 		return outImage;
 	}
