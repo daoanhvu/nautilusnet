@@ -18,9 +18,9 @@ import nautilus.ai.model.NautilusNet;
  */
 public class HWRNet {
 	
-	private static final int SAMPLE_WIDTH = 45;
-	private static final int SAMPLE_HEIGHT = 50;
-	private static final int INPUT_LENGTH = 2251; // 45 * 50 + bias
+	private static final int SAMPLE_WIDTH = 54;
+	private static final int SAMPLE_HEIGHT = 72;
+	private static final int INPUT_LENGTH = 3889; // 54 * 72 + bias
 	private static final int HIDDEN_LENGTH = 1801; //bias included
 	private static final int OUTPUT_LENGTH = 62; // 26 lowcase characters + 26 upcase characters + 10 digits
 	
@@ -32,7 +32,8 @@ public class HWRNet {
 	}
 	
 	private void buildBackproNet() {
-		mBackproNet = new NautilusNet(mLearningRate, INPUT_LENGTH, HIDDEN_LENGTH, OUTPUT_LENGTH);
+		mBackproNet = new NautilusNet(mLearningRate, 
+				INPUT_LENGTH, HIDDEN_LENGTH, OUTPUT_LENGTH);
 	}
 	
 	public void readWeightFromFile(String filepath) {

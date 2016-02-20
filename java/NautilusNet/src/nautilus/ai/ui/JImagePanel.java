@@ -1,5 +1,6 @@
 package nautilus.ai.ui;
 
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -18,7 +19,12 @@ public class JImagePanel extends JPanel {
 	
 	public void setImage(BufferedImage img) {
 		mImage = img;
-		repaint();
+		EventQueue.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				repaint();
+			}
+		});
 	}
 	
 	public BufferedImage getImage() {
@@ -40,7 +46,6 @@ public class JImagePanel extends JPanel {
 			imageW = mImage.getWidth(null);
 			imageH = mImage.getHeight(null);
 			
-			//TODO: Implement this please
 			if( (imageW <= w) && (imageH <= h) ) {
 				x = (w - imageW) / 2; // center it along horizontal
 				y = (h - imageH) / 2; // center it along vertical
