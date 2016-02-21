@@ -4,12 +4,17 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
@@ -20,7 +25,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -34,11 +41,17 @@ public class TrainingForm extends JFrame {
 	private JPanel mButtonPane;
 	private JPanel mInfoPane;
 	private JButton mStartLearning;
-	private JTextField mImageFolderPath;
-	private JButton mBrowse;
+	private JTextField mImageFolderPath, mOuputFolderPath;
+	private JButton mBrowse, mBrowse1;
 	JLabel mImageSizeLabel;
+	File mSelectedDir;
+	File mOutputDir;
+	Task mTask;
 	
 	private JCheckBox chkHighPassFilter;
+	
+	final ImageOpenFilter mImageFilter = new ImageOpenFilter();
+	ProgressMonitor progressMonitor;
 	
 	public TrainingForm() {
 		super("Train the net");
@@ -52,12 +65,22 @@ public class TrainingForm extends JFrame {
 		c.setLayout(new BorderLayout());
 		
 		//Input File Path pane
-		JPanel northPane = new JPanel();
+		JPanel northPane = new JPanel(new GridLayout(2, 1));
+		JPanel inputPane = new JPanel();
 		mImageFolderPath = new JTextField(20);
 		mBrowse = new JButton("Browse");
-		northPane.add(new JLabel("Input Image"));
-		northPane.add(mImageFolderPath);
-		northPane.add(mBrowse);
+		inputPane.add(new JLabel("Input Image"));
+		inputPane.add(mImageFolderPath);
+		inputPane.add(mBrowse);
+		
+		JPanel outputPane = new JPanel();
+		mOuputFolderPath = new JTextField(20);
+		mBrowse1 = new JButton("Browse");
+		outputPane.add(new JLabel("Output folder"));
+		outputPane.add(mOuputFolderPath);
+		outputPane.add(mBrowse1);
+		northPane.add(inputPane);
+		northPane.add(outputPane);
 		c.add(northPane, BorderLayout.NORTH);
 		
 		//Image pane
@@ -92,10 +115,23 @@ public class TrainingForm extends JFrame {
 				fc.setCurrentDirectory(new File("D:\\data"));
 				int returnVal = fc.showOpenDialog(TrainingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
-		            File file = fc.getSelectedFile();
-		            openInputImage(file);
-		        } else {
-		            //log.append("Open command cancelled by user." + newline);
+					mSelectedDir = fc.getSelectedFile();
+		        }
+			}
+		});
+		
+		mBrowse1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				fc.setAcceptAllFileFilterUsed(false);
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				fc.addChoosableFileFilter(new ImageOpenFilter());
+				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
+				fc.setCurrentDirectory(new File("D:\\data"));
+				int returnVal = fc.showOpenDialog(TrainingForm.this);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					mOutputDir = fc.getSelectedFile();
 		        }
 			}
 		});
@@ -103,69 +139,87 @@ public class TrainingForm extends JFrame {
 		mStartLearning.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
-
-					@Override
-					protected BufferedImage doInBackground() throws Exception {
-						BufferedImage bimage = null;
-						BufferedImage result = null;
-						try {
-							
-						} catch (Exception ex) {
-							ex.printStackTrace();
-							return null;
-						}
-						
-						return result;
-					}
-					
-					protected void done() {
-						BufferedImage result;
-						try {
-							result = get();
-							
-						} catch (InterruptedException | ExecutionException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				};
-				worker.execute();
+				progressMonitor = new ProgressMonitor(TrainingForm.this, 
+						"Processing Images...", "", 0, 100);
+				progressMonitor.setProgress(0);
+				mTask = new Task();
+				mTask.addPropertyChangeListener(mProperChangeListener);
+				mStartLearning.setEnabled(false);
 			}
 		});
 	}
 	
-	private void openInputImage(final File file) {
-		SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
-
-			@Override
-			protected BufferedImage doInBackground() throws Exception {
-				BufferedImage bimage = null;
-				try {
-					bimage = ImageIO.read(file);
-				} catch (Exception ex) {
-					return null;
-				}
-				
-				return bimage;
+	PropertyChangeListener mProperChangeListener = new PropertyChangeListener() {
+		
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			if("progress".equals(evt.getPropertyName())) {
+				int progress = (Integer) evt.getNewValue();
+				progressMonitor.setProgress(progress);
+	            String message =
+	                String.format("Completed %d%%.\n", progress);
+	            progressMonitor.setNote(message);
+	            if (progressMonitor.isCanceled() || mTask.isDone()) {
+	                Toolkit.getDefaultToolkit().beep();
+	                if (progressMonitor.isCanceled()) {
+	                	mTask.cancel(true);
+	                }
+	                mStartLearning.setEnabled(true);
+	            }
 			}
-			
-			protected void done() {
-				BufferedImage result;
-				int width;
-				int height;
-				try {
-					result = get();
+		}
+	};
+	
+	class Task extends SwingWorker<Void, Void> {
+		@Override
+		public Void doInBackground() {
+			int progress = 0;
+			setProgress(0);
+			BufferedImage bimage, result;
+			File[] files = mSelectedDir.listFiles(mImageFilter);
+			int total = files.length;
+			int i, dotidx;
+			float percent;
+			File output;
+			String filename;
+			try {
+				for(i=0; i<total; i++) {
+					filename = files[i].getName();
+					dotidx = filename.indexOf(".");
+					if(dotidx >= 0) {
+						filename = filename.substring(0, dotidx);
+					}
+					bimage = ImageIO.read(files[i]);
+					result = ImageFilter.lowpassFilter(bimage);
+					result = ImageFilter.fixImage(result);
+					result = ImageFilter.resize2(result, 54, 72);
+					output = new File(mOutputDir, filename + ".png");
+					//Save the image to output folder
+					ImageIO.write(result, "png", output);
 					
-					width = result.getWidth();
-					height = result.getHeight();
-					mImageSizeLabel.setText("W: " + width + "; H: " + height);
-				} catch (InterruptedException | ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					percent = ((i+1) * 100.0f) / total;
+					progress = (int)percent;
+					setProgress(progress);
 				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		};
-		worker.execute();
+			return null;
+		}
+		
+		@Override
+		public void done() {
+//			Toolkit.getDefaultToolkit().beep();
+			mStartLearning.setEnabled(true);
+            progressMonitor.setProgress(100);
+		}
+	}
+	
+	private void preprocessImage(File dir) {
+		File[] files = dir.listFiles(mImageFilter);
+		for(File f: files) {
+			
+		}
 	}
 }

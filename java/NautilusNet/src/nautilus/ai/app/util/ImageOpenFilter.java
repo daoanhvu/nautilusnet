@@ -4,7 +4,7 @@ import java.io.File;
 
 import javax.swing.filechooser.FileFilter;
 
-public class ImageOpenFilter extends FileFilter {
+public class ImageOpenFilter extends FileFilter implements java.io.FileFilter {
 	public final static String jpeg = "jpeg";
     public final static String jpg = "jpg";
     public final static String gif = "gif";
