@@ -73,12 +73,19 @@ public class TrainingForm extends JFrame {
 		inputPane.add(mImageFolderPath);
 		inputPane.add(mBrowse);
 		
+		mImageFolderPath.setText("D:\\projects\\NautilusNet\\data\\a");
+		mSelectedDir = new File("D:\\projects\\NautilusNet\\data\\a");
+		
 		JPanel outputPane = new JPanel();
 		mOuputFolderPath = new JTextField(20);
 		mBrowse1 = new JButton("Browse");
 		outputPane.add(new JLabel("Output folder"));
 		outputPane.add(mOuputFolderPath);
 		outputPane.add(mBrowse1);
+		
+		mOuputFolderPath.setText("D:\\projects\\NautilusNet\\data\\output\\a");
+		mOutputDir = new File("D:\\projects\\NautilusNet\\data\\output\\a");
+		
 		northPane.add(inputPane);
 		northPane.add(outputPane);
 		c.add(northPane, BorderLayout.NORTH);
@@ -112,7 +119,7 @@ public class TrainingForm extends JFrame {
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
 				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\data"));
+				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data\\a"));
 				int returnVal = fc.showOpenDialog(TrainingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					mSelectedDir = fc.getSelectedFile();
@@ -128,7 +135,7 @@ public class TrainingForm extends JFrame {
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
 				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\data"));
+				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data\\output\\a"));
 				int returnVal = fc.showOpenDialog(TrainingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					mOutputDir = fc.getSelectedFile();
@@ -145,6 +152,7 @@ public class TrainingForm extends JFrame {
 				mTask = new Task();
 				mTask.addPropertyChangeListener(mProperChangeListener);
 				mStartLearning.setEnabled(false);
+				mTask.execute();
 			}
 		});
 	}
