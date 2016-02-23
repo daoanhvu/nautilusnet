@@ -2,6 +2,7 @@ package nautilus.ai.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -14,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
@@ -24,12 +26,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 
+import nautilus.ai.app.hwr.HWRNet;
 import nautilus.ai.app.util.ImageFilter;
 import nautilus.ai.app.util.ImageOpenFilter;
 
@@ -39,16 +44,12 @@ public class ImageForm extends JFrame {
 	private JImagePanel mInputImagePane;
 	private JImagePanel mTargetmagePane;
 	private JPanel mButtonPane;
-	private JPanel mInfoPane;
 	private JButton mStartLearning;
-	private JButton mRecognize;
+	private JButton btnRecognize, btnLoadTheNet;
 	private JTextField mInputImagePath;
 	private JButton mBrowse;
 	
-	/* 
-	 * I will use this in a inner class so I mask it as inner 
-	 * attribute
-	 **/
+	HWRNet mTheNet;
 	JLabel mImageSizeLabel;
 	
 	/* Menu bar */
@@ -65,10 +66,12 @@ public class ImageForm extends JFrame {
 		super("Nautilus ANN Demo v1.0");
 		iniComponent();
 		initListeners();
+		
+		mTheNet = new HWRNet();
 	}
 	
 	private void iniComponent() {
-		setBounds(20, 20, 500, 360);
+		setBounds(20, 20, 800, 460);
 		Container c = getContentPane();
 		c.setLayout(new BorderLayout());
 		
@@ -120,6 +123,7 @@ public class ImageForm extends JFrame {
 		c.add(northPane, BorderLayout.NORTH);
 		
 		//Image pane
+		JPanel mainPane = new JPanel(new BorderLayout());
 		GridLayout glayout = new GridLayout(1, 2, 10, 10);
 		JPanel imagePane = new JPanel(glayout);
 		mInputImagePane = new JImagePanel();
@@ -131,27 +135,33 @@ public class ImageForm extends JFrame {
 		border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 		mTargetmagePane.setBorder(border);
 		imagePane.add(mTargetmagePane);
-		c.add(imagePane, BorderLayout.CENTER);
-		
-		//Info pane
-		glayout = new GridLayout(5, 1, 10, 10);
-		mInfoPane = new JPanel(glayout);
-		mInfoPane.setBounds(0, 0, 200, 400);
-		border = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
-		mInfoPane.setBorder(border);
-		JLabel lb = new JLabel("Image size:   ");
-		mImageSizeLabel = new JLabel("N/A");
-		mInfoPane.add(lb);
-		mInfoPane.add(mImageSizeLabel);
-		c.add(mInfoPane, BorderLayout.EAST);
+		mainPane.add(imagePane, BorderLayout.CENTER);
 		
 		//Button pane
 		mButtonPane = new JPanel();
 		
-		mStartLearning = new JButton("Start");
+		mStartLearning = new JButton("Test Process Image");
 		mButtonPane.add(mStartLearning);
 		
-		c.add(mButtonPane, BorderLayout.SOUTH);
+		btnLoadTheNet = new JButton("Load Network");
+		mButtonPane.add(btnLoadTheNet);
+		
+		btnRecognize = new JButton("Recognize");
+		mButtonPane.add(btnRecognize);
+		mainPane.add(mButtonPane, BorderLayout.SOUTH);
+		
+		//Add main pane to frame
+		c.add(mainPane, BorderLayout.CENTER);
+		
+		// create the status bar panel and shove it down the bottom of the frame
+		JPanel statusPanel = new JPanel();
+		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		c.add(statusPanel, BorderLayout.SOUTH);
+		statusPanel.setPreferredSize(new Dimension(c.getWidth(), 22));
+		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+		mImageSizeLabel = new JLabel("");
+		mImageSizeLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		statusPanel.add(mImageSizeLabel);
 	}
 	
 	private void initListeners() {
@@ -213,6 +223,42 @@ public class ImageForm extends JFrame {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					}
+				};
+				worker.execute();
+			}
+		});
+		
+		btnLoadTheNet.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
+					@Override
+					protected BufferedImage doInBackground() throws Exception {
+						return null;
+					}
+					
+					protected void done() {
+						mImageSizeLabel.setText("Loading the net done!");
+					}
+				};
+				worker.execute();
+			}
+		});
+		
+		btnRecognize.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
+
+					@Override
+					protected BufferedImage doInBackground() throws Exception {
+						
+						return null;
+					}
+					
+					protected void done() {
+						mImageSizeLabel.setText("Recognizing done!");
 					}
 				};
 				worker.execute();

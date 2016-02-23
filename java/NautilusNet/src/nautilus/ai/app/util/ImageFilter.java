@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 
 /**
  * 
@@ -74,6 +75,27 @@ public class ImageFilter {
 		}
 		
 		return grayImage;
+	}
+	
+	/**
+	 * 
+	 * @param inputImage
+	 * @param result
+	 * @return
+	 */
+	public static double[] getImageData(final BufferedImage inputImage,
+			double[] result) {
+		int inputH = inputImage.getHeight();
+		int inputW = inputImage.getWidth();
+		int i, j, c = 0;
+		Raster raster = inputImage.getData();
+		for(i=0; i<inputH; i++) {
+			for(j=0; j<inputW; j++) {
+				result[c++] = raster.getSample(j, i, 0);
+			}
+		}
+		
+		return result;
 	}
 	
 	public static BufferedImage fixImage(final BufferedImage inputImage) {

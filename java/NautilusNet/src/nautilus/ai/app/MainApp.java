@@ -32,6 +32,13 @@ public class MainApp {
 	int i, j;
 	NNeuron neuron;
 	
+	/**
+	 * The number of row is the number of node in hidden layer
+	 * Each row contain the weights those connect from input layer to corresponding
+	 * node in hidden layer.
+	 * Ex: in the array iniW1 below, data in row 0 {0.15, 0.20, 0.35} is the weights
+	 * those connect from all node in input layer to node 0 of hidden layer. 
+	 */
 	double[][] initW1 = {
 						{0.15, 0.20, 0.35},
 						{0.25, 0.30, 0.35}

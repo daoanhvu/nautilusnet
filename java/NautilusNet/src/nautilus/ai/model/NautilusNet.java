@@ -44,6 +44,7 @@ public class NautilusNet {
 		}
 		
 		mTargets = new double[outputCount];
+		mErrors = new double[outputCount];
 	}
 	
 	public void setInputOutput(double[] inputs, double[] outputs) {
@@ -53,14 +54,11 @@ public class NautilusNet {
 			throw new RuntimeException("Data does not match the network structure!!!!!!");
 		}
 		
-		
-//		for(int i=0; i<mInputLayer.length; i++) {
-//			mInputLayer[i] = inputs[i];
-//		}
 		System.arraycopy(inputs, 0, mInputLayer, 0, inputs.length);
 		
-		mTargets = new double[outputs.length];
-		mErrors = new double[outputs.length];
+		for(int i=0; i<outputs.length; i++) {
+			mErrors[i] = 0;
+		}
 		System.arraycopy(outputs, 0, mTargets, 0, outputs.length);
 	}
 		
@@ -95,6 +93,15 @@ public class NautilusNet {
 	
 	public double getLearningRate() {
 		return mLearningRate;
+	}
+	
+	public double getTotalError() {
+		int i;
+		double err = 0;
+		for(i=0; i<mOutputLayer.length; i++) {
+			err += (mErrors[i]*mErrors[i])/2.0;
+		}
+		return err;
 	}
 	
 	public void forward() {
