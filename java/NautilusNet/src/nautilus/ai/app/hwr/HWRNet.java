@@ -192,6 +192,12 @@ public class HWRNet {
 //		aNet.printNetwork(System.out);
 	}
 	
+	public int recognize(double[] inputs) {
+		mBackproNet.setInput(inputs);
+		mBackproNet.forward();
+		return mBackproNet.getResultIndex();
+	}
+	
 	public double getTotalError() {
 		return mBackproNet.getTotalError();
 	}

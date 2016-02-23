@@ -42,21 +42,17 @@ import nautilus.ai.app.hwr.HWRNet;
 import nautilus.ai.app.util.ImageFilter;
 import nautilus.ai.app.util.ImageOpenFilter;
 
-public class PreprocessingForm extends JFrame {
+public class PreprocessingForm extends JFrame implements PropertyChangeListener {
 	
 	private static final long serialVersionUID = 10452L;
-	private JPanel mButtonPane;
 	private JPanel mInfoPane;
-	private JButton mStartPreprocessing;
-	private JButton mStartLearning;
-	JTextField mImageFolderPath, mOuputFolderPath, mOutputNetFolder;
-	private JButton mBrowse, mBrowse1, mNetOutputBrowse;
+	private JButton btnStartPreprocessing;
+	JTextField mImageFolderPath, mOuputFolderPath;
+	JButton mBrowse, mBrowse1;
 	JLabel mImageSizeLabel;
 	File mSelectedDir;
 	File mOutputDir;
-	File mOutputNetFile;
 	PreprocessingTask mPreprocessingTask;
-	TrainingTask mTrainingTask;
 	
 	private JCheckBox chkPreprocessImage;
 	private JCheckBox chkTrainTheNet;
@@ -65,92 +61,73 @@ public class PreprocessingForm extends JFrame {
 	
 	/* Progress bar dialo */
 	JProgressBar progressBar;
-	JDialog progressDialog;
-	
-	HWRNet mTheNet;
-	
-	
-		
-	private void initProgressDialog() {
-		progressDialog = new JDialog(this);
-		
-		progressBar = new JProgressBar(0, 100);
-		progressBar.setValue(0);
-		progressBar.setStringPainted(true);
-		
-		progressDialog.add(progressBar);
-	}
-	
 	
 	public PreprocessingForm() {
-		super("Train the net");
+		super("Preprocessing samples ");
 		iniComponent();
 		initListeners();
-		mTheNet = new HWRNet();
 	}
 	
 	private void iniComponent() {
-		setBounds(20, 20, 500, 360);
+		setBounds(20, 20, 540, 210);
 		Container c = getContentPane();
 		c.setLayout(new BorderLayout());
 		
 		//Input File Path pane
-		JPanel northPane = new JPanel(new GridLayout(2, 1));
+		JPanel northPane = new JPanel(new GridLayout(3, 1));
 		JPanel inputPane = new JPanel();
-		mImageFolderPath = new JTextField(20);
-		mBrowse = new JButton("Browse");
+		mImageFolderPath = new JTextField(30);
+		mBrowse = new JButton("...");
 		inputPane.add(new JLabel("Input Image"));
 		inputPane.add(mImageFolderPath);
 		inputPane.add(mBrowse);
 		
-		mImageFolderPath.setText("D:\\projects\\NautilusNet\\data\\a");
-		mSelectedDir = new File("D:\\projects\\NautilusNet\\data\\a");
+//		mImageFolderPath.setText("D:\\projects\\NautilusNet\\data\\input_samples");
+//		mSelectedDir = new File("D:\\projects\\NautilusNet\\data\\input_samples");
+		mImageFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
+		mSelectedDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
 		
 		JPanel outputPane = new JPanel();
-		mOuputFolderPath = new JTextField(20);
-		mBrowse1 = new JButton("Browse");
+		mOuputFolderPath = new JTextField(30);
+		mBrowse1 = new JButton("...");
 		outputPane.add(new JLabel("Output folder"));
 		outputPane.add(mOuputFolderPath);
 		outputPane.add(mBrowse1);
 		
-		mOuputFolderPath.setText("D:\\projects\\NautilusNet\\data\\output\\a");
-		mOutputDir = new File("D:\\projects\\NautilusNet\\data\\output\\a");
+//		mOuputFolderPath.setText("D:\\projects\\NautilusNet\\data\\output_samples");
+//		mOutputDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+		mOuputFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+		mOutputDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+		
+		//Button pane
+		JPanel pnButtonPane = new JPanel();
+		btnStartPreprocessing = new JButton("Start");
+		pnButtonPane.add(btnStartPreprocessing);
 		
 		northPane.add(inputPane);
 		northPane.add(outputPane);
+		northPane.add(pnButtonPane);
 		c.add(northPane, BorderLayout.NORTH);
-		
 		
 		GridBagLayout glayout = new GridBagLayout();
 		mInfoPane = new JPanel(new BorderLayout());
-		JPanel pnOutputNet = new JPanel();
-		mOutputNetFolder = new JTextField(20);
-		mNetOutputBrowse = new JButton("Browse");
-		mOutputNetFolder.setText("D:\\projects\\NautilusNet\\data\\output\\nautilusnet.dat");
-		mOutputNetFile = new File("D:\\projects\\NautilusNet\\data\\output\\nautilusnet.dat");
-		pnOutputNet.add(new JLabel("Save the net: "));
-		pnOutputNet.add(mOutputNetFolder);
-		pnOutputNet.add(mNetOutputBrowse);
-		mInfoPane.add(pnOutputNet, BorderLayout.SOUTH);
 		c.add(mInfoPane, BorderLayout.CENTER);
 		
-		//Button pane
-		mButtonPane = new JPanel();
-		
-		mStartLearning = new JButton("Start");
-		mButtonPane.add(mStartLearning);
-		
-		//c.add(mButtonPane, BorderLayout.SOUTH);
+		progressBar = new JProgressBar(0, 100);
+		progressBar.setValue(0);
+		progressBar.setStringPainted(true);
+		progressBar.setPreferredSize(new Dimension(c.getWidth(), 16));
+		c.add(progressBar, BorderLayout.SOUTH);
 		
 		// create the status bar panel and shove it down the bottom of the frame
-		JPanel statusPanel = new JPanel();
-		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
-		c.add(statusPanel, BorderLayout.SOUTH);
-		statusPanel.setPreferredSize(new Dimension(c.getWidth(), 16));
-		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
-		JLabel statusLabel = new JLabel("status");
-		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		statusPanel.add(statusLabel);
+//		JPanel statusPanel = new JPanel();
+//		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+//		c.add(statusPanel, BorderLayout.SOUTH);
+//		statusPanel.setPreferredSize(new Dimension(c.getWidth(), 16));
+//		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+//		JLabel statusLabel = new JLabel("status");
+//		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+//		statusPanel.add(statusLabel);
 	}
 	
 	private void initListeners() {
@@ -167,8 +144,7 @@ public class PreprocessingForm extends JFrame {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
-				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data\\a"));
+				fc.setCurrentDirectory(mSelectedDir);
 				int returnVal = fc.showOpenDialog(PreprocessingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					mSelectedDir = fc.getSelectedFile();
@@ -184,8 +160,7 @@ public class PreprocessingForm extends JFrame {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
-				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data\\output\\a"));
+				fc.setCurrentDirectory(mOutputDir);
 				int returnVal = fc.showOpenDialog(PreprocessingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					mOutputDir = fc.getSelectedFile();
@@ -194,56 +169,27 @@ public class PreprocessingForm extends JFrame {
 			}
 		});
 		
-		mNetOutputBrowse.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fc = new JFileChooser();
-				fc.setAcceptAllFileFilterUsed(false);
-//				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-//				fc.addChoosableFileFilter(new ImageOpenFilter());
-				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data\\output"));
-				int returnVal = fc.showOpenDialog(PreprocessingForm.this);
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					mOutputNetFile = fc.getSelectedFile();
-					mOutputNetFolder.setText(mOutputNetFile.getPath());
-		        }
-			}
-		});
-		
-		mStartPreprocessing.addActionListener(new ActionListener() {
+		btnStartPreprocessing.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				progressBar.setIndeterminate(true);
 				mPreprocessingTask = new PreprocessingTask();
-				mPreprocessingTask.addPropertyChangeListener(mProperChangeListener);
-				mStartLearning.setEnabled(false);
-				mPreprocessingTask.execute();
-			}
-		});
-		
-		mStartLearning.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				progressBar.setIndeterminate(false);
-				mPreprocessingTask = new PreprocessingTask();
-				mPreprocessingTask.addPropertyChangeListener(mProperChangeListener);
-				mStartLearning.setEnabled(false);
+				mPreprocessingTask.addPropertyChangeListener(PreprocessingForm.this);
+				btnStartPreprocessing.setEnabled(false);
 				mPreprocessingTask.execute();
 			}
 		});
 	}
-	
-	PropertyChangeListener mProperChangeListener = new PropertyChangeListener() {
 		
-		@Override
-		public void propertyChange(PropertyChangeEvent evt) {
-			if("progress".equals(evt.getPropertyName())) {
-				int progress = (Integer) evt.getNewValue();
-				progressBar.setValue(progress);
-			}
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if("progress".equals(evt.getPropertyName())) {
+			int progress = (Integer) evt.getNewValue();
+			progressBar.setIndeterminate(false);
+	        progressBar.setValue(progress);
 		}
-	};
+	}
+	
 	
 	class PreprocessingTask extends SwingWorker<Void, Void> {
 		@Override
@@ -251,84 +197,50 @@ public class PreprocessingForm extends JFrame {
 			int progress = 0;
 			setProgress(0);
 			BufferedImage bimage, result;
-			File[] files = mSelectedDir.listFiles(mImageFilter);
-			int total = files.length;
+			File[] files;
+			int total, k;
 			int i, dotidx;
 			float percent;
-			File output;
+			File outFolder, outputFile;
 			String filename;
 			try {
-				for(i=0; i<total; i++) {
-					filename = files[i].getName();
-					dotidx = filename.indexOf(".");
-					if(dotidx >= 0) {
-						filename = filename.substring(0, dotidx);
-					}
-					bimage = ImageIO.read(files[i]);
-					result = ImageFilter.lowpassFilter(bimage);
-					result = ImageFilter.fixImage(result);
-					result = ImageFilter.resize2(result, 54, 72);
-					output = new File(mOutputDir, filename + ".png");
-					//Save the image to output folder
-					ImageIO.write(result, "png", output);
-					
-					percent = ((i+1) * 100.0f) / total;
-					progress = (int)percent;
-					setProgress(progress);
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}
-		
-		@Override
-		public void done() {
-//			Toolkit.getDefaultToolkit().beep();
-			mStartPreprocessing.setEnabled(true);
-		}
-	}
-	
-	class TrainingTask extends SwingWorker<Void, Void> {
-		@Override
-		public Void doInBackground() {
-			int progress = 0;
-			setProgress(0);
-			BufferedImage bimage, result;
-			int total;
-			int i, dotidx;
-			float percent;
-			File sampleDir = new File("D:\\projects\\NautilusNet\\data\\output");
-			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
-			double[] targets = new double[4];
-			try {
 				
-				File[] subfolders = sampleDir.listFiles(new FileFilter(){
+				//get sub folders
+				File[] subfolders = mSelectedDir.listFiles(new FileFilter(){
 					@Override
 					public boolean accept(File f) {
 						return f.isDirectory()?true:false;
 					}
 				});
-				File[] images;
-				BufferedImage img;
 				
 				//TODO: need to be improved
 				total = 0;
 				for(File folder: subfolders) {
 					total += folder.listFiles(mImageFilter).length;
 				}
-				i = 0;
+				
+				k = 0;
 				for(File folder: subfolders) {
-					String name = folder.getName();
-					targets = getTargetFromFolderName(name);
-					images = folder.listFiles(mImageFilter);
-					for(File f: images) {
-						img = ImageIO.read(f);
-						ImageFilter.getImageData(img, inputs);
-						inputs[inputs.length - 1] = 1.0;
-						mTheNet.train(inputs, targets);
-						percent = ((++i) * 100.0f) / total;
+					files = folder.listFiles(mImageFilter);
+					outFolder = new File(mOutputDir, folder.getName());
+					if(!outFolder.exists())
+						outFolder.mkdir();
+					
+					for(i=0; i<files.length; i++) {
+						filename = files[i].getName();
+						dotidx = filename.indexOf(".");
+						if(dotidx >= 0) {
+							filename = filename.substring(0, dotidx);
+						}
+						bimage = ImageIO.read(files[i]);
+						result = ImageFilter.lowpassFilter(bimage);
+						result = ImageFilter.fixImage(result);
+						result = ImageFilter.resize2(result, HWRNet.SAMPLE_WIDTH, HWRNet.SAMPLE_HEIGHT);
+						outputFile = new File(outFolder, filename + ".png");
+						//Save the image to output folder
+						ImageIO.write(result, "png", outputFile);
+						
+						percent = (++k * 100.0f) / total;
 						progress = (int)percent;
 						setProgress(progress);
 					}
@@ -343,59 +255,7 @@ public class PreprocessingForm extends JFrame {
 		@Override
 		public void done() {
 //			Toolkit.getDefaultToolkit().beep();
-			mStartLearning.setEnabled(true);
-		}
-	}
-	
-	private double[] getTargetFromFolderName(String name) {
-		double[] result = null;
-		if(name.equals("a")) {
-			result = new double[]{1, 0, 0, 0, 0};
-		} else if(name.equals("b")) {
-			result = new double[]{0, 1, 0, 0, 0};
-		} else if(name.equals("c")) {
-			result = new double[]{0, 0, 1, 0, 0};
-		} else if(name.equals("d")) {
-			result = new double[]{0, 0, 0, 1, 0};
-		} else if(name.equals("e")) {
-			result = new double[]{0, 0, 0, 0, 1};
-		} else {
-			//it's properly not here!!!!
-			result = new double[]{0, 0, 0, 0, 0};
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * 
-	 * @param dir
-	 */
-	private void trainTheNet(File dir) {
-		double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
-		double[] targets = new double[4];
-		File[] subfolders = dir.listFiles(new FileFilter(){
-			@Override
-			public boolean accept(File f) {
-				return f.isDirectory()?true:false;
-			}
-		});
-		File[] images;
-		BufferedImage img;
-		try {
-			for(File folder: subfolders) {
-				String name = folder.getName();
-				targets = getTargetFromFolderName(name);
-				images = folder.listFiles(mImageFilter);
-				for(File f: images) {
-					img = ImageIO.read(f);
-					ImageFilter.getImageData(img, inputs);
-					inputs[inputs.length - 1] = 1.0;
-					mTheNet.train(inputs, targets);
-				}
-			}
-		}catch(IOException ex) {
-			ex.printStackTrace();
+			btnStartPreprocessing.setEnabled(true);
 		}
 	}
 }

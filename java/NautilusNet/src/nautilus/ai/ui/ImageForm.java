@@ -11,6 +11,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import javax.imageio.ImageIO;
@@ -58,6 +59,7 @@ public class ImageForm extends JFrame {
 	private JMenu mMenuTool;
 	private JMenu mMenuHelp;
 	private JMenuItem mOpenLearningForm;
+	private JMenuItem mniPreprocessingForm;
 	private JMenuItem mQuit;
 	
 	private JCheckBox chkHighPassFilter;
@@ -89,6 +91,22 @@ public class ImageForm extends JFrame {
 		mMenuFile.add(mQuit);
 		
 		mMenuTool = new JMenu("Tool");
+		
+		mniPreprocessingForm = new JMenuItem("Preprocess samples");
+		mniPreprocessingForm.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						PreprocessingForm form = new PreprocessingForm();
+						form.setVisible(true);
+					}
+				});
+			}
+		});
+		mMenuTool.add(mniPreprocessingForm);
+		
 		mOpenLearningForm = new JMenuItem("Train the network");
 		mOpenLearningForm.addActionListener(new ActionListener() {
 			@Override
@@ -206,7 +224,7 @@ public class ImageForm extends JFrame {
 							bimage = mInputImagePane.getImage();
 							result = ImageFilter.lowpassFilter(bimage);
 							result = ImageFilter.fixImage(result);
-							result = ImageFilter.resize2(result, 54, 72);
+							result = ImageFilter.resize2(result, HWRNet.SAMPLE_WIDTH, HWRNet.SAMPLE_HEIGHT);
 						} catch (Exception ex) {
 							ex.printStackTrace();
 							return null;
@@ -232,14 +250,20 @@ public class ImageForm extends JFrame {
 		btnLoadTheNet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				
+				btnLoadTheNet.setEnabled(false);
+				mImageSizeLabel.setText("Loading...");
+				
 				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
 					@Override
 					protected BufferedImage doInBackground() throws Exception {
+						mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
 						return null;
 					}
 					
 					protected void done() {
 						mImageSizeLabel.setText("Loading the net done!");
+						btnLoadTheNet.setEnabled(false);
 					}
 				};
 				worker.execute();
@@ -249,16 +273,42 @@ public class ImageForm extends JFrame {
 		btnRecognize.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
+				SwingWorker<Integer, Void> worker = new SwingWorker<Integer, Void>() {
 
 					@Override
-					protected BufferedImage doInBackground() throws Exception {
-						
-						return null;
+					protected Integer doInBackground() throws Exception {
+						double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
+						BufferedImage img = mTargetmagePane.getImage();
+						ImageFilter.getImageData(img, inputs);
+						inputs[inputs.length - 1] = 1.0;
+						int result = mTheNet.recognize(inputs);
+						return result;
 					}
 					
 					protected void done() {
-						mImageSizeLabel.setText("Recognizing done!");
+						int result;
+						try {
+							String strResult = "";
+							result = get();
+							if(result==0)
+								strResult = "a";
+							else if(result==1)
+								strResult = "b";
+							else if(result==2)
+								strResult = "c";
+							else if(result==3)
+								strResult = "d";
+							else if(result==4)
+								strResult = "e";
+							
+								mImageSizeLabel.setText("Recognizing done! Result: " + strResult);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						} catch (ExecutionException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 				};
 				worker.execute();

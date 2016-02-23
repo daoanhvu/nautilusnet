@@ -61,6 +61,16 @@ public class NautilusNet {
 		}
 		System.arraycopy(outputs, 0, mTargets, 0, outputs.length);
 	}
+	
+	public void setInput(double[] inputs) {
+		
+		if( (mInputLayer==null) || (inputs.length != mInputLayer.length)
+			|| (mOutputLayer==null ) ) {
+			throw new RuntimeException("Data does not match the network structure!!!!!!");
+		}
+		
+		System.arraycopy(inputs, 0, mInputLayer, 0, inputs.length);
+	}
 		
 	//Setup hidden layer
 	public void setInputLayer(double[] inputLayer) {
@@ -102,6 +112,21 @@ public class NautilusNet {
 			err += (mErrors[i]*mErrors[i])/2.0;
 		}
 		return err;
+	}
+	
+	public int getResultIndex() {
+		int i;
+		double err = 0;
+		double minErr = (mErrors[0]*mErrors[0])/2.0;
+		int minIdx = 0;
+		for(i=1; i<mOutputLayer.length; i++) {
+			err = (mErrors[i]*mErrors[i])/2.0;
+			if(err < minErr) {
+				minErr = err;
+				minIdx = i;
+			}
+		}
+		return minIdx;
 	}
 	
 	public void forward() {
