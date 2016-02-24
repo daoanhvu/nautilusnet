@@ -82,10 +82,10 @@ public class PreprocessingForm extends JFrame implements PropertyChangeListener 
 		inputPane.add(mImageFolderPath);
 		inputPane.add(mBrowse);
 		
-		mImageFolderPath.setText("D:\\projects\\NautilusNet\\data\\input_samples");
-		mSelectedDir = new File("D:\\projects\\NautilusNet\\data\\input_samples");
-//		mImageFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
-//		mSelectedDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
+//		mImageFolderPath.setText("D:\\projects\\NautilusNet\\data\\input_samples");
+//		mSelectedDir = new File("D:\\projects\\NautilusNet\\data\\input_samples");
+		mImageFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
+		mSelectedDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
 		
 		JPanel outputPane = new JPanel();
 		mOuputFolderPath = new JTextField(30);
@@ -94,10 +94,10 @@ public class PreprocessingForm extends JFrame implements PropertyChangeListener 
 		outputPane.add(mOuputFolderPath);
 		outputPane.add(mBrowse1);
 		
-		mOuputFolderPath.setText("D:\\projects\\NautilusNet\\data\\output_samples");
-		mOutputDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
-//		mOuputFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
-//		mOutputDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+//		mOuputFolderPath.setText("D:\\projects\\NautilusNet\\data\\output_samples");
+//		mOutputDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+		mOuputFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+		mOutputDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 		
 		//Button pane
 		JPanel pnButtonPane = new JPanel();
@@ -144,6 +144,7 @@ public class PreprocessingForm extends JFrame implements PropertyChangeListener 
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
+				mSelectedDir = new File(mImageFolderPath.getText());
 				fc.setCurrentDirectory(mSelectedDir);
 				int returnVal = fc.showOpenDialog(PreprocessingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -160,6 +161,7 @@ public class PreprocessingForm extends JFrame implements PropertyChangeListener 
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
+				mOutputDir = new File(mOuputFolderPath.getText());
 				fc.setCurrentDirectory(mOutputDir);
 				int returnVal = fc.showOpenDialog(PreprocessingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {

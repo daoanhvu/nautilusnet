@@ -69,7 +69,7 @@ public class ImageForm extends JFrame {
 		iniComponent();
 		initListeners();
 		
-		mTheNet = new HWRNet();
+		mTheNet = new HWRNet(.3, .5, .45);
 	}
 	
 	private void iniComponent() {
@@ -199,8 +199,8 @@ public class ImageForm extends JFrame {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
-				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data"));
+				fc.setCurrentDirectory(new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data"));
+				//fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data"));
 				int returnVal = fc.showOpenDialog(ImageForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 		            File file = fc.getSelectedFile();
@@ -257,8 +257,8 @@ public class ImageForm extends JFrame {
 				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
 					@Override
 					protected BufferedImage doInBackground() throws Exception {
-						//mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
-						mTheNet.readWeightFromFile("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+						mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+//						mTheNet.readWeightFromFile("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
 						return null;
 					}
 					
@@ -278,10 +278,9 @@ public class ImageForm extends JFrame {
 
 					@Override
 					protected Integer doInBackground() throws Exception {
-						double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
+						double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH];
 						BufferedImage img = mTargetmagePane.getImage();
 						ImageFilter.getImageData(img, inputs);
-						inputs[inputs.length - 1] = 1.0;
 						int result = mTheNet.recognize(inputs);
 						return result;
 					}

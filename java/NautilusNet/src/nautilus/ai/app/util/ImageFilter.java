@@ -91,7 +91,7 @@ public class ImageFilter {
 		Raster raster = inputImage.getData();
 		for(i=0; i<inputH; i++) {
 			for(j=0; j<inputW; j++) {
-				result[c++] = raster.getSample(j, i, 0);
+				result[c++] = 1.0 - raster.getSample(j, i, 0)/255.0;
 			}
 		}
 		

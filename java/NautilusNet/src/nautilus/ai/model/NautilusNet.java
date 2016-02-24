@@ -15,12 +15,15 @@ public class NautilusNet {
 	private NNeuron[] mHiddenLayer;
 	private NNeuron[] mOutputLayer;
 	
+	private double mBias1;
+	private double mBias2;
+	
 	private double[] mTargets;
 	private double[] mErrors;
-//	private double[] mDeltaE;
 	
 	public NautilusNet() {
 		mLearningRate = 0.0;
+		mBias1 = mBias2 = 0;
 	}
 	
 	/**
@@ -60,6 +63,19 @@ public class NautilusNet {
 			mErrors[i] = 0;
 		}
 		System.arraycopy(outputs, 0, mTargets, 0, outputs.length);
+	}
+	
+	public void setBiases(double bias1, double bias2) {
+		mBias1 = bias1;
+		mBias2 = bias2;
+	}
+	
+	public double getBias1() {
+		return mBias1;
+	}
+	
+	public double getBias2() {
+		return mBias2;
 	}
 	
 	public void setInput(double[] inputs) {
@@ -140,13 +156,13 @@ public class NautilusNet {
 		
 		//calculate net and output values for the hidden layer
 		//The last neuron of input layer is a bias
-		for(i=0; i<mHiddenLayer.length-1; i++) {
-			mHiddenLayer[i].onActivated(mInputLayer);
+		for(i=0; i<mHiddenLayer.length; i++) {
+			mHiddenLayer[i].onActivated(mInputLayer, mBias1);
 		}
 		
 		//calculate net and output values for the output layer
 		for(i=0; i<mOutputLayer.length; i++) {
-			mOutputLayer[i].onActivated(mHiddenLayer);
+			mOutputLayer[i].onActivated(mHiddenLayer, mBias2);
 		}
 		
 		//calculate the errors
@@ -191,7 +207,7 @@ public class NautilusNet {
 		}
 		
 		//Calculate for hidden
-		for(i=0; i<mHiddenLayer.length-1; i++) {
+		for(i=0; i<mHiddenLayer.length; i++) {
 			neuron = mHiddenLayer[i];
 			
 			//TODO:
@@ -229,7 +245,7 @@ public class NautilusNet {
 			fos = new FileOutputStream(new File(filepath));
 			dos = new DataOutputStream(fos);
 			
-			for(i=0; i<mHiddenLayer.length - 1; i++) {
+			for(i=0; i<mHiddenLayer.length; i++) {
 				for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
 					dos.writeDouble(mHiddenLayer[i].getWeight(j));
 				}
@@ -259,7 +275,7 @@ public class NautilusNet {
 			fis = new FileInputStream(new File(filepath));
 			dis = new DataInputStream(fis);
 			
-			for(i=0; i<mHiddenLayer.length - 1; i++) {
+			for(i=0; i<mHiddenLayer.length; i++) {
 				for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
 					mHiddenLayer[i].setWeight(dis.readDouble(), j);
 				}

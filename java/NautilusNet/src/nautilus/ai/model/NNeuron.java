@@ -46,7 +46,7 @@ public class NNeuron {
 	
 	public void setWeightArray(double[] initWeights) {
 		if(initWeights.length < mWeights.length)
-			throw new RuntimeException("List weight not enough");
+			throw new RuntimeException("List weight not enough. Need " + mWeights.length + "; got: " + initWeights.length);
 		
 		System.arraycopy(initWeights, 0, mWeights, 0, mWeights.length);
 	}
@@ -70,7 +70,7 @@ public class NNeuron {
 	/**
 	*	return output
 	*/
-	public double onActivated(final double[] preLayerOutput) {
+	public double onActivated(final double[] preLayerOutput, double bias) {
 		int i;
 		//double[] inputValues = new double[mWeights.length];
 		mInput = 0;
@@ -78,12 +78,12 @@ public class NNeuron {
 			mInput += preLayerOutput[i] * mWeights[i];
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-mInput));
+		mOutput = 1.0 / (1.0 + Math.exp(-mInput + bias));
 		
 		return mOutput;
 	}
 	
-	public double onActivated(final NNeuron[] preLayer) {
+	public double onActivated(final NNeuron[] preLayer, double bias) {
 		int i;
 		//double[] inputValues = new double[mWeights.length];
 		mInput = 0;
@@ -91,7 +91,7 @@ public class NNeuron {
 			mInput += preLayer[i].getOutput() * mWeights[i];
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-mInput));
+		mOutput = 1.0 / (1.0 + Math.exp(-mInput + bias));
 		
 		return mOutput;
 	}

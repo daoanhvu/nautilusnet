@@ -65,7 +65,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		super("Train the net");
 		iniComponent();
 		initListeners();
-		mTheNet = new HWRNet();
+		mTheNet = new HWRNet(.3, .5, .45);
 		mTheNet.initializeWeight();
 	}
 	
@@ -83,10 +83,10 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		inputPane.add(txtSampleDir);
 		inputPane.add(mSampleDirBrowse);
 		
-		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output_samples");
-		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
-//		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
-//		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+//		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output_samples");
+//		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 		
 		//Button pane
 		JPanel pnButtonPane = new JPanel();
@@ -144,7 +144,8 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		btnSaveTheNet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				mTheNet.writeWeight2File("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+				//mTheNet.writeWeight2File("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+				mTheNet.writeWeight2File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
 			}
 		});
 	}
@@ -154,7 +155,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		public Void doInBackground() {
 			int i, total, progress = 0;
 			float percent;
-			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
+			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH];
 			double[] targets = new double[HWRNet.OUTPUT_LENGTH];
 			try {
 				setProgress(0);
@@ -180,7 +181,6 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 					for(File f: images) {
 						img = ImageIO.read(f);
 						ImageFilter.getImageData(img, inputs);
-						inputs[inputs.length - 1] = 1.0;
 						mTheNet.train(inputs, targets);
 						percent = ((++i) * 100.0f) / total;
 						progress = (int)percent;
@@ -226,7 +226,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 	 * @param dir
 	 */
 	private void trainTheNet(File dir) {
-		double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
+		double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH];
 		double[] targets = new double[4];
 		File[] subfolders = dir.listFiles(new FileFilter(){
 			@Override
@@ -244,7 +244,6 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 				for(File f: images) {
 					img = ImageIO.read(f);
 					ImageFilter.getImageData(img, inputs);
-					inputs[inputs.length - 1] = 1.0;
 					mTheNet.train(inputs, targets);
 				}
 			}
