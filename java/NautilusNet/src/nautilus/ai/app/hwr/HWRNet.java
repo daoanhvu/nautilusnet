@@ -26,7 +26,10 @@ public class HWRNet {
 	public static final int SAMPLE_HEIGHT = 72;
 	private static final int INPUT_LENGTH = 3888; // 54 * 72 NOT including bias
 	private static final int HIDDEN_LENGTH = 1800; //bias NOT included
-	private static final int OUTPUT_LENGTH = 62; // 26 lowercase characters + 26 upcase characters + 10 digits
+//	public static final int OUTPUT_LENGTH = 62; // 26 lowercase characters + 26 upcase characters + 10 digits
+	
+	//for testing
+	public static final int OUTPUT_LENGTH = 5;
 	
 	private NautilusNet mBackproNet;
 	private double mLearningRate = 0.45;
@@ -202,4 +205,7 @@ public class HWRNet {
 		return mBackproNet.getTotalError();
 	}
 	
+	public double[] getErrors() {
+		return mBackproNet.getErrors();
+	}
 }

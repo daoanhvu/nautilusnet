@@ -200,7 +200,7 @@ public class ImageForm extends JFrame {
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
 				//fc.setCurrentDirectory(new File("D:\\data\\nautilusnet"));
-				fc.setCurrentDirectory(new File("D:\\data"));
+				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data"));
 				int returnVal = fc.showOpenDialog(ImageForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 		            File file = fc.getSelectedFile();
@@ -257,13 +257,14 @@ public class ImageForm extends JFrame {
 				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
 					@Override
 					protected BufferedImage doInBackground() throws Exception {
-						mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+						//mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+						mTheNet.readWeightFromFile("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
 						return null;
 					}
 					
 					protected void done() {
 						mImageSizeLabel.setText("Loading the net done!");
-						btnLoadTheNet.setEnabled(false);
+						btnLoadTheNet.setEnabled(true);
 					}
 				};
 				worker.execute();
@@ -301,7 +302,15 @@ public class ImageForm extends JFrame {
 							else if(result==4)
 								strResult = "e";
 							
-								mImageSizeLabel.setText("Recognizing done! Result: " + strResult);
+							mImageSizeLabel.setText("Recognizing done! Result: " + strResult);
+							
+							//for testing
+							double[] errors = mTheNet.getErrors();
+							System.out.print("\n[");
+							for(double e: errors) {
+								System.out.print(e + ", ");
+							}
+							System.out.println("]");	
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

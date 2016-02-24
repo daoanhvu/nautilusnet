@@ -83,10 +83,10 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		inputPane.add(txtSampleDir);
 		inputPane.add(mSampleDirBrowse);
 		
-//		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output");
-//		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output");
-		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
-		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output_samples");
+		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+//		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+//		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 		
 		//Button pane
 		JPanel pnButtonPane = new JPanel();
@@ -118,8 +118,9 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fc = new JFileChooser();
 				fc.setAcceptAllFileFilterUsed(false);
-//				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 //				fc.addChoosableFileFilter(new ImageOpenFilter());
+				mSampleDir = new File(txtSampleDir.getText());
 				fc.setCurrentDirectory(mSampleDir);
 				int returnVal = fc.showOpenDialog(TrainingForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -143,7 +144,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		btnSaveTheNet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				mTheNet.writeWeight2File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+				mTheNet.writeWeight2File("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
 			}
 		});
 	}
@@ -154,7 +155,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 			int i, total, progress = 0;
 			float percent;
 			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH + 1];
-			double[] targets = new double[4];
+			double[] targets = new double[HWRNet.OUTPUT_LENGTH];
 			try {
 				setProgress(0);
 				File[] subfolders = mSampleDir.listFiles(new FileFilter(){

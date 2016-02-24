@@ -114,6 +114,12 @@ public class NautilusNet {
 		return err;
 	}
 	
+	public double[] getErrors() {
+		double[] errs = new double[mOutputLayer.length];
+		System.arraycopy(mErrors, 0, errs, 0, mOutputLayer.length);
+		return errs;
+	}
+	
 	public int getResultIndex() {
 		int i;
 		double err = 0;
