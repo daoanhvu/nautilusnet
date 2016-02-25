@@ -22,10 +22,10 @@ import nautilus.ai.model.NautilusNet;
  */
 public class HWRNet {
 	
-	public static final int SAMPLE_WIDTH = 24;
-	public static final int SAMPLE_HEIGHT = 32;
-	private static final int INPUT_LENGTH = 768; // 24 * 32 NOT including bias
-	private static final int HIDDEN_LENGTH = 624; //bias NOT included
+	public static final int SAMPLE_WIDTH = 16;
+	public static final int SAMPLE_HEIGHT = 24;
+	private static final int INPUT_LENGTH = 384; // 24 * 32 NOT including bias
+	private static final int HIDDEN_LENGTH = 268; //bias NOT included
 //	public static final int OUTPUT_LENGTH = 62; // 26 lowercase characters + 26 upcase characters + 10 digits
 	
 	//for testing
@@ -48,9 +48,9 @@ public class HWRNet {
 		for(i=0; i<HIDDEN_LENGTH; i++) {
 			neuron = mBackproNet.getHiddenLayer()[i];
 			for(j=0; j<INPUT_LENGTH; j++) {
-				//w = generator.nextDouble();
+//				w = generator.nextDouble();
 				//trying to make the initialized weight smaller
-				w = generator.nextDouble() / 20.0;
+				w = generator.nextDouble() / 10.0;
 				neuron.setWeight(w, j);
 			}
 		}
@@ -59,9 +59,9 @@ public class HWRNet {
 		for(i=0; i<OUTPUT_LENGTH; i++) {
 			neuron = mBackproNet.getOutputLayer()[i];
 			for(j=0; j<HIDDEN_LENGTH; j++) {
-				//w = generator.nextDouble();
+//				w = generator.nextDouble();
 				//trying to make the initialized weight smaller
-				w = generator.nextDouble() / 20.0;
+				w = generator.nextDouble() / 10.0;
 				neuron.setWeight(w, j);
 			}
 		}
@@ -196,7 +196,7 @@ public class HWRNet {
 		return mBackproNet.getTotalError();
 	}
 	
-	public double[] getErrors() {
-		return mBackproNet.getErrors();
+	public void getErrors(double[] errs) {
+		mBackproNet.getErrors(errs);
 	}
 }

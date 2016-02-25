@@ -48,8 +48,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 	
 	JTextField txtSampleDir;
 	private JButton mSampleDirBrowse;
-	JButton btnStartLearning, btnSaveTheNet;
-	JLabel mImageSizeLabel;
+	JButton btnLoadWeight, btnStartLearning, btnSaveTheNet;
 	File mSampleDir;
 	File mOutputNetFile;
 	TrainingTask mTrainingTask;
@@ -83,17 +82,22 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		inputPane.add(txtSampleDir);
 		inputPane.add(mSampleDirBrowse);
 		
-//		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output_samples");
-//		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
-		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
-		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output_samples");
+		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+//		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
+//		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 		
 		//Button pane
 		JPanel pnButtonPane = new JPanel();
+		
+		btnLoadWeight = new JButton("Load Weights");
+		pnButtonPane.add(btnLoadWeight);
+		
 		btnStartLearning = new JButton("Start Training");
 		pnButtonPane.add(btnStartLearning);
 		btnSaveTheNet = new JButton("Save Weights");
 		pnButtonPane.add(btnSaveTheNet);
+		
 		northPane.add(inputPane);
 		northPane.add(pnButtonPane);
 		
@@ -130,6 +134,28 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 			}
 		});
 		
+		btnLoadWeight.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				
+				btnLoadWeight.setEnabled(false);
+				
+				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
+					@Override
+					protected BufferedImage doInBackground() throws Exception {
+//						mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+						mTheNet.readWeightFromFile("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+						return null;
+					}
+					
+					protected void done() {
+						btnLoadWeight.setEnabled(true);
+					}
+				};
+				worker.execute();
+			}
+		});
+		
 		btnStartLearning.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -144,8 +170,8 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		btnSaveTheNet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//mTheNet.writeWeight2File("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
-				mTheNet.writeWeight2File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+				mTheNet.writeWeight2File("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+//				mTheNet.writeWeight2File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
 			}
 		});
 	}
@@ -153,7 +179,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 	class TrainingTask extends SwingWorker<Void, Void> {
 		@Override
 		public Void doInBackground() {
-			int i, total, progress = 0;
+			int i, j, total, progress = 0;
 			float percent;
 			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH];
 			double[] targets = new double[HWRNet.OUTPUT_LENGTH];
@@ -174,17 +200,24 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 					total += folder.listFiles(mImageFilter).length;
 				}
 				i = 0;
-				for(File folder: subfolders) {
-					String name = folder.getName();
-					targets = getTargetFromFolderName(name);
-					images = folder.listFiles(mImageFilter);
-					for(File f: images) {
-						img = ImageIO.read(f);
-						ImageFilter.getImageData(img, inputs);
-						mTheNet.train(inputs, targets);
-						percent = ((++i) * 100.0f) / total;
-						progress = (int)percent;
-						setProgress(progress);
+				int loop = 100000000;
+				total = total * loop;
+				
+				for(j=0; j< loop; j++) {
+					for(File folder: subfolders) {
+						String name = folder.getName();
+						targets = getTargetFromFolderName(name);
+						images = folder.listFiles(mImageFilter);
+						for(File f: images) {
+							img = ImageIO.read(f);
+							ImageFilter.getImageData(img, inputs);
+							
+							mTheNet.train(inputs, targets);
+							
+							percent = ((++i) * 100.0f) / total;
+							progress = (int)percent;
+							setProgress(progress);
+						}
 					}
 				}
 			} catch (IOException e) {
@@ -198,8 +231,18 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		public void done() {
 //			Toolkit.getDefaultToolkit().beep();
 			btnStartLearning.setEnabled(true);
+			
+			//For testing purpose
+			//for testing
+			mTheNet.getErrors(mErrors);
+			System.out.print("\n[");
+			for(double e: mErrors) {
+				System.out.print(e + ", ");
+			}
+			System.out.println("]");
 		}
 	}
+	double[] mErrors = new double[HWRNet.OUTPUT_LENGTH];
 	
 	private double[] getTargetFromFolderName(String name) {
 		double[] result = null;

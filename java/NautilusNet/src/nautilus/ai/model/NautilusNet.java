@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import nautilus.ai.app.Application;
+
 public class NautilusNet {
 	private double mLearningRate;
 	
@@ -130,10 +132,8 @@ public class NautilusNet {
 		return err;
 	}
 	
-	public double[] getErrors() {
-		double[] errs = new double[mOutputLayer.length];
+	public void getErrors(double[] errs) {
 		System.arraycopy(mErrors, 0, errs, 0, mOutputLayer.length);
-		return errs;
 	}
 	
 	public int getResultIndex() {
@@ -157,11 +157,21 @@ public class NautilusNet {
 		//calculate net and output values for the hidden layer
 		//The last neuron of input layer is a bias
 		for(i=0; i<mHiddenLayer.length; i++) {
+			
+			if(Application.DEBUG) {
+				System.out.println("***** Calculating for hidden node[" + i +"]:");
+			}
+			
 			mHiddenLayer[i].onActivated(mInputLayer, mBias1);
 		}
 		
 		//calculate net and output values for the output layer
 		for(i=0; i<mOutputLayer.length; i++) {
+			//Debug mode
+			if(Application.DEBUG) {
+				System.out.println("***** Calculating for output node[" + i +"]:");
+			}
+			
 			mOutputLayer[i].onActivated(mHiddenLayer, mBias2);
 		}
 		
@@ -169,8 +179,13 @@ public class NautilusNet {
 		for(i=0; i<mTargets.length; i++) {
 			//mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1).getNeuron(i).getOutput();
 			//Now we calculate deltaErro = d(E)/d(output) = - ( target - output) = output - target
-			mErrors[i] = mOutputLayer[i].getOutput() - mTargets[i];
+			mErrors[i] = mTargets[i] - mOutputLayer[i].getOutput();
 			//totalError += (mErrors[i] * mErrors[i]) / 2.0;
+			
+			//For DEBUG mode
+			if(Application.DEBUG) {
+				System.out.println("Error[" + i + "] = " + mErrors[i]);
+			}
 		}
 	}
 	
@@ -187,6 +202,11 @@ public class NautilusNet {
 		double dEdNetHidden[] = new double[mErrors.length];
 		double dOutDNet[] = new double[mErrors.length];
 		
+		/* For DEBUG mode */
+		StringBuilder debugStr = new StringBuilder(); //for debug mode
+		StringBuilder debugStrValue = new StringBuilder(); //for debug mode
+		double debugValue; //for debug mode
+		
 		//Calculate for the output layer
 		for(j=0; j<mOutputLayer.length; j++) {
 			neuron = mOutputLayer[j];
@@ -195,6 +215,8 @@ public class NautilusNet {
 			/*  d(out)/D(input) */
 			dOut[j]  = tmpOut * (1.0 - tmpOut);
 			
+			/* thu cong thuc trong paper Neural Net Component */
+			mErrors[j] = -mErrors[j]; //code moi
 			tmpOut = mErrors[j] * dOut[j] ;
 			
 			wn = neuron.getWeightCount();
@@ -203,6 +225,12 @@ public class NautilusNet {
 				w = neuron.getWeight(k);
 				w = w - mLearningRate * dw;
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
+				
+				if(Application.DEBUG) {
+					System.out.println("dw = " + mLearningRate + " * " + mErrors[j] + 
+							" * " + mHiddenLayer[k].getOutput() + " * " + neuron.getOutput() + 
+							" * (1 - " + neuron.getOutput() + ") = " + (dw*mLearningRate));
+				}
 			}
 		}
 		

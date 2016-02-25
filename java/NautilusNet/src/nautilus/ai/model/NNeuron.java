@@ -2,6 +2,8 @@ package nautilus.ai.model;
 
 import java.io.PrintStream;
 
+import nautilus.ai.app.Application;
+
 /**
 * Dao Anh Vu
 *
@@ -72,26 +74,52 @@ public class NNeuron {
 	*/
 	public double onActivated(final double[] preLayerOutput, double bias) {
 		int i;
-		//double[] inputValues = new double[mWeights.length];
+		StringBuilder debugStr = new StringBuilder(); //for debug mode
+		StringBuilder debugStrValue = new StringBuilder(); //for debug mode
+		double debugValue; //for debug mode
 		mInput = 0;
 		for(i=0; i<mWeights.length; i++) {
 			mInput += preLayerOutput[i] * mWeights[i];
+			
+			if(Application.DEBUG) {
+				debugValue = preLayerOutput[i] * mWeights[i];
+				debugStr.append(preLayerOutput[i] +" * " + mWeights[i] + (i<(mWeights.length-1)?" + ":""));
+				debugStrValue.append(debugValue + (i<(mWeights.length-1)?" + ":""));
+			}
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-mInput + bias));
+		mOutput = 1.0 / (1.0 + Math.exp(-(mInput + bias)));
+		
+		if(Application.DEBUG) {
+			System.out.println("net = " + debugStr + " = " + debugStrValue + " = " + mInput);
+			System.out.println("output = " + mOutput);
+		}
 		
 		return mOutput;
 	}
 	
 	public double onActivated(final NNeuron[] preLayer, double bias) {
 		int i;
-		//double[] inputValues = new double[mWeights.length];
+		StringBuilder debugStr = new StringBuilder(); //for debug mode
+		StringBuilder debugStrValue = new StringBuilder(); //for debug mode
+		double debugValue; //for debug mode
 		mInput = 0;
 		for(i=0; i<mWeights.length; i++) {
 			mInput += preLayer[i].getOutput() * mWeights[i];
+			
+			if(Application.DEBUG) {
+				debugValue = preLayer[i].getOutput() * mWeights[i];
+				debugStr.append(preLayer[i].getOutput() +" * " + mWeights[i] + (i<(mWeights.length-1)?" + ":""));
+				debugStrValue.append(debugValue + (i<(mWeights.length-1)?" + ":""));
+			}
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-mInput + bias));
+		mOutput = 1.0 / (1.0 + Math.exp(-(mInput + bias)));
+		
+		if(Application.DEBUG) {
+			System.out.println("net = " + debugStr + " = " + debugStrValue + " = " + mInput);
+			System.out.println("output = " + mOutput);
+		}
 		
 		return mOutput;
 	}
