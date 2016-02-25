@@ -81,7 +81,7 @@ public class NNeuron {
 		for(i=0; i<mWeights.length; i++) {
 			mInput += preLayerOutput[i] * mWeights[i];
 			
-			if(Application.DEBUG) {
+			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 				debugValue = preLayerOutput[i] * mWeights[i];
 				debugStr.append(preLayerOutput[i] +" * " + mWeights[i] + (i<(mWeights.length-1)?" + ":""));
 				debugStrValue.append(debugValue + (i<(mWeights.length-1)?" + ":""));
@@ -90,7 +90,7 @@ public class NNeuron {
 		
 		mOutput = 1.0 / (1.0 + Math.exp(-(mInput + bias)));
 		
-		if(Application.DEBUG) {
+		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 			System.out.println("net = " + debugStr + " = " + debugStrValue + " = " + mInput);
 			System.out.println("output = " + mOutput);
 		}
@@ -107,7 +107,7 @@ public class NNeuron {
 		for(i=0; i<mWeights.length; i++) {
 			mInput += preLayer[i].getOutput() * mWeights[i];
 			
-			if(Application.DEBUG) {
+			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 				debugValue = preLayer[i].getOutput() * mWeights[i];
 				debugStr.append(preLayer[i].getOutput() +" * " + mWeights[i] + (i<(mWeights.length-1)?" + ":""));
 				debugStrValue.append(debugValue + (i<(mWeights.length-1)?" + ":""));
@@ -116,7 +116,7 @@ public class NNeuron {
 		
 		mOutput = 1.0 / (1.0 + Math.exp(-(mInput + bias)));
 		
-		if(Application.DEBUG) {
+		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 			System.out.println("net = " + debugStr + " = " + debugStrValue + " = " + mInput);
 			System.out.println("output = " + mOutput);
 		}

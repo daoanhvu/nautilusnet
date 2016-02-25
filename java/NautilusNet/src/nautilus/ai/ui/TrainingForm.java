@@ -1,5 +1,10 @@
 package nautilus.ai.ui;
 
+import static nautilus.ai.app.Application.OUTPUT_SAMPLE_DIR;
+import static nautilus.ai.app.Application.NETWORK_DATA_FILE;
+import static nautilus.ai.app.Application.ERROR_DATA_FILE;
+import static nautilus.ai.app.Application.DEBUG_LEVEL;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -16,6 +21,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
@@ -38,6 +44,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
+import nautilus.ai.app.Application;
 import nautilus.ai.app.hwr.HWRNet;
 import nautilus.ai.app.util.ImageFilter;
 import nautilus.ai.app.util.ImageOpenFilter;
@@ -82,8 +89,8 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		inputPane.add(txtSampleDir);
 		inputPane.add(mSampleDirBrowse);
 		
-		txtSampleDir.setText("D:\\projects\\NautilusNet\\data\\output_samples");
-		mSampleDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+		txtSampleDir.setText(Application.getInstance().getStringValue(OUTPUT_SAMPLE_DIR));
+		mSampleDir = new File(Application.getInstance().getStringValue(OUTPUT_SAMPLE_DIR));
 //		txtSampleDir.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 //		mSampleDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 		
@@ -144,7 +151,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 					@Override
 					protected BufferedImage doInBackground() throws Exception {
 //						mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
-						mTheNet.readWeightFromFile("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+						mTheNet.readWeightFromFile(Application.getInstance().getStringValue(NETWORK_DATA_FILE));
 						return null;
 					}
 					
@@ -170,8 +177,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		btnSaveTheNet.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				mTheNet.writeWeight2File("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
-//				mTheNet.writeWeight2File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
+				mTheNet.writeWeight2File(Application.getInstance().getStringValue(NETWORK_DATA_FILE));
 			}
 		});
 	}
@@ -194,13 +200,16 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 				File[] images;
 				BufferedImage img;
 				
+				/* This is for debuging */
+				FileWriter fw = new FileWriter(Application.getInstance().getStringValue(ERROR_DATA_FILE));
+				
 				//TODO: need to be improved
 				total = 0;
 				for(File folder: subfolders) {
 					total += folder.listFiles(mImageFilter).length;
 				}
 				i = 0;
-				int loop = 100000000;
+				int loop = 1000;
 				total = total * loop;
 				
 				for(j=0; j< loop; j++) {
@@ -214,12 +223,18 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 							
 							mTheNet.train(inputs, targets);
 							
+							if( (Application.getInstance().getDebugLevel() == Application.SIMPLE_STEP) 
+									&& (i%100 == 0)) {
+								fw.write(mTheNet.getTotalError() + "\n");
+							}
+							
 							percent = ((++i) * 100.0f) / total;
 							progress = (int)percent;
 							setProgress(progress);
 						}
 					}
 				}
+				fw.close();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -230,6 +245,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		@Override
 		public void done() {
 //			Toolkit.getDefaultToolkit().beep();
+			setProgress(100);
 			btnStartLearning.setEnabled(true);
 			
 			//For testing purpose

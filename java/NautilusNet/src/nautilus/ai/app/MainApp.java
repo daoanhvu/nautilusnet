@@ -10,6 +10,10 @@ import nautilus.ai.model.NNeuron;
 public class MainApp {
 	
 	public static void main(String[] agrs) {
+		
+		//Load configurations
+		Application.getInstance();
+		
 		SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

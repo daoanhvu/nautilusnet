@@ -23,6 +23,10 @@ public class NautilusNet {
 	private double[] mTargets;
 	private double[] mErrors;
 	
+	//This is used for backward
+	private double[] dOutdNeto;
+	private double[][] oldOuputWeights;
+	
 	public NautilusNet() {
 		mLearningRate = 0.0;
 		mBias1 = mBias2 = 0;
@@ -50,6 +54,8 @@ public class NautilusNet {
 		
 		mTargets = new double[outputCount];
 		mErrors = new double[outputCount];
+		dOutdNeto = new double[outputCount];
+		oldOuputWeights = new double[outputCount][hiddenCount];
 	}
 	
 	public void setInputOutput(double[] inputs, double[] outputs) {
@@ -158,7 +164,7 @@ public class NautilusNet {
 		//The last neuron of input layer is a bias
 		for(i=0; i<mHiddenLayer.length; i++) {
 			
-			if(Application.DEBUG) {
+			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 				System.out.println("***** Calculating for hidden node[" + i +"]:");
 			}
 			
@@ -168,7 +174,7 @@ public class NautilusNet {
 		//calculate net and output values for the output layer
 		for(i=0; i<mOutputLayer.length; i++) {
 			//Debug mode
-			if(Application.DEBUG) {
+			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 				System.out.println("***** Calculating for output node[" + i +"]:");
 			}
 			
@@ -183,7 +189,7 @@ public class NautilusNet {
 			//totalError += (mErrors[i] * mErrors[i]) / 2.0;
 			
 			//For DEBUG mode
-			if(Application.DEBUG) {
+			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 				System.out.println("Error[" + i + "] = " + mErrors[i]);
 			}
 		}
@@ -196,37 +202,28 @@ public class NautilusNet {
 		int i, j, k;
 		int wn;
 		NNeuron neuron;
-		double tmpOut, w, dw;
+		double w, dw;
 		double dOutHidden, dEttNet;
-		double dOut[] = new double[mErrors.length];
-		double dEdNetHidden[] = new double[mErrors.length];
-		double dOutDNet[] = new double[mErrors.length];
 		
-		/* For DEBUG mode */
-		StringBuilder debugStr = new StringBuilder(); //for debug mode
-		StringBuilder debugStrValue = new StringBuilder(); //for debug mode
-		double debugValue; //for debug mode
-		
-		//Calculate for the output layer
+		//Calculate dw for the output layer
 		for(j=0; j<mOutputLayer.length; j++) {
 			neuron = mOutputLayer[j];
-			tmpOut = neuron.getOutput();
-			
-			/*  d(out)/D(input) */
-			dOut[j]  = tmpOut * (1.0 - tmpOut);
-			
+
 			/* thu cong thuc trong paper Neural Net Component */
-			mErrors[j] = -mErrors[j]; //code moi
-			tmpOut = mErrors[j] * dOut[j] ;
+			dOutdNeto[j] = (mTargets[j] - neuron.getOutput()) * neuron.getOutput() * (1.0 - neuron.getOutput()) ;
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
-				dw = tmpOut * mHiddenLayer[k].getOutput();
-				w = neuron.getWeight(k);
-				w = w - mLearningRate * dw;
+				
+				//First, we save the old weight;
+				oldOuputWeights[j][k] = neuron.getWeight(k);
+				
+				/* output of node k(th) in hidden layer is the input k(th) in output layer  */
+				dw = dOutdNeto[j] * mHiddenLayer[k].getOutput();
+				w = neuron.getWeight(k) - mLearningRate * dw;
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 				
-				if(Application.DEBUG) {
+				if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 					System.out.println("dw = " + mLearningRate + " * " + mErrors[j] + 
 							" * " + mHiddenLayer[k].getOutput() + " * " + neuron.getOutput() + 
 							" * (1 - " + neuron.getOutput() + ") = " + (dw*mLearningRate));
@@ -234,32 +231,27 @@ public class NautilusNet {
 			}
 		}
 		
-		//Calculate for hidden
+		//Calculate dw for hidden layer
 		for(i=0; i<mHiddenLayer.length; i++) {
 			neuron = mHiddenLayer[i];
-			
-			//TODO:
 			
 			//d(outHidden)/d(netHidden) = outHidden (1 - outHidden)
 			dOutHidden = neuron.getOutput() * (1 - neuron.getOutput());
 			
 			/**
-				d(E)/d(out(h[i])) = d(E) / d(netOut) * d(netOut) / d(outHidden)
-				
+				d(E)/d(out(h[i])) = d(E) / d(netOut) * d(netOut) / d(outHidden)				
 				d(E) / d(net) = d(E)/d(out) * d(out)/d(net)
 			*/
 			dEttNet = 0;
-			for(j=0; j<mErrors.length; j++) {
-				dEdNetHidden[j] = mErrors[j] * dOut[j];
-				dOutDNet[j] =  mOutputLayer[j].getWeight(i);
-				dEttNet += dEdNetHidden[j] * dOutDNet[j];
+			for(j=0; j<mOutputLayer.length; j++) {
+				//should we use old weight or new weight here?   
+				dEttNet += dOutdNeto[j] * oldOuputWeights[j][i];
 			}
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
 				dw = dEttNet * dOutHidden * mInputLayer[k];
-				w = neuron.getWeight(k);
-				w = w - mLearningRate * dw;
+				w = neuron.getWeight(k) - mLearningRate * dw;
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 			}
 		}

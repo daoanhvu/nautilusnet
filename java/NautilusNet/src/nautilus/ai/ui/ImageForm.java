@@ -35,9 +35,13 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 
+import nautilus.ai.app.Application;
 import nautilus.ai.app.hwr.HWRNet;
 import nautilus.ai.app.util.ImageFilter;
 import nautilus.ai.app.util.ImageOpenFilter;
+
+import static nautilus.ai.app.Application.DATA_DIR;
+import static nautilus.ai.app.Application.NETWORK_DATA_FILE;
 
 public class ImageForm extends JFrame {
 	
@@ -199,8 +203,7 @@ public class ImageForm extends JFrame {
 				fc.setAcceptAllFileFilterUsed(false);
 				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fc.addChoosableFileFilter(new ImageOpenFilter());
-//				fc.setCurrentDirectory(new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data"));
-				fc.setCurrentDirectory(new File("D:\\projects\\NautilusNet\\data"));
+				fc.setCurrentDirectory(new File(Application.getInstance().getStringValue(DATA_DIR)));
 				int returnVal = fc.showOpenDialog(ImageForm.this);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 		            File file = fc.getSelectedFile();
@@ -257,8 +260,7 @@ public class ImageForm extends JFrame {
 				SwingWorker<BufferedImage, Void> worker = new SwingWorker<BufferedImage, Void>() {
 					@Override
 					protected BufferedImage doInBackground() throws Exception {
-//						mTheNet.readWeightFromFile("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\nautilusnet.net");
-						mTheNet.readWeightFromFile("D:\\projects\\NautilusNet\\data\\nautilusnet.net");
+						mTheNet.readWeightFromFile(Application.getInstance().getStringValue(NETWORK_DATA_FILE));
 						return null;
 					}
 					

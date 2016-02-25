@@ -178,12 +178,8 @@ public class HWRNet {
 	
 	public void train(double[] inputs, double[] targets) {
 		mBackproNet.setInputOutput(inputs, targets);
-		
-		mBackproNet.forward();
-//		aNet.printNetwork(System.out);
-		
+		mBackproNet.forward();		
 		mBackproNet.backward();
-//		aNet.printNetwork(System.out);
 	}
 	
 	public int recognize(double[] inputs) {

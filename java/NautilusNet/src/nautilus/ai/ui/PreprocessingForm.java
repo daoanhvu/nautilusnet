@@ -1,5 +1,10 @@
 package nautilus.ai.ui;
 
+import static nautilus.ai.app.Application.NETWORK_DATA_FILE;
+import static nautilus.ai.app.Application.DATA_DIR;
+import static nautilus.ai.app.Application.INPUT_SAMPLE_DIR;
+import static nautilus.ai.app.Application.OUTPUT_SAMPLE_DIR;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -38,6 +43,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
+import nautilus.ai.app.Application;
 import nautilus.ai.app.hwr.HWRNet;
 import nautilus.ai.app.util.ImageFilter;
 import nautilus.ai.app.util.ImageOpenFilter;
@@ -82,8 +88,8 @@ public class PreprocessingForm extends JFrame implements PropertyChangeListener 
 		inputPane.add(mImageFolderPath);
 		inputPane.add(mBrowse);
 		
-		mImageFolderPath.setText("D:\\projects\\NautilusNet\\data\\input_samples");
-		mSelectedDir = new File("D:\\projects\\NautilusNet\\data\\input_samples");
+		mImageFolderPath.setText(Application.getInstance().getStringValue(INPUT_SAMPLE_DIR));
+		mSelectedDir = new File(Application.getInstance().getStringValue(INPUT_SAMPLE_DIR));
 //		mImageFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
 //		mSelectedDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\input_samples");
 		
@@ -94,8 +100,8 @@ public class PreprocessingForm extends JFrame implements PropertyChangeListener 
 		outputPane.add(mOuputFolderPath);
 		outputPane.add(mBrowse1);
 		
-		mOuputFolderPath.setText("D:\\projects\\NautilusNet\\data\\output_samples");
-		mOutputDir = new File("D:\\projects\\NautilusNet\\data\\output_samples");
+		mOuputFolderPath.setText(Application.getInstance().getStringValue(OUTPUT_SAMPLE_DIR));
+		mOutputDir = new File(Application.getInstance().getStringValue(OUTPUT_SAMPLE_DIR));
 //		mOuputFolderPath.setText("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 //		mOutputDir = new File("D:\\Documents\\testapp\\nautilusnet\\nautilusnet\\data\\output_samples");
 		
