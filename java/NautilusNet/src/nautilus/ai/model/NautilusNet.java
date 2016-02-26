@@ -198,11 +198,11 @@ public class NautilusNet {
 	/**
 	*	
 	*/
-	public void backward() {
+	public double backward() {
 		int i, j, k;
 		int wn;
 		NNeuron neuron;
-		double w, dw;
+		double w, dw, error=0;
 		double dOutHidden, dEttNet;
 		
 		//Calculate dw for the output layer
@@ -220,7 +220,8 @@ public class NautilusNet {
 				
 				/* output of node k(th) in hidden layer is the input k(th) in output layer  */
 				dw = dOutdNeto[j] * mHiddenLayer[k].getOutput();
-				w = neuron.getWeight(k) - mLearningRate * dw;
+//				w = neuron.getWeight(k) - mLearningRate * dw;
+				w = neuron.getWeight(k) + mLearningRate * dw; //cong thuc moi
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 				
 				if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
@@ -251,10 +252,18 @@ public class NautilusNet {
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
 				dw = dEttNet * dOutHidden * mInputLayer[k];
-				w = neuron.getWeight(k) - mLearningRate * dw;
+//				w = neuron.getWeight(k) - mLearningRate * dw;
+				w = neuron.getWeight(k) + mLearningRate * dw; //cong thuc moi
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 			}
 		}
+		
+		//if in debug mode we output the total error
+		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
+			System.out.println("\nTOTAL ERROR = " + getTotalError());
+		}
+		
+		return (error/2.0);
 	}
 	
 	public void writeWeight2File(String filepath) {

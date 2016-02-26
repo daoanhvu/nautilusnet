@@ -10,10 +10,15 @@ import nautilus.ai.model.NNeuron;
 public class MainApp {
 	
 	public static void main(String[] agrs) {
-		
 		//Load configurations
 		Application.getInstance();
-		
+	
+		runUIApp();
+//		testANN();
+//		testAND();
+	}
+	
+	static void runUIApp() {
 		SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -21,9 +26,6 @@ public class MainApp {
             	mainForm.setVisible(true);
             }
         });
-		
-//		testANN();
-//		testAND();
 	}
 	
 	static void testANN() {
@@ -121,15 +123,12 @@ public class MainApp {
 		
 		aNet.backward();
 		
+		inputs = new double[] {1, 1};
+		targets = new double[] {1};
+		System.out.println("++++++++++++++++++++++++++++++++++++++++++++ \n");
+		aNet.setInputOutput(inputs, targets);
+		aNet.forward();
+		aNet.backward();
 		
-//		
-//		inputs = new double[] {1, 1};
-//		targets = new double[] {1};
-//		
-//		aNet.setInputOutput(inputs, targets);
-//		aNet.forward();
-//		aNet.printNetwork(System.out);
-//		aNet.backward();
-//		aNet.printNetwork(System.out);
 	}
 }
