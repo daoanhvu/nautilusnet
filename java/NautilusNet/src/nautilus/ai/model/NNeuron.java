@@ -88,7 +88,7 @@ public class NNeuron {
 			}
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-(mInput + bias)));
+		mOutput = 1.0 / (1.0 + Math.exp(-mInput + bias));
 		
 		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 			System.out.println("net = " + debugStr + " = " + debugStrValue + " = " + mInput);
@@ -114,7 +114,7 @@ public class NNeuron {
 			}
 		}
 		
-		mOutput = 1.0 / (1.0 + Math.exp(-(mInput + bias)));
+		mOutput = 1.0 / (1.0 + Math.exp(-mInput + bias));
 		
 		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
 			System.out.println("net = " + debugStr + " = " + debugStrValue + " = " + mInput);

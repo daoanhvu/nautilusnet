@@ -304,15 +304,6 @@ public class ImageForm extends JFrame {
 								strResult = "e";
 							
 							mImageSizeLabel.setText("Recognizing done! Result: " + strResult);
-							
-							//for testing
-							double[] errors = new double[HWRNet.OUTPUT_LENGTH];
-							mTheNet.getErrors(errors);
-							System.out.print("\n[");
-							for(double e: errors) {
-								System.out.print(e + ", ");
-							}
-							System.out.println("]");	
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

@@ -50,7 +50,7 @@ public class HWRNet {
 			for(j=0; j<INPUT_LENGTH; j++) {
 //				w = generator.nextDouble();
 				//trying to make the initialized weight smaller
-				w = generator.nextDouble() / 10.0;
+				w = generator.nextDouble() / 100.0;
 				neuron.setWeight(w, j);
 			}
 		}
@@ -61,7 +61,7 @@ public class HWRNet {
 			for(j=0; j<HIDDEN_LENGTH; j++) {
 //				w = generator.nextDouble();
 				//trying to make the initialized weight smaller
-				w = generator.nextDouble() / 10.0;
+				w = generator.nextDouble() / 100.0;
 				neuron.setWeight(w, j);
 			}
 		}
@@ -176,23 +176,15 @@ public class HWRNet {
 		}
 	}
 	
-	public void train(double[] inputs, double[] targets) {
+	public double train(double[] inputs, double[] targets) {
 		mBackproNet.setInputOutput(inputs, targets);
 		mBackproNet.forward();		
-		mBackproNet.backward();
+		return mBackproNet.backward();
 	}
 	
 	public int recognize(double[] inputs) {
 		mBackproNet.setInput(inputs);
 		mBackproNet.forward();
 		return mBackproNet.getResultIndex();
-	}
-	
-	public double getTotalError() {
-		return mBackproNet.getTotalError();
-	}
-	
-	public void getErrors(double[] errs) {
-		mBackproNet.getErrors(errs);
 	}
 }

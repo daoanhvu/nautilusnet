@@ -32,35 +32,28 @@ int loadNetwork(FILE *f, BPNETWORK *nw)
 
 	nw->nLayer = numOfLayer;
 	nw->layer = (LAYER*)malloc(nw->nLayer * sizeof(LAYER));
-	for(i=0; i<nw->nLayer; i++)
-	{
+	for(i=0; i<nw->nLayer; i++) {
 		nw->layer[i].nNeural = neurals[i];
 		nw->layer[i].p = (NEURAL*)malloc(nw->layer[i].nNeural * sizeof(NEURAL));
 
-		if( i < (nw->nLayer - 1) )
-		{
+		if( i < (nw->nLayer - 1) ){
 			tmp = neurals[i+1];
 			if( (i + 1) < (nw->nLayer - 1))
 				tmp = neurals[i+1] - 1;
 
-			for(j=0; j<neurals[i]; j++)
-			{
+			for(j=0; j<neurals[i]; j++)	{
 				nw->layer[i].p[j].w = (double*)malloc(tmp * sizeof(double));
 				nw->layer[i].p[j].preDw = (double*)malloc(tmp * sizeof(double));
 			}
-		}
-		else
-		{
-			for(j=0; j<neurals[i]; j++)
-			{
+		} else {
+			for(j=0; j<neurals[i]; j++) {
 				nw->layer[i].p[j].w = NULL;
 				nw->layer[i].p[j].preDw = NULL;
 			}
 		}
 	}
 
-	for(i=0; i<nw->nLayer-1; i++)
-	{
+	for(i=0; i<nw->nLayer-1; i++) {
 		tmp = neurals[i] * (neurals[i+1]);
 		if(i+1 < nw->nLayer-1)
 			tmp = neurals[i] * (neurals[i+1]-1);
@@ -72,16 +65,13 @@ int loadNetwork(FILE *f, BPNETWORK *nw)
 	weights = (double*)malloc(nWeight * sizeof(double));
 	fread(weights, sizeof(double), nWeight, f);
 	c=0;
-	for(i=0; i<nw->nLayer-1; i++)
-	{
+	for(i=0; i<nw->nLayer-1; i++) {
 		tmp = neurals[i+1];
 		if( (i + 1) < (nw->nLayer - 1))
 			tmp = neurals[i+1] - 1;
 
-		for(j=0; j<neurals[i]; j++)
-		{
-			for(k=0; k<tmp; k++)
-			{
+		for(j=0; j<neurals[i]; j++) {
+			for(k=0; k<tmp; k++) {
 				nw->layer[i].p[j].w[k] = weights[c];
 				c = c + 1;
 				//nw->layer[i].p[j].preDw = (double*)malloc(tmp * sizeof(double));
@@ -102,28 +92,24 @@ int loadNetwork(FILE *f, BPNETWORK *nw)
 		neurals: number of neural in each layer, this is an array
 		nw: our network
  */
-void initNetwork( double *b, int nlayer, int *neurals, BPNETWORK *nw )
-{
+void initNetwork( double *b, int nlayer, int *neurals, BPNETWORK *nw ) {
 	int i, j, k, temp, iBias = 0;
 	srand(time(0));
 	nw->nLayer = nlayer;
 	nw->layer = (LAYER*)malloc(nw->nLayer * sizeof(LAYER));
 
-	for(i=0; i<nw->nLayer; i++)
-	{
+	for(i=0; i<nw->nLayer; i++)	{
 		nw->layer[i].nNeural = neurals[i];
 		nw->layer[i].p = (NEURAL*)malloc(nw->layer[i].nNeural * sizeof(NEURAL));
 	}
 
 	/* Memory allocate for weights */
 	for(i=0;i<nw->nLayer - 1 ;i++)
-		for(j=0;j<nw->layer[i].nNeural;j++)
-		{
+		for(j=0;j<nw->layer[i].nNeural;j++)	{
 			/* By default, we think that the next layer is a hidden layer */
 			temp = nw->layer[i+1].nNeural - 1;
 			/* if the next layer is the output layer */
-			if( i + 1 == nw->nLayer-1 )
-			{
+			if( i + 1 == nw->nLayer-1 )	{
 				temp = nw->layer[i+1].nNeural;
 			}
 

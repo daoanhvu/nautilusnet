@@ -187,6 +187,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		public Void doInBackground() {
 			int i, j, total, progress = 0;
 			float percent;
+			double error;
 			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH];
 			double[] targets = new double[HWRNet.OUTPUT_LENGTH];
 			try {
@@ -221,11 +222,11 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 							img = ImageIO.read(f);
 							ImageFilter.getImageData(img, inputs);
 							
-							mTheNet.train(inputs, targets);
+							error = mTheNet.train(inputs, targets);
 							
 							if( (Application.getInstance().getDebugLevel() == Application.SIMPLE_STEP) 
 									&& (i%100 == 0)) {
-								fw.write(mTheNet.getTotalError() + "\n");
+								fw.write(error + "\n");
 							}
 							
 							percent = ((++i) * 100.0f) / total;
@@ -247,15 +248,6 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 //			Toolkit.getDefaultToolkit().beep();
 			setProgress(100);
 			btnStartLearning.setEnabled(true);
-			
-			//For testing purpose
-			//for testing
-			mTheNet.getErrors(mErrors);
-			System.out.print("\n[");
-			for(double e: mErrors) {
-				System.out.print(e + ", ");
-			}
-			System.out.println("]");
 		}
 	}
 	double[] mErrors = new double[HWRNet.OUTPUT_LENGTH];
