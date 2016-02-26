@@ -1,0 +1,16 @@
+# depslib dependency file v1.0
+1340543951 source:d:\projects\bpnetwork\ansic\bp.c
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+	<time.h>
+	"bp.h"
+
+1340533992 d:\projects\bpnetwork\ansic\bp.h
+	<stdio.h>
+
+1340544077 source:d:\projects\bpnetwork\ansic\bpnetwork\main.c
+	<stdio.h>
+	<stdlib.h>
+	"../bp.h"
+
