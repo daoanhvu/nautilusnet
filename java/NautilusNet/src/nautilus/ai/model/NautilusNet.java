@@ -159,6 +159,14 @@ public class NautilusNet {
 			
 			mOutputLayer[i].onActivated(mHiddenLayer, mBias2);
 		}
+		
+		if(Application.getInstance().getDebugLevel()==Application.SIMPLE_STEP) {
+			System.out.println("Output: ");
+			for(NNeuron n: mOutputLayer) {
+				System.out.print(n.getOutput() + ", " );
+			}
+			System.out.println();
+		}
 	}
 	
 	/**

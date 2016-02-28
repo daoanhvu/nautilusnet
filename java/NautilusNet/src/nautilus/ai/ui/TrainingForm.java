@@ -71,7 +71,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		super("Train the net");
 		iniComponent();
 		initListeners();
-		mTheNet = new HWRNet(.3, .5, .45);
+		mTheNet = new HWRNet(.75, .65, .45);
 		mTheNet.initializeWeight();
 	}
 	
@@ -211,7 +211,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 					total += folder.listFiles(mImageFilter).length;
 				}
 				i = 0;
-				int loop = 100;
+				int loop = 1000;
 				total = total * loop;
 				
 				for(j=0; j< loop; j++) {
