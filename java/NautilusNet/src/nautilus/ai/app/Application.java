@@ -9,6 +9,8 @@ public class Application {
 	
 	private static Application app = null;
 	
+	public static final int TRAINING_LOOP_COUNT = 100;
+	
 	//Instance's members
 	public static final int NO_DEBUG = 0;
 	public static final int SIMPLE_STEP = 1;

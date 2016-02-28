@@ -29,7 +29,7 @@ public class HWRNet {
 //	public static final int OUTPUT_LENGTH = 62; // 26 lowercase characters + 26 upcase characters + 10 digits
 	
 	//for testing
-	public static final int OUTPUT_LENGTH = 5;
+	public static final int OUTPUT_LENGTH = 26;
 	private NautilusNet mBackproNet;
 	
 	
@@ -176,10 +176,10 @@ public class HWRNet {
 		}
 	}
 	
-	public void train(double[] inputs, double[] targets) {
+	public double train(double[] inputs, double[] targets) {
 		mBackproNet.setInputOutput(inputs, targets);
 		mBackproNet.forward();		
-		mBackproNet.backward();
+		return mBackproNet.backward();
 	}
 	
 	public int recognize(double[] inputs) {
@@ -188,11 +188,222 @@ public class HWRNet {
 		return mBackproNet.getResultIndex();
 	}
 	
-	public double getTotalError() {
-		return mBackproNet.getTotalError();
+	public static void getTargetFromFolderName(char ch, double[] targets) {
+		java.util.Arrays.fill(targets, 0.0);
+		switch(ch) {
+			case 'a':
+				targets[0] = 1;
+				break;
+				
+			case 'b':
+				targets[1] = 1;
+				break;
+				
+			case 'c':
+				targets[2] = 1;
+				break;
+				
+			case 'd':
+				targets[3] = 1;
+				break;
+				
+			case 'e':
+				targets[4] = 1;
+				break;
+				
+			case 'f':
+				targets[5] = 1;
+				break;
+				
+			case 'g':
+				targets[6] = 1;
+				break;
+				
+			case 'h':
+				targets[7] = 1;
+				break;
+				
+			case 'i':
+				targets[8] = 1;
+				break;
+				
+			case 'j':
+				targets[9] = 1;
+				break;
+				
+			case 'k':
+				targets[10] = 1;
+				break;
+				
+			case 'l':
+				targets[11] = 1;
+				break;
+				
+			case 'm':
+				targets[12] = 1;
+				break;
+				
+			case 'n':
+				targets[13] = 1;
+				break;
+				
+			case 'o':
+				targets[14] = 1;
+				break;
+				
+			case 'p':
+				targets[15] = 1;
+				break;
+				
+			case 'q':
+				targets[16] = 1;
+				break;
+				
+			case 'r':
+				targets[17] = 1;
+				break;
+				
+			case 's':
+				targets[18] = 1;
+				break;
+				
+			case 't':
+				targets[19] = 1;
+				break;
+				
+			case 'u':
+				targets[20] = 1;
+				break;
+				
+			case 'v':
+				targets[21] = 1;
+				break;
+				
+			case 'w':
+				targets[22] = 1;
+				break;
+				
+			case 'x':
+				targets[23] = 1;
+				break;
+				
+			case 'y':
+				targets[24] = 1;
+				break;
+				
+			case 'z':
+				targets[25] = 1;
+				break;
+		}
 	}
 	
-	public void getErrors(double[] errs) {
-		mBackproNet.getErrors(errs);
+	public static char getCharacter(int index) {
+		char result = 'a';
+		switch(index) {
+			case 0:
+				result = 'a';
+				break;
+				
+			case 1:
+				result = 'b';
+				break;
+				
+			case 2:
+				result = 'c';
+				break;
+				
+			case 3:
+				result = 'd';
+				break;
+				
+			case 4:
+				result = 'e';
+				break;
+				
+			case 5:
+				result = 'f';
+				break;
+				
+			case 6:
+				result = 'g';
+				break;
+				
+			case 7:
+				result = 'h';
+				break;
+				
+			case 8:
+				result = 'i';
+				break;
+				
+			case 9:
+				result = 'j';
+				break;
+				
+			case 10:
+				result = 'k';
+				break;
+				
+			case 11:
+				result = 'l';
+				break;
+				
+			case 12:
+				result = 'm';
+				break;
+				
+			case 13:
+				result = 'n';
+				break;
+				
+			case 14:
+				result = 'o';
+				break;
+				
+			case 15:
+				result = 'p';
+				break;
+				
+			case 16:
+				result = 'q';
+				break;
+				
+			case 17:
+				result = 'r';
+				break;
+				
+			case 18:
+				result = 's';
+				break;
+				
+			case 19:
+				result = 't';
+				break;
+				
+			case 20:
+				result = 'u';
+				break;
+				
+			case 21:
+				result = 'v';
+				break;
+				
+			case 22:
+				result = 'w';
+				break;
+				
+			case 23:
+				result = 'x';
+				break;
+				
+			case 24:
+				result = 'y';
+				break;
+				
+			case 25:
+				result = 'z';
+				break;
+		}
+		return result;
 	}
 }

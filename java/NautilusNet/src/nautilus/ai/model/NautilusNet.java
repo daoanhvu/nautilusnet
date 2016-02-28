@@ -21,10 +21,9 @@ public class NautilusNet {
 	private double mBias2;
 	
 	private double[] mTargets;
-	private double[] mErrors;
 	
 	//This is used for backward
-	private double[] dOutdNeto;
+	private double[] delta;
 	private double[][] oldOuputWeights;
 	
 	public NautilusNet() {
@@ -53,8 +52,7 @@ public class NautilusNet {
 		}
 		
 		mTargets = new double[outputCount];
-		mErrors = new double[outputCount];
-		dOutdNeto = new double[outputCount];
+		delta = new double[outputCount];
 		oldOuputWeights = new double[outputCount][hiddenCount];
 	}
 	
@@ -66,10 +64,6 @@ public class NautilusNet {
 		}
 		
 		System.arraycopy(inputs, 0, mInputLayer, 0, inputs.length);
-		
-		for(int i=0; i<outputs.length; i++) {
-			mErrors[i] = 0;
-		}
 		System.arraycopy(outputs, 0, mTargets, 0, outputs.length);
 	}
 	
@@ -129,32 +123,17 @@ public class NautilusNet {
 		return mLearningRate;
 	}
 	
-	public double getTotalError() {
-		int i;
-		double err = 0;
-		for(i=0; i<mOutputLayer.length; i++) {
-			err += (mErrors[i]*mErrors[i])/2.0;
-		}
-		return err;
-	}
-	
-	public void getErrors(double[] errs) {
-		System.arraycopy(mErrors, 0, errs, 0, mOutputLayer.length);
-	}
-	
 	public int getResultIndex() {
 		int i;
-		double err = 0;
-		double minErr = (mErrors[0]*mErrors[0])/2.0;
-		int minIdx = 0;
+		double max = mOutputLayer[0].getOutput();
+		int maxIdx = 0;
 		for(i=1; i<mOutputLayer.length; i++) {
-			err = (mErrors[i]*mErrors[i])/2.0;
-			if(err < minErr) {
-				minErr = err;
-				minIdx = i;
+			if(max < mOutputLayer[i].getOutput()) {
+				max = mOutputLayer[i].getOutput();
+				maxIdx = i;
 			}
 		}
-		return minIdx;
+		return maxIdx;
 	}
 	
 	public void forward() {
@@ -180,19 +159,6 @@ public class NautilusNet {
 			
 			mOutputLayer[i].onActivated(mHiddenLayer, mBias2);
 		}
-		
-		//calculate the errors
-		for(i=0; i<mTargets.length; i++) {
-			//mErrors[i] = mTargets[i] - mLayers.get(mTargets.length - 1).getNeuron(i).getOutput();
-			//Now we calculate deltaErro = d(E)/d(output) = - ( target - output) = output - target
-			mErrors[i] = mTargets[i] - mOutputLayer[i].getOutput();
-			//totalError += (mErrors[i] * mErrors[i]) / 2.0;
-			
-			//For DEBUG mode
-			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
-				System.out.println("Error[" + i + "] = " + mErrors[i]);
-			}
-		}
 	}
 	
 	/**
@@ -202,15 +168,17 @@ public class NautilusNet {
 		int i, j, k;
 		int wn;
 		NNeuron neuron;
-		double w, dw, error=0;
+		double w, error, totalError=0;
 		double dOutHidden, dEttNet;
 		
-		//Calculate dw for the output layer
+		//Calculate delta for the output layer
 		for(j=0; j<mOutputLayer.length; j++) {
 			neuron = mOutputLayer[j];
 
 			/* thu cong thuc trong paper Neural Net Component */
-			dOutdNeto[j] = (mTargets[j] - neuron.getOutput()) * neuron.getOutput() * (1.0 - neuron.getOutput()) ;
+			error = neuron.getOutput() - mTargets[j];
+			totalError += error * error;
+			delta[j] = error * neuron.getOutput() * (1.0 - neuron.getOutput()) ;
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
@@ -219,20 +187,18 @@ public class NautilusNet {
 				oldOuputWeights[j][k] = neuron.getWeight(k);
 				
 				/* output of node k(th) in hidden layer is the input k(th) in output layer  */
-				dw = dOutdNeto[j] * mHiddenLayer[k].getOutput();
-//				w = neuron.getWeight(k) - mLearningRate * dw;
-				w = neuron.getWeight(k) + mLearningRate * dw; //cong thuc moi
+				w = neuron.getWeight(k) - mLearningRate * delta[j] * mHiddenLayer[k].getOutput();
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 				
 				if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
-					System.out.println("dw = " + mLearningRate + " * " + mErrors[j] + 
+					System.out.println("dw = " + mLearningRate + " * " + error + 
 							" * " + mHiddenLayer[k].getOutput() + " * " + neuron.getOutput() + 
-							" * (1 - " + neuron.getOutput() + ") = " + (dw*mLearningRate));
+							" * (1 - " + neuron.getOutput() + ") = " + (mLearningRate * delta[j] * mHiddenLayer[k].getOutput()));
 				}
 			}
 		}
 		
-		//Calculate dw for hidden layer
+		//Calculate delta for hidden layer
 		for(i=0; i<mHiddenLayer.length; i++) {
 			neuron = mHiddenLayer[i];
 			
@@ -246,24 +212,22 @@ public class NautilusNet {
 			dEttNet = 0;
 			for(j=0; j<mOutputLayer.length; j++) {
 				//should we use old weight or new weight here?   
-				dEttNet += dOutdNeto[j] * oldOuputWeights[j][i];
+				dEttNet += delta[j] * oldOuputWeights[j][i];
 			}
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
-				dw = dEttNet * dOutHidden * mInputLayer[k];
-//				w = neuron.getWeight(k) - mLearningRate * dw;
-				w = neuron.getWeight(k) + mLearningRate * dw; //cong thuc moi
+				w = neuron.getWeight(k) - mLearningRate * dEttNet * dOutHidden * mInputLayer[k];
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 			}
 		}
 		
 		//if in debug mode we output the total error
 		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
-			System.out.println("\nTOTAL ERROR = " + getTotalError());
+			System.out.println("\nTOTAL ERROR = " + (totalError/2.0));
 		}
 		
-		return (error/2.0);
+		return (totalError/2.0);
 	}
 	
 	public void writeWeight2File(String filepath) {

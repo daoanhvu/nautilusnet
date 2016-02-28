@@ -189,6 +189,8 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 			float percent;
 			double[] inputs = new double[HWRNet.SAMPLE_HEIGHT * HWRNet.SAMPLE_WIDTH];
 			double[] targets = new double[HWRNet.OUTPUT_LENGTH];
+			double error;
+
 			try {
 				setProgress(0);
 				File[] subfolders = mSampleDir.listFiles(new FileFilter(){
@@ -209,23 +211,23 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 					total += folder.listFiles(mImageFilter).length;
 				}
 				i = 0;
-				int loop = 1000;
+				int loop = 100;
 				total = total * loop;
 				
 				for(j=0; j< loop; j++) {
 					for(File folder: subfolders) {
 						String name = folder.getName();
-						targets = getTargetFromFolderName(name);
+						HWRNet.getTargetFromFolderName(name.charAt(0), targets);
 						images = folder.listFiles(mImageFilter);
 						for(File f: images) {
 							img = ImageIO.read(f);
 							ImageFilter.getImageData(img, inputs);
 							
-							mTheNet.train(inputs, targets);
+							error = mTheNet.train(inputs, targets);
 							
 							if( (Application.getInstance().getDebugLevel() == Application.SIMPLE_STEP) 
 									&& (i%100 == 0)) {
-								fw.write(mTheNet.getTotalError() + "\n");
+								fw.write(error + "\n");
 							}
 							
 							percent = ((++i) * 100.0f) / total;
@@ -247,37 +249,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 //			Toolkit.getDefaultToolkit().beep();
 			setProgress(100);
 			btnStartLearning.setEnabled(true);
-			
-			//For testing purpose
-			//for testing
-			mTheNet.getErrors(mErrors);
-			System.out.print("\n[");
-			for(double e: mErrors) {
-				System.out.print(e + ", ");
-			}
-			System.out.println("]");
 		}
-	}
-	double[] mErrors = new double[HWRNet.OUTPUT_LENGTH];
-	
-	private double[] getTargetFromFolderName(String name) {
-		double[] result = null;
-		if(name.equals("a")) {
-			result = new double[]{1, 0, 0, 0, 0};
-		} else if(name.equals("b")) {
-			result = new double[]{0, 1, 0, 0, 0};
-		} else if(name.equals("c")) {
-			result = new double[]{0, 0, 1, 0, 0};
-		} else if(name.equals("d")) {
-			result = new double[]{0, 0, 0, 1, 0};
-		} else if(name.equals("e")) {
-			result = new double[]{0, 0, 0, 0, 1};
-		} else {
-			//it's properly not here!!!!
-			result = new double[]{0, 0, 0, 0, 0};
-		}
-		
-		return result;
 	}
 	
 	/**
@@ -298,7 +270,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		try {
 			for(File folder: subfolders) {
 				String name = folder.getName();
-				targets = getTargetFromFolderName(name);
+				HWRNet.getTargetFromFolderName(name.charAt(0), targets);
 				images = folder.listFiles(mImageFilter);
 				for(File f: images) {
 					img = ImageIO.read(f);
