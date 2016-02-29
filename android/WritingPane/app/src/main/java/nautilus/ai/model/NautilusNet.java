@@ -8,8 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import nautilus.ai.app.Application;
-
 public class NautilusNet {
 	private double mLearningRate;
 	
@@ -142,25 +140,12 @@ public class NautilusNet {
 		//calculate net and output values for the hidden layer
 		//The last neuron of input layer is a bias
 		for(i=0; i<mHiddenLayer.length; i++) {
-			
-			if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
-				System.out.println("***** Calculating for hidden node[" + i +"]:");
-			}
-			
 			mHiddenLayer[i].onActivated(mInputLayer, mBias1);
 		}
 		
 		//calculate net and output values for the output layer
 		for(i=0; i<mOutputLayer.length; i++) {
 			mOutputLayer[i].onActivated(mHiddenLayer, mBias2);
-		}
-		
-		if(Application.getInstance().getDebugLevel()==Application.SIMPLE_STEP) {
-			System.out.println("Output: ");
-			for(NNeuron n: mOutputLayer) {
-				System.out.print(n.getOutput() + ", " );
-			}
-			System.out.println();
 		}
 	}
 	
@@ -178,25 +163,18 @@ public class NautilusNet {
 		for(j=0; j<mOutputLayer.length; j++) {
 			neuron = mOutputLayer[j];
 
+			/* thu cong thuc trong paper Neural Net Component */
 			error = neuron.getOutput() - mTargets[j];
 			totalError += error * error;
 			delta[j] = error * neuron.getOutput() * (1.0 - neuron.getOutput()) ;
 			
 			wn = neuron.getWeightCount();
 			for(k=0; k<wn; k++) {
-				
 				//First, we save the old weight;
 				oldOuputWeights[j][k] = neuron.getWeight(k);
-				
 				/* output of node k(th) in hidden layer is the input k(th) in output layer  */
 				w = neuron.getWeight(k) - mLearningRate * delta[j] * mHiddenLayer[k].getOutput();
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
-				
-				if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
-					System.out.println("dw = " + mLearningRate + " * " + error + 
-							" * " + mHiddenLayer[k].getOutput() + " * " + neuron.getOutput() + 
-							" * (1 - " + neuron.getOutput() + ") = " + (mLearningRate * delta[j] * mHiddenLayer[k].getOutput()));
-				}
 			}
 		}
 		
@@ -223,12 +201,7 @@ public class NautilusNet {
 				neuron.setWeight(w, k); // <- Should we update weight of output right here?
 			}
 		}
-		
-		//if in debug mode we output the total error
-		if(Application.getInstance().getDebugLevel()==Application.NETWORK_STEP) {
-			System.out.println("\nTOTAL ERROR = " + (totalError/2.0));
-		}
-		
+
 		return (totalError/2.0);
 	}
 	

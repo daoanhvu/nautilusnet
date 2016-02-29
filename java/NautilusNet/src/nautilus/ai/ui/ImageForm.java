@@ -290,20 +290,10 @@ public class ImageForm extends JFrame {
 					protected void done() {
 						int result;
 						try {
-							String strResult = "";
+							char ch;
 							result = get();
-							if(result==0)
-								strResult = "a";
-							else if(result==1)
-								strResult = "b";
-							else if(result==2)
-								strResult = "c";
-							else if(result==3)
-								strResult = "d";
-							else if(result==4)
-								strResult = "e";
-							
-							mImageSizeLabel.setText("Recognizing done! Result: " + strResult);
+							ch = HWRNet.getCharacter(result);
+							mImageSizeLabel.setText("Recognizing done! Result: " + ch);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

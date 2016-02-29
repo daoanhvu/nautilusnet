@@ -27,7 +27,7 @@ public class ImageFilter {
 		int i, j;
 		
 		BufferedImage grayImage = new BufferedImage(inputW,inputH, BufferedImage.TYPE_BYTE_GRAY);
-		int inColor, grayColor;
+		int inColor;
 		int alpha, red, green, blue, gray;
 		Color color;
 		
@@ -66,7 +66,7 @@ public class ImageFilter {
 				green = (int) (((inColor >> 8) & 0x000000ff) * 0.578);
 				blue = (int) ((inColor & 0x000000ff) * 0.114);
 				gray = red + green + blue;
-				if(gray > 170) {
+				if(gray > 180) {
 					gray = 255;
 				}
 				color = new Color(gray, gray, gray, alpha);
