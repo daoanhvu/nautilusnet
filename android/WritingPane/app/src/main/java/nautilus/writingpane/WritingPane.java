@@ -2,7 +2,12 @@ package nautilus.writingpane;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -14,7 +19,7 @@ public class WritingPane extends View {
 	/** Need to track this so the dirty region can accommodate the stroke. **/
 	private static final float HALF_STROKE_WIDTH = STROKE_WIDTH / 2;
 
-	private Paint mPaint = new Paint();
+	private Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private Path mPath = new Path();
 
 	  /**
@@ -44,15 +49,20 @@ public class WritingPane extends View {
     }
 	
 	private void init() {
+		mPaint.setColor(Color.RED);
+		mPaint.setAntiAlias(true);
+		mPaint.setStyle(Paint.Style.STROKE);
+		mPaint.setStrokeJoin(Paint.Join.ROUND);
+		mPaint.setStrokeWidth(STROKE_WIDTH);
 	}
 	
 	@Override
 	protected void onMeasure(int widthSpec, int heightSpec) {
 		final int intrinsicSize = 100;
-		int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-		int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-		int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-		int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+		int widthMode = MeasureSpec.getMode(widthSpec);
+		int widthSize = MeasureSpec.getSize(widthSpec);
+		int heightMode = MeasureSpec.getMode(heightSpec);
+		int heightSize = MeasureSpec.getSize(heightSpec);
 		int width;
 		int height;
 		
@@ -79,7 +89,7 @@ public class WritingPane extends View {
     protected void onDraw(Canvas canvas) {
 		canvas.drawPath(mPath, mPaint);
     }
-	
+
 	@Override
 	public boolean onTouchEvent(MotionEvent ev) {
 		int i, historySize;
@@ -87,18 +97,18 @@ public class WritingPane extends View {
 		float historicalY;
 		float eX = ev.getX();
 		float eY = ev.getY();
-		
+
 		switch(ev.getAction()) {
-			case MotionEvent.ACTION_DOWN: 
-				path.moveTo(eX, eY);
+			case MotionEvent.ACTION_DOWN:
+				mPath.moveTo(eX, eY);
 				mLastDownX = eX;
 				mLastDownY = eY;
-			break;
-			
+				break;
+
 			case MotionEvent.ACTION_MOVE:
 				// Start tracking the dirty region.
 				resetDirtyRect(eX, eY);
-				
+
 				// When the hardware tracks events faster than they are delivered, the
 				// event will contain a history of those skipped points.
 				historySize = ev.getHistorySize();
@@ -109,13 +119,13 @@ public class WritingPane extends View {
 					mPath.lineTo(historicalX, historicalY);
 				}
 				// After replaying history, connect the line to the touch point.
-				path.lineTo(eventX, eventY)
-			break;
-			
+				mPath.lineTo(eX, eY);
+				break;
+
 			case MotionEvent.ACTION_UP:
 				// Start tracking the dirty region.
 				resetDirtyRect(eX, eY);
-				
+
 				// When the hardware tracks events faster than they are delivered, the
 				// event will contain a history of those skipped points.
 				historySize = ev.getHistorySize();
@@ -126,15 +136,12 @@ public class WritingPane extends View {
 					mPath.lineTo(historicalX, historicalY);
 				}
 				// After replaying history, connect the line to the touch point.
-				path.lineTo(eventX, eventY)
-				
-				//Xu ly
-			break;
-			
+				mPath.lineTo(eX, eY);
+				break;
+
 			case MotionEvent.ACTION_CANCEL:
-			break;
+				break;
 		}
-		
 		invalidate(
 			(int) (mDirtyRect.left - HALF_STROKE_WIDTH),
 			(int) (mDirtyRect.top - HALF_STROKE_WIDTH),
@@ -153,14 +160,14 @@ public class WritingPane extends View {
    */
 	private void expandDirtyRect(float historicalX, float historicalY) {
 		if (historicalX < mDirtyRect.left) {
-		  mDirtyRect.left = historicalX;
+			mDirtyRect.left = historicalX;
 		} else if (historicalX > mDirtyRect.right) {
-		  mDirtyRect.right = historicalX;
+			mDirtyRect.right = historicalX;
 		}
 		if (historicalY < mDirtyRect.top) {
-		  mDirtyRect.top = historicalY;
+			mDirtyRect.top = historicalY;
 		} else if (historicalY > mDirtyRect.bottom) {
-		  mDirtyRect.bottom = historicalY;
+			mDirtyRect.bottom = historicalY;
 		}
 	}
 
