@@ -18,11 +18,25 @@
         android:layout_alignParentBottom="true"
         android:background="#ffcedbeb"/>
 
+    <RelativeLayout
+        android:id="@+id/buttonPane"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="Clear"/>
+    </RelativeLayout>
+
     <nautilus.writingpane.WritingPane
         android:id="@+id/writingPane"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/buttonPane"
         android:layout_above="@id/tvResult"
+        android:background="#fff4e8e1"
         />
 </RelativeLayout>

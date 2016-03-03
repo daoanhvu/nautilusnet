@@ -1,8 +1,6 @@
 package nautilus.ai.app.hwr;
 
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -68,42 +66,16 @@ public class HWRNet {
 	}
 	
 	public void readWeightFromFile(String filepath) {
-		DataInputStream dis = null;
-		int i, j;
-		double w, bias1, bias2;
-		NNeuron neuron;
+		FileInputStream fis = null;
 		try {
-			FileInputStream fis = new FileInputStream(new File(filepath));
-			dis = new DataInputStream(fis);
-			
-			//Read biases
-			bias1 = dis.readDouble();
-			bias2 = dis.readDouble();
-			mBackproNet.setBiases(bias1, bias2);
-			
-			//initialize weights for hidden layer
-			for(i=0; i<HIDDEN_LENGTH; i++) {
-				neuron = mBackproNet.getHiddenLayer()[i];
-				for(j=0; j<INPUT_LENGTH; j++) {
-					w = dis.readDouble();
-					neuron.setWeight(w, j);
-				}
-			}
-			
-			//initialize weights for output layer
-			for(i=0; i<OUTPUT_LENGTH; i++) {
-				neuron = mBackproNet.getOutputLayer()[i];
-				for(j=0; j<HIDDEN_LENGTH; j++) {
-					w = dis.readDouble();
-					neuron.setWeight(w, j);
-				}
-			}
+			fis = new FileInputStream(new File(filepath));
+			mBackproNet.readWeightFromStream(fis);
 		}catch(IOException ex) {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if(dis != null)
-					dis.close();
+				if(fis != null)
+					fis.close();
 			}catch(IOException ex1) {
 				ex1.printStackTrace();
 			}
@@ -111,41 +83,16 @@ public class HWRNet {
 	}
 	
 	public void writeWeight2File(String filepath) {
-		DataOutputStream dos = null;
-		NNeuron neuron;
-		double w;
-		int i, j;
+		FileOutputStream fos = null;
 		try {
-			FileOutputStream fos = new FileOutputStream(new File(filepath));
-			dos = new DataOutputStream(fos);
-			
-			//Write biases
-			dos.writeDouble(mBackproNet.getBias1());
-			dos.writeDouble(mBackproNet.getBias2());
-			
-			//initialize weights for hidden layer
-			for(i=0; i<HIDDEN_LENGTH; i++) {
-				neuron = mBackproNet.getHiddenLayer()[i];
-				for(j=0; j<INPUT_LENGTH; j++) {
-					w = neuron.getWeight(j);
-					dos.writeDouble(w);
-				}
-			}
-			
-			//initialize weights for output layer
-			for(i=0; i<OUTPUT_LENGTH; i++) {
-				neuron = mBackproNet.getOutputLayer()[i];
-				for(j=0; j<HIDDEN_LENGTH; j++) {
-					w = neuron.getWeight(j);
-					dos.writeDouble(w);
-				}
-			}
+			fos = new FileOutputStream(new File(filepath));
+			mBackproNet.writeWeight2Stream(fos);
 		}catch(IOException ex) {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if(dos != null)
-					dos.close();
+				if(fos != null)
+					fos.close();
 			}catch(IOException ex1) {
 				ex1.printStackTrace();
 			}

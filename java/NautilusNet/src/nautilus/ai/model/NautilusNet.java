@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 import nautilus.ai.app.Application;
@@ -234,25 +236,9 @@ public class NautilusNet {
 	
 	public void writeWeight2File(String filepath) {
 		FileOutputStream fos = null;
-		DataOutputStream dos = null;
-		int i, j;
 		try {
 			fos = new FileOutputStream(new File(filepath));
-			dos = new DataOutputStream(fos);
-			
-			for(i=0; i<mHiddenLayer.length; i++) {
-				for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
-					dos.writeDouble(mHiddenLayer[i].getWeight(j));
-				}
-			}
-			
-			for(i=0; i<mOutputLayer.length; i++) {
-				for(j=0; j<mOutputLayer[i].getWeightCount(); j++) {
-					dos.writeDouble(mOutputLayer[i].getWeight(j));
-				}
-			}
-			dos.flush();
-			
+			writeWeight2Stream(fos);
 		} catch(IOException ex) {
 			ex.printStackTrace();
 		} finally {
@@ -262,31 +248,65 @@ public class NautilusNet {
 		}
 	}
 	
+	public void writeWeight2Stream(OutputStream outputStream) throws IOException {
+		int i, j;
+		DataOutputStream dos = new DataOutputStream(outputStream);
+			
+		//Write learning rate
+		dos.writeDouble(mLearningRate);
+		//write biases
+		dos.writeDouble(mBias1);
+		dos.writeDouble(mBias2);
+			
+		for(i=0; i<mHiddenLayer.length; i++) {
+			for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
+				dos.writeDouble(mHiddenLayer[i].getWeight(j));
+			}
+		}
+			
+		for(i=0; i<mOutputLayer.length; i++) {
+			for(j=0; j<mOutputLayer[i].getWeightCount(); j++) {
+				dos.writeDouble(mOutputLayer[i].getWeight(j));
+			}
+		}
+		dos.flush();
+	}
+	
 	public void readWeightFromFile(String filepath) {
 		FileInputStream fis = null;
-		DataInputStream dis = null;
-		int i, j;
 		try {
 			fis = new FileInputStream(new File(filepath));
-			dis = new DataInputStream(fis);
-			
-			for(i=0; i<mHiddenLayer.length; i++) {
-				for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
-					mHiddenLayer[i].setWeight(dis.readDouble(), j);
-				}
-			}
-			
-			for(i=0; i<mOutputLayer.length; i++) {
-				for(j=0; j<mOutputLayer[i].getWeightCount(); j++) {
-					mOutputLayer[i].setWeight(dis.readDouble(), j);
-				}
-			}
+			readWeightFromStream(fis);
 		} catch(IOException ex) {
 			ex.printStackTrace();
 		} finally {
 			try {
-				if(fis != null) fis.close();
+				if(fis != null)
+					fis.close();
 			} catch(IOException ex) {	}
+		}
+	}
+	
+	public void readWeightFromStream(InputStream inputStream) throws IOException {
+		int i, j;
+		DataInputStream dis = new DataInputStream(inputStream);
+		
+		//Read mLearningRate
+		mLearningRate = dis.readDouble();
+		//Read biases
+		mBias1 = dis.readDouble();
+		mBias2 = dis.readDouble();
+			
+		for(i=0; i<mHiddenLayer.length; i++) {
+			for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
+				mHiddenLayer[i].setWeight(dis.readDouble(), j);
+			}
+		}
+			
+		for(i=0; i<mOutputLayer.length; i++) {
+			for(j=0; j<mOutputLayer[i].getWeightCount(); j++) {
+				mOutputLayer[i].setWeight(dis.readDouble(), j);
+			}
 		}
 	}
 	

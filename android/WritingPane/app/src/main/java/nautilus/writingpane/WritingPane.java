@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +33,7 @@ public class WritingPane extends View {
 	private float mPreX;
 	private float mPreY;
 	private int mColor;
+	private boolean mClearScreen = false;
 	
     public WritingPane(Context ctx) {
         super(ctx);
@@ -49,11 +51,12 @@ public class WritingPane extends View {
     }
 	
 	private void init() {
+
 		mPaint.setColor(Color.RED);
 		mPaint.setAntiAlias(true);
 		mPaint.setStyle(Paint.Style.STROKE);
 		mPaint.setStrokeJoin(Paint.Join.ROUND);
-		mPaint.setStrokeWidth(STROKE_WIDTH);
+		mPaint.setStrokeWidth(STROKE_WIDTH * 2);
 	}
 	
 	@Override
@@ -85,9 +88,20 @@ public class WritingPane extends View {
 		setMeasuredDimension(width, height);
 	}
 
+	public void clear() {
+		mClearScreen = true;
+		mPath.reset();
+		invalidate();
+	}
+
     @Override
     protected void onDraw(Canvas canvas) {
-		canvas.drawPath(mPath, mPaint);
+		if(mClearScreen) {
+			canvas.drawColor(((ColorDrawable)getBackground()).getColor());
+			mClearScreen = false;
+		} else {
+			canvas.drawPath(mPath, mPaint);
+		}
     }
 
 	@Override
@@ -139,8 +153,10 @@ public class WritingPane extends View {
 				mPath.lineTo(eX, eY);
 				break;
 
-			case MotionEvent.ACTION_CANCEL:
-				break;
+//			case MotionEvent.ACTION_CANCEL:
+//				break;
+			default:
+				return false;
 		}
 		invalidate(
 			(int) (mDirtyRect.left - HALF_STROKE_WIDTH),

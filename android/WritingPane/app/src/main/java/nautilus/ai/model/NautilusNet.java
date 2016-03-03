@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 
 public class NautilusNet {
 	private double mLearningRate;
@@ -249,6 +248,40 @@ public class NautilusNet {
 				}
 			}
 			
+			for(i=0; i<mOutputLayer.length; i++) {
+				for(j=0; j<mOutputLayer[i].getWeightCount(); j++) {
+					mOutputLayer[i].setWeight(dis.readDouble(), j);
+				}
+			}
+		} catch(IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			try {
+				if(fis != null) fis.close();
+			} catch(IOException ex) {	}
+		}
+	}
+
+	public void readWeightInputStream(DataInputStream dis) {
+		FileInputStream fis = null;
+		int i, j;
+		double temp;
+		try {
+			dis = new DataInputStream(fis);
+
+			//read learning rate
+			mLearningRate = dis.readDouble();
+
+			//read biases
+			mBias1 = dis.readDouble();
+			mBias2 = dis.readDouble();
+
+			for(i=0; i<mHiddenLayer.length; i++) {
+				for(j=0; j<mHiddenLayer[i].getWeightCount(); j++) {
+					mHiddenLayer[i].setWeight(dis.readDouble(), j);
+				}
+			}
+
 			for(i=0; i<mOutputLayer.length; i++) {
 				for(j=0; j<mOutputLayer[i].getWeightCount(); j++) {
 					mOutputLayer[i].setWeight(dis.readDouble(), j);

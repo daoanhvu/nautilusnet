@@ -5,6 +5,7 @@ import nautilus.ai.ui.ImageForm;
 
 import static nautilus.ai.app.Application.ERROR_DATA_FILE;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,12 +23,43 @@ public class MainApp {
 	
 	public static void main(String[] agrs) {
 		//Load configurations
-		Application.getInstance();
+//		Application.getInstance();
 	
-//		runUIApp();
+		runUIApp();
+//		moveData();
 //		testANN();
-		testANN2();
+//		testANN2();
 //		testAND();
+	}
+	
+	static void moveData() {
+		int l;
+		byte[] buf = new byte[64];
+		DataOutputStream dos = null;
+		java.io.FileInputStream fis = null;
+		try {
+			dos = new DataOutputStream(new java.io.FileOutputStream(new File("D:/projects/NautilusNet/data/nautilusnet.dat")));
+			fis = new java.io.FileInputStream(new File("D:/projects/NautilusNet/data/nautilusnet2.net"));
+			
+			//Write learning rate
+			dos.writeDouble(0.75);
+			
+			while( (l=fis.read(buf)) > 0 ) {
+				dos.write(buf, 0, l);
+			}
+			
+			dos.flush();
+		}catch(java.io.IOException ex) {
+			ex.printStackTrace();
+		} finally {
+			try {
+				if(dos != null) dos.close();
+				if(fis != null) fis.close();
+				System.out.println("Writing data done!!!!");
+			}catch(java.io.IOException ex1) {
+				ex1.printStackTrace();
+			}
+		}
 	}
 	
 	static void runUIApp() {
@@ -102,7 +134,7 @@ public class MainApp {
 		final int SAMPLE_HEIGHT = 24;
 		final int INPUT_LENGTH = 384; // 24 * 32 NOT including bias
 		final int HIDDEN_LENGTH = 268; //bias NOT included
-		final int OUTPUT_LENGTH = 8;
+		final int OUTPUT_LENGTH = 26;
 		
 		final ImageOpenFilter mImageFilter = new ImageOpenFilter();
 		
@@ -142,13 +174,13 @@ public class MainApp {
 		double[] targets = new double[OUTPUT_LENGTH];
 		
 		java.awt.image.BufferedImage img;
-		File folder = new File("D:/projects/NautilusNet/data/test1");
+		File folder = new File("D:/projects/NautilusNet/data/output_samples2/test1");
 		File[] images = folder.listFiles(mImageFilter);
 		double error;
 		try {
 			FileWriter fw = new FileWriter(Application.getInstance().getStringValue(ERROR_DATA_FILE));
 			char ch;
-			for(i=0; i<120; i++) {
+			for(i=0; i<200; i++) {
 				for(File f: images) {
 					img = ImageIO.read(f);
 					ch = f.getName().charAt(0);
@@ -178,6 +210,78 @@ public class MainApp {
 						case 'h':
 							targets[7] = 1.0;
 							break;
+							
+						case 'i':
+							targets[8] = 1.0;
+							break;
+							
+						case 'j':
+							targets[9] = 1.0;
+							break;
+							
+						case 'k':
+							targets[10] = 1.0;
+							break;
+							
+						case 'l':
+							targets[11] = 1.0;
+							break;
+							
+						case 'm':
+							targets[12] = 1.0;
+							break;
+							
+						case 'n':
+							targets[13] = 1.0;
+							break;
+							
+						case 'o':
+							targets[14] = 1.0;
+							break;
+							
+						case 'p':
+							targets[15] = 1.0;
+							break;
+							
+						case 'q':
+							targets[16] = 1.0;
+							break;
+							
+						case 'r':
+							targets[17] = 1.0;
+							break;
+							
+						case 's':
+							targets[18] = 1.0;
+							break;
+							
+						case 't':
+							targets[19] = 1.0;
+							break;
+							
+						case 'u':
+							targets[20] = 1.0;
+							break;
+							
+						case 'v':
+							targets[21] = 1.0;
+							break;
+							
+						case 'w':
+							targets[22] = 1.0;
+							break;
+							
+						case 'x':
+							targets[23] = 1.0;
+							break;
+							
+						case 'y':
+							targets[24] = 1.0;
+							break;
+							
+						case 'z':
+							targets[25] = 1.0;
+							break;
 					}
 					ImageFilter.getImageData(img, inputs);
 					img.flush();
@@ -191,7 +295,7 @@ public class MainApp {
 			fw.close();
 			
 			img = ImageIO.read(new File("D:/projects/NautilusNet/data/output_samples/b/2.png"));
-			java.awt.image.BufferedImage img2 = ImageIO.read(new File("D:/projects/NautilusNet/data/output_samples/a/2.png"));
+			java.awt.image.BufferedImage img2 = ImageIO.read(new File("D:/projects/NautilusNet/data/output_samples/u/1.png"));
 			ImageFilter.getImageData(img, inputs);
 			mBackproNet.setInput(inputs);
 			mBackproNet.forward();
@@ -203,6 +307,9 @@ public class MainApp {
 			mBackproNet.forward();
 			result = mBackproNet.getResultIndex();
 			System.out.println("Result: " + HWRNet.getCharacter(result));
+			
+			//Save the network
+			mBackproNet.writeWeight2File("D:/projects/NautilusNet/data/net_test.dat");
 			
 		}catch(IOException ex) {
 			ex.printStackTrace();
