@@ -18,18 +18,44 @@
         android:layout_alignParentBottom="true"
         android:background="#ffcedbeb"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/buttonPane"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         >
-        <Button
-            android:id="@+id/btnClear"
+        <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:text="Learn"
+            android:id="@+id/chkLearn"
+            android:layout_weight="0.4"
+            android:layout_alignParentStart="true"
+            />
+
+        <EditText
+            android:id="@+id/txtChar"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:layout_weight="2"
+            />
+
+        <Button
+            android:id="@+id/btnProcess"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.3"
+            android:text="Start"/>
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.3"
             android:text="Clear"/>
-    </RelativeLayout>
+
+    </LinearLayout>
 
     <nautilus.writingpane.WritingPane
         android:id="@+id/writingPane"

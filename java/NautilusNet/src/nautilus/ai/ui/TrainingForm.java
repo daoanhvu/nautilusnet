@@ -8,6 +8,7 @@ import static nautilus.ai.app.Application.DEBUG_LEVEL;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -55,12 +56,14 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 	
 	JTextField txtSampleDir;
 	private JButton mSampleDirBrowse;
+	JLabel lbStatusText;
 	JButton btnLoadWeight, btnStartLearning, btnSaveTheNet;
 	File mSampleDir;
 	File mOutputNetFile;
 	TrainingTask mTrainingTask;
 	
 	final ImageOpenFilter mImageFilter = new ImageOpenFilter();
+	static final java.text.SimpleDateFormat TIME_FORMAT = new java.text.SimpleDateFormat("hh:mm:ss");
 	
 	/* Progress bar dialo */
 	JProgressBar progressBar;
@@ -107,14 +110,36 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		
 		northPane.add(inputPane);
 		northPane.add(pnButtonPane);
+		c.add(northPane, BorderLayout.CENTER);
 		
+		GridBagLayout gbl = new GridBagLayout();
+		JPanel statusBar = new JPanel(gbl);
+		
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridheight = 1;
+		gbc.gridwidth = 1;
+		gbc.weightx = 0.5;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
+		lbStatusText = new JLabel();
+		statusBar.add(lbStatusText, gbc);
+		
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.gridheight = 1;
+		gbc.gridwidth = 3;
+		gbc.weightx = 1.0;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 		progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
-		northPane.add(progressBar);
+		statusBar.add(progressBar, gbc);
 		
-		c.add(northPane, BorderLayout.CENTER);
-		
+		statusBar.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		statusBar.setPreferredSize(new Dimension(c.getWidth(), 16));
+		c.add(statusBar, BorderLayout.SOUTH);
 	}
 	
 	private void initListeners() {
@@ -170,6 +195,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 				mTrainingTask = new TrainingTask();
 				mTrainingTask.addPropertyChangeListener(TrainingForm.this);
 				btnStartLearning.setEnabled(false);
+				lbStatusText.setText("Start: " + TIME_FORMAT.format((new java.util.Date())));
 				mTrainingTask.execute();
 			}
 		});
@@ -206,30 +232,24 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 				FileWriter fw = new FileWriter(Application.getInstance().getStringValue(ERROR_DATA_FILE));
 				
 				//TODO: need to be improved
-				total = 0;
-				for(File folder: subfolders) {
-					total += folder.listFiles(mImageFilter).length;
-				}
-				i = 0;
-				int loop = 1000;
+				total = subfolders.length * HWRNet.OUTPUT_LENGTH;
+				int loop = 1600;
+				String name;
 				total = total * loop;
-				
+				i = 0;
 				for(j=0; j< loop; j++) {
 					for(File folder: subfolders) {
-						String name = folder.getName();
-						HWRNet.getTargetFromFolderName(name.charAt(0), targets);
 						images = folder.listFiles(mImageFilter);
 						for(File f: images) {
+							name = f.getName();
+							HWRNet.getTargetFromFolderName(name.charAt(0), targets);
 							img = ImageIO.read(f);
 							ImageFilter.getImageData(img, inputs);
-							
 							error = mTheNet.train(inputs, targets);
-							
 							if( (Application.getInstance().getDebugLevel() == Application.SIMPLE_STEP) 
 									&& (i%100 == 0)) {
 								fw.write(error + "\n");
 							}
-							
 							percent = ((++i) * 100.0f) / total;
 							progress = (int)percent;
 							setProgress(progress);
@@ -249,6 +269,8 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 //			Toolkit.getDefaultToolkit().beep();
 			setProgress(100);
 			btnStartLearning.setEnabled(true);
+			String text = lbStatusText.getText();
+			lbStatusText.setText(text + "   Finished at: " + TIME_FORMAT.format((new java.util.Date())));
 		}
 	}
 	

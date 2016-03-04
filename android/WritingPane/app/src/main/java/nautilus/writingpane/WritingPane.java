@@ -1,6 +1,7 @@
 package nautilus.writingpane;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -34,6 +35,10 @@ public class WritingPane extends View {
 	private float mPreY;
 	private int mColor;
 	private boolean mClearScreen = false;
+
+	private boolean mDrawBitmap = false;
+	private Bitmap mBitmap = null;
+	private Canvas mCanvas = null;
 	
     public WritingPane(Context ctx) {
         super(ctx);
@@ -58,7 +63,7 @@ public class WritingPane extends View {
 		mPaint.setStrokeJoin(Paint.Join.ROUND);
 		mPaint.setStrokeWidth(STROKE_WIDTH * 2);
 	}
-	
+
 	@Override
 	protected void onMeasure(int widthSpec, int heightSpec) {
 		final int intrinsicSize = 100;
@@ -86,11 +91,44 @@ public class WritingPane extends View {
 		}
 		
 		setMeasuredDimension(width, height);
+
+		if(mBitmap != null) {
+			mBitmap.recycle();
+		}
+
+		mBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+		mCanvas = new Canvas(mBitmap);
+	}
+
+	/**
+	 * Draw this view to a bitmap and return it. The function takes time.
+	 * @return
+	 */
+	public Bitmap getBitmap() {
+		Bitmap result;
+		setDrawingCacheEnabled(true);
+		result = Bitmap.createBitmap(getDrawingCache());
+		setDrawingCacheEnabled(false);
+		return result;
 	}
 
 	public void clear() {
 		mClearScreen = true;
+		mDrawBitmap = false;
 		mPath.reset();
+		invalidate();
+	}
+
+	public void dispose() {
+		if(mBitmap != null) {
+			mBitmap.recycle();
+		}
+	}
+
+	public void drawBitmap(final Bitmap bmp) {
+		mClearScreen = true;
+		mDrawBitmap = true;
+		mCanvas.drawBitmap(mBitmap, 0, 0, mPaint);
 		invalidate();
 	}
 
@@ -98,6 +136,9 @@ public class WritingPane extends View {
     protected void onDraw(Canvas canvas) {
 		if(mClearScreen) {
 			canvas.drawColor(((ColorDrawable)getBackground()).getColor());
+			if(mDrawBitmap && (mBitmap != null)) {
+				canvas.drawBitmap(mBitmap, 0, 0, mPaint);
+			}
 			mClearScreen = false;
 		} else {
 			canvas.drawPath(mPath, mPaint);
@@ -159,10 +200,10 @@ public class WritingPane extends View {
 				return false;
 		}
 		invalidate(
-			(int) (mDirtyRect.left - HALF_STROKE_WIDTH),
-			(int) (mDirtyRect.top - HALF_STROKE_WIDTH),
-			(int) (mDirtyRect.right + HALF_STROKE_WIDTH),
-			(int) (mDirtyRect.bottom + HALF_STROKE_WIDTH));
+				(int) (mDirtyRect.left - HALF_STROKE_WIDTH),
+				(int) (mDirtyRect.top - HALF_STROKE_WIDTH),
+				(int) (mDirtyRect.right + HALF_STROKE_WIDTH),
+				(int) (mDirtyRect.bottom + HALF_STROKE_WIDTH));
 			
 		mPreX = eX;
 		mPreY = eY;
