@@ -397,6 +397,18 @@ public class GraphUtilites {
 		return grayImage;
 	}
 
+	public static void getImageData(final Bitmap inputImage,
+										double[] result) {
+		int inputH = inputImage.getHeight();
+		int inputW = inputImage.getWidth();
+		int y, x, c = 0;
+		for(y=0; y<inputH; y++) {
+			for(x=0; x<inputW; x++) {
+				result[c++] = 1.0 - inputImage.getPixel(x, y)/255.0;
+			}
+		}
+	}
+
 	public static Bitmap fixBackWhiteImage(final Bitmap inputImage, final Paint paint) {
 		int inputH = inputImage.getHeight();
 		int inputW = inputImage.getWidth();

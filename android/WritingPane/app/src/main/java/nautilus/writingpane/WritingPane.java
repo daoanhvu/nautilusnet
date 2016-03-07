@@ -128,7 +128,7 @@ public class WritingPane extends View {
 	public void drawBitmap(final Bitmap bmp) {
 		mClearScreen = true;
 		mDrawBitmap = true;
-		mCanvas.drawBitmap(mBitmap, 0, 0, mPaint);
+		mCanvas.drawBitmap(bmp, 0, 0, mPaint);
 		invalidate();
 	}
 

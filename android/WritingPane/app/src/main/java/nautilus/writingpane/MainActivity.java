@@ -114,11 +114,11 @@ public class MainActivity extends AppCompatActivity {
                             Bitmap image = writingPane.getBitmap();
                             Bitmap image2 = GraphUtilites.lowpassFilter(image);
                             Bitmap image3 = GraphUtilites.fixBackWhiteImage(image2, p);
-                            Bitmap image4 = GraphUtilites.resize(image3, MyApplication.SAMPLE_WIDTH, MyApplication.SAMPLE_HEIGHT);
+                            //Bitmap image4 = GraphUtilites.resize(image3, MyApplication.SAMPLE_WIDTH, MyApplication.SAMPLE_HEIGHT);
                             image.recycle();
                             image2.recycle();
-                            image3.recycle();
-                            msg.obj = image4;
+                            //image3.recycle();
+                            msg.obj = image3;
                             mHandler.sendMessage(msg);
                         }
                     });
