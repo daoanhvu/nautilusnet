@@ -55,6 +55,13 @@
             android:layout_weight="1.3"
             android:text="Clear"/>
 
+        <Button
+            android:id="@+id/btnOpenCamera"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.3"
+            android:text="Camera"/>
+
     </LinearLayout>
 
     <nautilus.writingpane.WritingPane

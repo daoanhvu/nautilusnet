@@ -76,4 +76,113 @@ public class MyApplication extends Application {
 		return mNetwork;
 	}
 
+    public static char getCharacter(int index) {
+        char result = 'a';
+        switch(index) {
+            case 0:
+                result = 'a';
+                break;
+
+            case 1:
+                result = 'b';
+                break;
+
+            case 2:
+                result = 'c';
+                break;
+
+            case 3:
+                result = 'd';
+                break;
+
+            case 4:
+                result = 'e';
+                break;
+
+            case 5:
+                result = 'f';
+                break;
+
+            case 6:
+                result = 'g';
+                break;
+
+            case 7:
+                result = 'h';
+                break;
+
+            case 8:
+                result = 'i';
+                break;
+
+            case 9:
+                result = 'j';
+                break;
+
+            case 10:
+                result = 'k';
+                break;
+
+            case 11:
+                result = 'l';
+                break;
+
+            case 12:
+                result = 'm';
+                break;
+
+            case 13:
+                result = 'n';
+                break;
+
+            case 14:
+                result = 'o';
+                break;
+
+            case 15:
+                result = 'p';
+                break;
+
+            case 16:
+                result = 'q';
+                break;
+
+            case 17:
+                result = 'r';
+                break;
+
+            case 18:
+                result = 's';
+                break;
+
+            case 19:
+                result = 't';
+                break;
+
+            case 20:
+                result = 'u';
+                break;
+
+            case 21:
+                result = 'v';
+                break;
+
+            case 22:
+                result = 'w';
+                break;
+
+            case 23:
+                result = 'x';
+                break;
+
+            case 24:
+                result = 'y';
+                break;
+
+            case 25:
+                result = 'z';
+                break;
+        }
+        return result;
+    }
 }

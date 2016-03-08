@@ -1,5 +1,7 @@
 package nautilus.writingpane;
 
+import android.app.Application;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.os.Handler;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     CheckBox chkLearn;
     private Button btnClear;
     private Button btnProcess;
+    Button btnOpenCamera;
     MyHandler mHandler;
 
     static class MyHandler extends Handler {
@@ -42,9 +45,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
 
                 case MSG_RECOGNITE_DONE:
-                    bmp = (Bitmap)msg.obj;
-                    mContext.updateImage(bmp);
-                    bmp.recycle();
+                    mContext.setResult((Result)msg.obj);
                     mContext.btnProcess.setEnabled(true);
                     break;
 
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         btnProcess.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                NautilusNet mTheNet = MyApplication.instance.getANN();
+                final NautilusNet mTheNet = MyApplication.instance.getANN();
                 btnProcess.setEnabled(false);
                 if(chkLearn.isChecked()) {
                     //learn
@@ -114,25 +115,53 @@ public class MainActivity extends AppCompatActivity {
                             Bitmap image = writingPane.getBitmap();
                             Bitmap image2 = GraphUtilites.lowpassFilter(image);
                             Bitmap image3 = GraphUtilites.fixBackWhiteImage(image2, p);
-                            //Bitmap image4 = GraphUtilites.resize(image3, MyApplication.SAMPLE_WIDTH, MyApplication.SAMPLE_HEIGHT);
+                            Bitmap image4 = GraphUtilites.resize(image3, MyApplication.SAMPLE_WIDTH, MyApplication.SAMPLE_HEIGHT);
                             image.recycle();
                             image2.recycle();
-                            //image3.recycle();
-                            msg.obj = image3;
+                            image3.recycle();
+                            GraphUtilites.getImageData(image4, data);
+                            image4.recycle();
+                            mTheNet.setInput(data);
+                            mTheNet.forward();
+                            int idx = mTheNet.getResultIndex();
+                            result.character = MyApplication.getCharacter(idx);
+                            msg.obj = result;
                             mHandler.sendMessage(msg);
                         }
                     });
                     thread.start();
+
+//                    Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+//                    startActivity(intent);
+
                 }
             }
         });
 
+        btnOpenCamera = (Button)(Button)findViewById(R.id.btnOpenCamera);
+        btnOpenCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
+                startActivity(intent);
+            }
+        });
         mHandler = new MyHandler(this);
     }
 
-
+    final double[] data = new double[MyApplication.SAMPLE_HEIGHT * MyApplication.SAMPLE_WIDTH];
+    final Result result = new Result();
 
     void updateImage(Bitmap bmp) {
         writingPane.drawBitmap(bmp);
+    }
+
+    void setResult(Result result) {
+        tvResult.setText("" + result.character);
+    }
+
+    static class Result {
+        char character;
+        double error;
     }
 }
