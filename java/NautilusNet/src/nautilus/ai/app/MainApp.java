@@ -23,7 +23,9 @@ public class MainApp {
 	
 	public static void main(String[] agrs) {
 		//Load configurations
-//		Application.getInstance();
+		Application.getInstance();
+		
+//		System.out.println("Result: " + ( 0.1 + 0.2));
 	
 		runUIApp();
 //		moveData();
