@@ -2,10 +2,13 @@
 #define _NAUTILUSNET_H
 
 #include <cstddef>
+#include "fmat.hpp"
+
+using namespace gm;
 
 typedef struct tagLayer {
 	int layerSize;
-	double **weights;
+	FMat<double> *weight;
 	double *a;
 } Layer;
 

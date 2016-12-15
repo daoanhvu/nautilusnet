@@ -7,6 +7,8 @@
 #include "vec.hpp"
 #ifdef _WIN32
 #include <memory.h>
+#else
+#include <cstring>
 #endif
 
 using namespace std;
@@ -15,16 +17,19 @@ namespace gm {
 	template <typename T>
 	struct FMat {
 	private:
-		//Column-major
-		Vec<T> *data;
+		Vec<T> **data;
 		int row;
 		int column;
+		
+		int logRow;
 
 	public:
 		FMat() {
-			m = NULL;
+			data = NULL;
+			logRow = row = column = 0;
 		}
 
+		/*
 		FMat(int r, int col, T **value) {
             data = new Vec<T>[r];
             for(int i=0; i<r; i++) {
@@ -33,23 +38,41 @@ namespace gm {
 			row = r;
 			column = col;
 		}
+		*/
         
-        FMat(int r, int col, T *value) {
-			data = new Vec<T>[r];
+        FMat(int r, int col) {
+			data = new Vec<T>*[r];
             for(int i=0; i<r; i++) {
-                data[i].set(value+(i*col), col);
+                data[i] = new Vec<T>(col);
+            }
+			row = r;
+			column = col;
+		}
+		
+		FMat(int r, int col, T *value) {
+			data = new Vec<T>*[r];
+            for(int i=0; i<r; i++) {
+                data[i] = new Vec<T>(value+(i*col), col);
             }
 			row = r;
 			column = col;
 		}
 
-		~FMat() {}
+		~FMat() {
+			if(data != NULL) {
+				for(int i=0; i<row; i++) {
+					delete data[i];
+				}
+				//cout << "FMat-Destructor: data address:" << (void*)data << endl;
+				delete data;
+			}
+		}
 		
-		friend ostream& operator <<(ostream &o, FMat &m) {
+		friend ostream& operator <<(ostream &o, const FMat &m) {
 			int i, j;
 			for(i=0; i<m.row; i++) {
 				for(j=0; j<m.column; j++) {
-					o << m.data[i][j] << " \t";
+					o << (*(m.data[i]))[j] << " \t";
 				}
 				o << "\n";
 			}
@@ -63,20 +86,20 @@ namespace gm {
 				for(j=0; j<column; j++) {
                     data[i][j] = (T)0;
 					if(i==j) 
-                        data[i][j] = (T)1;
+                        (*(data[i]))[j] = (T)1;
 				}
 			}
 		}
 
 		Vec<T>& operator [](int index)	{ 
-			return data[index];
+			return *(data[index]);
 		}
 
-		FMat<T>& operator =(FMat<T> const &m1) {
+		FMat<T>& operator =(const FMat<T> &m1) {
 			//memcpy could be faster
 			int i;
 			for(i=0; i<row; i++) {
-				memcpy(&data[i], &m1.data[i], column * sizeof(T));
+				data[i]->copyFrom(m1.data[i]);
 			}
 			return *this;
 		}
