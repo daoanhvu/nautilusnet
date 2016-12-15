@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <cstddef>
 #include <iostream>
+#include "vec.hpp"
 #ifdef _WIN32
 #include <memory.h>
 #endif
@@ -15,7 +16,7 @@ namespace gm {
 	struct FMat {
 	private:
 		//Column-major
-		T **m;
+		Vec<T> *data;
 		int row;
 		int column;
 
@@ -25,7 +26,19 @@ namespace gm {
 		}
 
 		FMat(int r, int col, T **value) {
-			m = value;
+            data = new Vec<T>[r];
+            for(int i=0; i<r; i++) {
+                data[i].set(value[i], col);
+            }
+			row = r;
+			column = col;
+		}
+        
+        FMat(int r, int col, T *value) {
+			data = new Vec<T>[r];
+            for(int i=0; i<r; i++) {
+                data[i].set(value+(i*col), col);
+            }
 			row = r;
 			column = col;
 		}
@@ -36,7 +49,7 @@ namespace gm {
 			int i, j;
 			for(i=0; i<m.row; i++) {
 				for(j=0; j<m.column; j++) {
-					o << m.m[i][j] << " \t";
+					o << m.data[i][j] << " \t";
 				}
 				o << "\n";
 			}
@@ -48,33 +61,32 @@ namespace gm {
 			int i, j;
 			for(i=0; i<row; i++) {
 				for(j=0; j<column; j++) {
-					if(i==j) m[i][j] = (T)0;
+                    data[i][j] = (T)0;
+					if(i==j) 
+                        data[i][j] = (T)1;
 				}
 			}
 		}
 
-		FMat<T>& operator [](int index)	{ 
-			return ( new FMat<T>(&m[index]) );
-		}
-		
-		T get(int idx1, int idx2)	{ 
-			return m[idx1][idx2];
+		Vec<T>& operator [](int index)	{ 
+			return data[index];
 		}
 
 		FMat<T>& operator =(FMat<T> const &m1) {
 			//memcpy could be faster
 			int i;
 			for(i=0; i<row; i++) {
-				memcpy(&m[i], &m1.m[i], column * sizeof(T));
+				memcpy(&data[i], &m1.data[i], column * sizeof(T));
 			}
 			return *this;
 		}
 
-		FMat<T> operator *(FMat<T> &m2) {
-			FMat<T> result = new FMat<T>();
-			int i, j;
-			for(i=0; i<row; i++) {
-				for(j=0; j<column; j++) {
+		FMat<T>& operator *(const FMat<T> &m2) {
+			FMat<T> *result = new FMat<T>();
+			int r, c, i, j;
+			for(r=0; r<row; r++) {
+                
+				for(c=0; c<m2.column; c++) {
 				}
 			}
 			
