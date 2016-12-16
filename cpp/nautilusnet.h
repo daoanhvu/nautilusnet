@@ -31,10 +31,10 @@ class NautilusNet {
 		}
 		
 		void setInputOutput(const double *inputs, const double* ouputs);
-		void forward(const double **x, double *y, double lambda);
+		void forward(const double *x, const double *y, double lambda);
 		void backward();
         double sigmoid(double);
-        void costFunction(double **x, double *y, double lambda, double J, double *grad, int &gradSize);
+        void costFunction(const double **x, int m, double *y, double lambda, double J, double *grad, int &gradSize);
 		
 };
 

@@ -68,6 +68,21 @@ namespace gm {
 			}
 		}
 		
+		void init(int r, int col) {
+			data = new Vec<T>*[r];
+            for(int i=0; i<r; i++) {
+                data[i] = new Vec<T>(col);
+            }
+			row = r;
+			column = col;
+		}
+		
+		void setValueToColumn(int col, T value) {
+            for(int i=0; i<row; i++) {
+                (*(data[i]))[0] = value;
+            }
+		}
+		
 		friend ostream& operator <<(ostream &o, const FMat &m) {
 			int i, j;
 			for(i=0; i<m.row; i++) {
@@ -79,6 +94,16 @@ namespace gm {
 			
 			return o;
 		}
+		
+		void mulToTranspose(const FMat<T> &m2, FMat<T> &result) {
+			int i, j;
+			result.init(column, row);
+			for(i=0; i<column; i++) {
+				for(j=0; j<row; j++) {
+					(*(result.operator[](i)))[j] = data[j]->operator[](i);
+				}
+			}
+		}
 
 		void setIdentity() {
 			int i, j;
@@ -89,6 +114,17 @@ namespace gm {
                         (*(data[i]))[j] = (T)1;
 				}
 			}
+		}
+		
+		FMat<T>* transpose() {
+			int i, j;
+			FMat<T> *t = new FMat<T>(column, row);
+			for(i=0; i<column; i++) {
+				for(j=0; j<row; j++) {
+					(*(t->operator[](i)))[j] = data[j]->operator[](i);
+				}
+			}
+			return t;
 		}
 
 		Vec<T>& operator [](int index)	{ 
@@ -112,6 +148,13 @@ namespace gm {
 				for(c=0; c<m2.column; c++) {
 				}
 			}
+			
+			return result;
+		}
+		
+		friend Vec<T> operator*(const Vec<T> &v, const FMat<T> &m2) {
+			Vec<T> *result = NULL;
+			
 			
 			return result;
 		}

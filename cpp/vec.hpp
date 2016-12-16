@@ -12,30 +12,30 @@ namespace gm {
 	struct Vec {
 	private:
 		T *data;
-		int size;
+		int length;
         
 	public:
 
 		Vec<T>() {
 			data = NULL;
-            size = 0;
+            length = 0;
 		}
 		
 		Vec<T>(int s) {
             data = new T[s];
-            size = s;
+            length = s;
 		}
         
         Vec<T>(const Vec<T> &v) {
-            data = new T[v.size];
-            memcpy(data, v.data, v.size * sizeof(T));
-            size = v.size;
+            data = new T[v.length];
+            memcpy(data, v.data, v.length * sizeof(T));
+            length = v.length;
         }
 
 		Vec<T>(T *d, int s) {
             data = new T[s];
 			memcpy(data, d, s * sizeof(T));
-            size = s;
+            length = s;
 		}
         
         ~Vec() {
@@ -47,26 +47,26 @@ namespace gm {
         }
 		
 		void copyFrom(const Vec<T> &v) {
-			if((data != NULL) && (size != v.size)){
+			if((data != NULL) && (length != v.length)){
                 delete data;
-                data = new T[v.size];
+                data = new T[v.length];
             }
 			if(data == NULL)
-				data = new T[v.size];
-            memcpy(data, v.data, v.size * sizeof(T));
-            size = v.size;
+				data = new T[v.length];
+            memcpy(data, v.data, v.length * sizeof(T));
+            length = v.length;
 		}
 		
 		void release() {
             if(data != NULL) {
                 delete data;
 				data = NULL;
-				size = 0;
+				length = 0;
 			}
         }
         
         void set(T *d, int s) {
-            if((data != NULL) && (size != s)){          
+            if((data != NULL) && (length != s)){          
 				cout << "Realloc data array " << endl;
                 delete data;
                 data = new T[s];
@@ -79,15 +79,19 @@ namespace gm {
 			
             memcpy(data, d, s * sizeof(T));
 			cout << "Address data array after copying " << (void*)data << endl;
-            size = s;
+            length = s;
         }
 
 		friend ostream& operator <<(ostream &o, const Vec<T> &v) {
-			for(int i=0; i<v.size; i++) {
+			for(int i=0; i<v.length; i++) {
                 o << v.data[i] << " ";
             }
             o << endl;
 			return o;
+		}
+		
+		int size() {
+			return length;
 		}
 
 		T operator [](int index)	{ return data[index]; }
@@ -95,31 +99,31 @@ namespace gm {
 		Vec<T>& operator =(const Vec<T> &v) {
 			//memcpy could be faster
             if(data != NULL) {
-                if(size != v.size) {
+                if(length != v.length) {
                     delete data;
-                    data = new T[v.size];
+                    data = new T[v.length];
                 }
             }
             
-			memcpy(data, v.data, v.size * sizeof(T));
-            size = v.size;
+			memcpy(data, v.data, v.length * sizeof(T));
+            length = v.length;
 			return *this;
 		}
         
         void plus(const Vec<T> &v) {
-            for(int i=0; i<size; i++) {
+            for(int i=0; i<length; i++) {
                 data[i] += v.data[i];
             }
         }
         
         void plus(T v) {
-            for(int i=0; i<size; i++) {
+            for(int i=0; i<length; i++) {
                 data[i] += v;
             }
         }
         
         void mul(T v) {
-            for(int i=0; i<size; i++) {
+            for(int i=0; i<length; i++) {
                 data[i] *= v;
             }
         }
@@ -156,7 +160,7 @@ namespace gm {
 		//}
 
 		Vec<T>& operator /=(T a) {
-			for(int i=0; i<size; i++) {
+			for(int i=0; i<length; i++) {
 				data[i] /= a;
 			}
 			return *this;
