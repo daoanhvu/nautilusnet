@@ -2,7 +2,7 @@
 #include "nautilusnet.h"
 #include "fmat.hpp"
 
-using namespace gm;
+//using namespace gm;
 using namespace std;
 
 int main(int argc, char **args) {

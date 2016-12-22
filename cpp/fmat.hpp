@@ -49,7 +49,7 @@ namespace gm {
 			column = col;
 		}
 		
-		FMat(int r, int col, T *value) {
+		FMat(T *value, int r, int col) {
 			data = new Vec<T>*[r];
             for(int i=0; i<r; i++) {
                 data[i] = new Vec<T>(value+(i*col), col);
@@ -127,7 +127,7 @@ namespace gm {
 			return t;
 		}
 
-		Vec<T>& operator [](int index)	{ 
+		Vec<T>& operator [](int index) { 
 			return *(data[index]);
 		}
 
@@ -140,11 +140,10 @@ namespace gm {
 			return *this;
 		}
 
-		FMat<T>& operator *(const FMat<T> &m2) {
-			FMat<T> *result = new FMat<T>();
+		FMat<T> operator *(const FMat<T> &m2) {
+			FMat<T> result;
 			int r, c, i, j;
 			for(r=0; r<row; r++) {
-                
 				for(c=0; c<m2.column; c++) {
 				}
 			}
@@ -152,9 +151,37 @@ namespace gm {
 			return result;
 		}
 		
-		friend Vec<T> operator*(const Vec<T> &v, const FMat<T> &m2) {
-			Vec<T> *result = NULL;
+		Vec<T> operator *(const Vec<T> &v) {
+			int i, j, k;
+			int size = v.size();
+			T s;
+			Vec<T> result(row);
 			
+			for(i=0; i<row; i++) {
+				s = (T)0;
+				for(j=0; j<size; j++) {
+					s += data[i]->operator[](j) * v[j];
+				}
+				result.setAt(s, i);
+			}
+			
+			return result;
+		}
+		
+		friend Vec<T> operator*(const Vec<T> &v, const FMat<T> &m2) {
+			int col = m2.column;
+			int l = v.size();
+			Vec<T> result(col);
+			T s;
+			int i, j, k;
+			
+			for(i=0; i<col; i++) {
+				s = (T)0;
+				for(j=0; j<l; j++) {
+					s += v[j] * m2.data[i]->operator[](j);
+				}
+				result.setAt(s, i);
+			}
 			
 			return result;
 		}

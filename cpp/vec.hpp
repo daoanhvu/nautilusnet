@@ -24,9 +24,11 @@ namespace gm {
 		Vec<T>(int s) {
             data = new T[s];
             length = s;
+			cout << "Vec-Constructor: data addressed at " << (void*)data << endl;
 		}
         
         Vec<T>(const Vec<T> &v) {
+			cout << "Vec: Copy constructor has been called " << endl;
             data = new T[v.length];
             memcpy(data, v.data, v.length * sizeof(T));
             length = v.length;
@@ -81,6 +83,10 @@ namespace gm {
 			cout << "Address data array after copying " << (void*)data << endl;
             length = s;
         }
+		
+		void setAt(T v, int pos) {
+            data[pos] = v;
+        }
 
 		friend ostream& operator <<(ostream &o, const Vec<T> &v) {
 			for(int i=0; i<v.length; i++) {
@@ -90,21 +96,26 @@ namespace gm {
 			return o;
 		}
 		
-		int size() {
+		int size() const {
 			return length;
 		}
 
-		T operator [](int index)	{ return data[index]; }
+		T operator [](int index) const	{ return data[index]; }
 
 		Vec<T>& operator =(const Vec<T> &v) {
+			
+			cout << "Operator assignment has been called!" << endl;
+			
 			//memcpy could be faster
             if(data != NULL) {
                 if(length != v.length) {
                     delete data;
                     data = new T[v.length];
                 }
-            }
-            
+            } else {
+				data = new T[v.length];
+			}
+			
 			memcpy(data, v.data, v.length * sizeof(T));
             length = v.length;
 			return *this;
