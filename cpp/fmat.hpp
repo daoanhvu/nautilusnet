@@ -134,6 +134,15 @@ namespace gm {
 		FMat<T>& operator =(const FMat<T> &m1) {
 			//memcpy could be faster
 			int i;
+			row = m1.row;
+			column = m1.column;
+			if(data == NULL) {
+				data = new Vec<T>*[m1.row];
+				for(i=0; i<row; i++) {
+					data[i] = new Vec<T>(column);
+				}
+			}
+			
 			for(i=0; i<row; i++) {
 				data[i]->copyFrom(m1.data[i]);
 			}
