@@ -3,6 +3,10 @@ AR=ar
 CFLAGS=-I./
 SRC=mainapp.cpp nautilusnet.cpp
 
+clean_files:
+	rm testm.exe
+	rm mainapp.exe
+	
 all: mainapp.exe
 
 mainapp.exe:

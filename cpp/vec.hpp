@@ -67,7 +67,7 @@ namespace gm {
 			}
         }
         
-        void set(T *d, int s) {
+        void set(const T *d, int s) {
             if((data != NULL) && (length != s)){          
 				cout << "Realloc data array " << endl;
                 delete data;
@@ -82,6 +82,21 @@ namespace gm {
             memcpy(data, d, s * sizeof(T));
 			cout << "Address data array after copying " << (void*)data << endl;
             length = s;
+        }
+		
+		void setValues(const T *d, int s, int offs = 0) {
+            if(data == NULL) {
+				throw "vector's data is NULL";
+			}
+			
+			if( length < (s + offs) ){
+				//cout << "Realloc data array " << endl;
+				throw "index out of bound.";
+                //delete data;
+                //data = new T[s];
+            }
+			
+            memcpy(data + offs, d, s * sizeof(T));
         }
 		
 		void setAt(T v, int pos) {

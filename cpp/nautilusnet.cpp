@@ -24,7 +24,8 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	//input layer
 	layer[0].layerSize = inputSize;
 	layer[0].weight = NULL; //Input layer has no weights
-	layer[0].a = new Vec<double>(inputSize);
+	layer[0].a = new Vec<double>(inputSize + 1);
+	layer[0].a->setAt(1.0, 0);
 	
 	//hidden layers
 	for(l=1; l<L-1; l++) {
@@ -34,7 +35,8 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 		//Number of row of matrix weight is this layerSize
 		//Number of column of matrix weight is preSize
 		layer[l].weight = new FMat<double>(hiddenSize, preSize + 1); //plus 1 for bias
-		layer[l].a = new Vec<double>(hiddenSize);
+		layer[l].a = new Vec<double>(hiddenSize + 1);
+		layer[l].a->setAt(1.0, 0);
 	}
 	
 	//output layer
@@ -75,11 +77,14 @@ void NautilusNet::forward(const double *x, const double *y, double lambda) {
 	Vec<double> z;
 	int size;
 	
+	//Set input data to the input layer
+	// Start from 1, because we hold bias at 0
+	layer[0].a->setValues(x, 1);
+	
 	for(l=1; l<L-1; l++) {
 		z = *(layer[l].weight) * (*(layer[l].a));
 		size = z.size();
 		for(i=0; i<size; i++) {
-			//a[i] = sigmoid(a[i]);
 			layer[l+1].a->setAt((1.0/(1.0 + exp(z[i]))), i);
 		}
 	}
