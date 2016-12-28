@@ -24,11 +24,11 @@ namespace gm {
 		Vec<T>(int s) {
             data = new T[s];
             length = s;
-			cout << "Vec-Constructor: data addressed at " << (void*)data << endl;
+			//cout << "Vec-Constructor: data addressed at " << (void*)data << endl;
 		}
         
         Vec<T>(const Vec<T> &v) {
-			cout << "Vec: Copy constructor has been called " << endl;
+			//cout << "Vec: Copy constructor has been called " << endl;
             data = new T[v.length];
             memcpy(data, v.data, v.length * sizeof(T));
             length = v.length;
@@ -41,7 +41,7 @@ namespace gm {
 		}
         
         ~Vec() {
-			cout << "Vec-Destructor " << (void*)data << endl;
+			//cout << "Vec-Destructor " << (void*)data << endl;
             if(data != NULL) {
                 delete data;
 				data = NULL;
@@ -69,18 +69,18 @@ namespace gm {
         
         void set(const T *d, int s) {
             if((data != NULL) && (length != s)){          
-				cout << "Realloc data array " << endl;
+				//cout << "Realloc data array " << endl;
                 delete data;
                 data = new T[s];
             }
 			
 			if(data == NULL) {
 				data = new T[s];
-				cout << "New data array at " << (void*)data << endl;
+				//cout << "New data array at " << (void*)data << endl;
 			}
 			
             memcpy(data, d, s * sizeof(T));
-			cout << "Address data array after copying " << (void*)data << endl;
+			//cout << "Address data array after copying " << (void*)data << endl;
             length = s;
         }
 		
@@ -118,9 +118,7 @@ namespace gm {
 		T operator [](int index) const	{ return data[index]; }
 
 		Vec<T>& operator =(const Vec<T> &v) {
-			
-			cout << "Operator assignment has been called!" << endl;
-			
+			//cout << "Operator assignment has been called!" << endl;
 			//memcpy could be faster
             if(data != NULL) {
                 if(length != v.length) {

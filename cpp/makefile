@@ -10,7 +10,7 @@ clean_files:
 all: mainapp.exe
 
 mainapp.exe:
-	$(CC) $(SRC) $(CFLAGS) -DDEBUG -o mainapp.exe
+	$(CC) $(SRC) $(CFLAGS) -g -DDEBUG -o mainapp.exe
 	
 testm.exe:
 	$(CC) testm.cpp $(CFLAGS) -DDEBUG -o testm.exe

@@ -71,11 +71,26 @@ NautilusNet::~NautilusNet() {
 void NautilusNet::setInputOutput(const double *inputs, const double* ouputs) {
 }
 
-void NautilusNet::forward(const double *x, const double *y, double lambda) {
+void NautilusNet::setWeights(int idx, const double *w) {
+	Layer *l = (Layer*) (layer + (idx + 1));
+	int size = l->layerSize;
+	
+	layer[idx+1].weight->setValues(w);
+}
+
+/**
+	This method returns the error value of the forward circle.
+	Params:
+		x input vertor
+		y this is the target vector has size number-of-class that is the 'right' class of input x,
+		if this is target k-th then y[k] = 1.0 otherwise y[k] = 0
+*/
+double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	int l, i;
 	
 	Vec<double> z;
 	int size;
+	double j = 0;
 	
 	//Set input data to the input layer
 	// Start from 1, because we hold bias at 0
@@ -88,6 +103,14 @@ void NautilusNet::forward(const double *x, const double *y, double lambda) {
 			layer[l+1].a->setAt((1.0/(1.0 + exp(z[i]))), i);
 		}
 	}
+	
+	Layer *last = (Layer*) (layer + (L-1));
+	size = last->layerSize;
+	for(i=0; i<size; i++) {
+		j += -y[i]*log(last->a->operator[](i)) - (1.0-y[i]) * log(1.0-(last->a->operator[](i)));
+	}
+	
+	return j;
 }
 
 void NautilusNet::backward() {

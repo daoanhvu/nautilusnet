@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <stdlib.h>
 #include "fmat.hpp"
 
 using namespace gm;
@@ -21,11 +23,14 @@ void testMatrix() {
 	cout << t << endl;
 }
 
-void testReadFile() {
-	ifstream f("D:/data/coursera_X.data", ios::binary);
+void testReadFile(int argc, char **args) {
+	ifstream f("/cygdrive/d/data/coursera_X.data", ios::binary);
+	
+	int index = (int)strtol(args[1], NULL, 10);
 	
 	int m, i, j;
 	int ftSize;
+	double tmp;
 	double X[400];
 	
 	f.read((char*)&m, sizeof(int));
@@ -35,19 +40,21 @@ void testReadFile() {
 	
 	for(i=0; i<1; i++) {
 		for(j=0; j<ftSize; j++) {
-			f.read((char*)X+j, sizeof(double));
+			//f.read((char*)&tmp, sizeof(double));
+			//X[j] = tmp;
+			f.read((char*)&X[j], sizeof(double));
 			//cout << "X[" << j <<"]: " << X[j] << endl;
 		}
 	}
 	
-	cout << "X[70]" << X[70] << endl;
+	cout << "X["<< index <<"] = " << X[index] << endl;
 	
 	f.close();
 }
 
 int main(int argc, char **args) {
 	
-	testReadFile();
+	testReadFile(argc, args);
 	
 	return 0;
 }

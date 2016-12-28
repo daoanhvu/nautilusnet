@@ -83,6 +83,16 @@ namespace gm {
             }
 		}
 		
+		void setValues(const T *d) {
+            if(data == NULL) {
+				throw "matrix's data is NULL";
+			}
+			
+			for(int i=0; i<row; i++) {
+				data[i]->setValues(d + (i*column), column, 0);
+			}
+        }
+		
 		friend ostream& operator <<(ostream &o, const FMat &m) {
 			int i, j;
 			for(i=0; i<m.row; i++) {

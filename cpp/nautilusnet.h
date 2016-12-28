@@ -36,8 +36,13 @@ class NautilusNet {
 			return L;
 		}
 		
+		/**
+			set weights to the net at the middle of layer idx and (idx + 1)
+		*/
+		void setWeights(int idx, const double *w);
+		
 		void setInputOutput(const double *inputs, const double* ouputs);
-		void forward(const double *x, const double *y, double lambda);
+		double forward(const double *x, const double *y, double lambda);
 		void backward();
         double sigmoid(double);
         double costFunction(const double **x, int m, double *y, double lambda, double *grad, int &gradSize);
