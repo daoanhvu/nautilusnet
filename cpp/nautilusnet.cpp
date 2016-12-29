@@ -74,8 +74,7 @@ void NautilusNet::setInputOutput(const double *inputs, const double* ouputs) {
 void NautilusNet::setWeights(int idx, const double *w) {
 	Layer *l = (Layer*) (layer + (idx + 1));
 	int size = l->layerSize;
-	
-	layer[idx+1].weight->setValues(w);
+	l->weight->setValues(w);
 }
 
 /**
@@ -101,7 +100,7 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		z = *(layer[l].weight) * (*(layer[l-1].a));
 		size = z.size();
 		for(i=0; i<size; i++) {
-			layer[l].a->setAt((1.0/(1.0 + exp(z[i]))), i);
+			layer[l].a->setAt((1.0/(1.0 + exp(-z[i]))), i);
 		}
 	}
 	
@@ -120,7 +119,7 @@ void NautilusNet::backward() {
 }
 
 double NautilusNet::sigmoid(double z) {
-    return (1.0/(1.0 + exp(z)));
+    return (1.0/(1.0 + exp(-z)));
 }
 
 /**
