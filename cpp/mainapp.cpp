@@ -25,6 +25,9 @@ int readInputByIndex(int index, const char *filename, int ftSize, double *X, dou
 	
 	for(i=0; i<ftSize; i++) {
 		f.read((char*)&(X[i]), sizeof(double));
+		if(i==123) {
+			cout << "x[123]" << X[i] << endl;
+		}
 	}
 	f.read((char*)&tmp, sizeof(char));
 	y = (double)tmp;
@@ -56,9 +59,40 @@ int readTheta(int layer_index, const char *filename, int &row, int &col, double 
 	return 1;
 }
 
-
-
 int main(int argc, char **args) {
+	double X[4] = {0.0, 1.3, 1.5, 1.0};
+	double y[1] = {1};
+	double theta1[] = {0.01, 0.015, 0.3, 0.5, 0.1,
+                0.18, 0.06, 0.1, 0.25, 0.71,
+                0.14, 0.05, 0.23, 0.39, 0.2,
+                0.21, 0.18, 0.54, 0.4, 0.21,
+                0.17, 0.11, 0.87, 0.2, 0.09};
+	double theta2[] = {0.23, 0.18, 0.4, 0.74, 0.12, 0.35,
+                0.66, 0.27, 0.54, 0.4, 0.21, 0.5};
+	double t[2];
+	double error = 0.0;
+	NautilusNet *aNet;
+	const int number_of_labels = 2;
+	
+	aNet = new NautilusNet(3, 4, 5, number_of_labels);
+	aNet->setWeights(0, theta1);
+	aNet->setWeights(1, theta2);
+	
+	for(int i=0; i<number_of_labels; i++) {
+		t[i] = 0.0;
+		if( i==(int)y[0]) {
+			t[i] = 1.0;
+		}
+	}
+	error = aNet->forward(X, t, 0.0);	
+	cout << "error = " << error << endl;
+	
+	delete aNet;
+	
+	return 0;
+}
+
+int testNIMS(int argc, char **args) {
 	
 	if(argc <= 1) {
 		cout << "Not enough parameters." << endl;
@@ -120,11 +154,19 @@ int main(int argc, char **args) {
 	aNet->setWeights(0, theta1);
 	aNet->setWeights(1, theta2);
 	
+	//Test the first training example
+	m = 1;
+	
 	k = 0;
 	while( k<m ) {
 		if(readInputByIndex(k, "/cygdrive/d/data/coursera_data.data", ftSize, X, y)) {
-			//cout << "Address data array after function read " << (void*)&X << endl;
-			//cout << "Number of size: " << ftSize << "; value X[70]: " << X[70] << "; digit: " << y << endl;	
+			
+			cout << "X[69]: " << X[69] << "; should be -0.00074 " << endl;
+			cout << "X[70]: " << X[70] << "; should be -0.00813 " << endl;
+			cout << "X[71]: " << X[71] << "; should be -0.01861 " << endl;
+			cout << "X[123]: " << X[123] << "; should be 0.00001 " << endl;
+			cout << "X[124]: " << X[124] << "; should be 0.00044 " << endl;
+			
 			for(i=0; i<number_output_class; i++) {
 				t[i] = 0.0;
 				if( (i+1)==(int)y) {

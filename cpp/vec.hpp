@@ -97,11 +97,27 @@ namespace gm {
             }
 			
             memcpy(data + offs, d, s * sizeof(T));
+			
+			/*
+			int c = 0;
+			while(c<s) {
+				data[offs+c] = d[c++];
+			}
+			*/
         }
 		
 		void setAt(T v, int pos) {
             data[pos] = v;
         }
+		
+		ostream& print(ostream &o) {
+			o <<"Vector: Size = " << length << endl;
+			for(int i=0; i<length; i++) {
+                o << data[i] << " ";
+            }
+            o << endl;
+			return o;
+		}
 
 		friend ostream& operator <<(ostream &o, const Vec<T> &v) {
 			for(int i=0; i<v.length; i++) {

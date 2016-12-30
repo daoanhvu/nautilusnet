@@ -94,24 +94,31 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	
 	//Set input data to the input layer
 	// Start from 1, because we hold bias at 0
-	layer[0].a->setValues(x, 1);
+	layer[0].a->setValues(x, 4, 1);
 	
 	for(l=1; l<L; l++) {
+		(layer[l].weight->transpose()).print(cout);
+		layer[l-1].a->print(cout);
 		z = *(layer[l].weight) * (*(layer[l-1].a));
+		//z =  (*(layer[l-1].a)) * (layer[l].weight)->transpose();
+		cout << " Result: " << endl;
+		z.print(cout);
+		cout << "===================" << endl;
 		size = z.size();
 		for(i=0; i<size; i++) {
-			layer[l].a->setAt((1.0/(1.0 + exp(-z[i]))), i);
+			layer[l].a->setAt((1.0/(1.0 + exp(-z[i]))), i+1);
 		}
+		//cout << "vector a layer: " << l;
+		//(layer[l].a)->print(cout);
 	}
-	
+
 	Layer *last = (Layer*) (layer + (L-1));
 	size = last->layerSize;
+	cout << "last layer size: " << size << endl;
 	for(i=0; i<size; i++) {
 		tmp = last->a->operator[](i);
-		//cout << "Temp error: " << tmp << endl;
 		j += -y[i]*log(tmp) - (1.0-y[i]) * log(1.0-tmp);
 	}
-	
 	return j;
 }
 

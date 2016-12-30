@@ -39,6 +39,16 @@ namespace gm {
 			column = col;
 		}
 		*/
+		
+		FMat(FMat<T> &m) {
+			cout << "Copying constructor" << endl;
+            data = new Vec<T>*[m.row];
+            for(int i=0; i<m.row; i++) {
+                data[i] = new Vec<T>(m[i]);
+            }
+			row = m.row;
+			column = m.column;
+		}
         
         FMat(int r, int col) {
 			data = new Vec<T>*[r];
@@ -59,11 +69,12 @@ namespace gm {
 		}
 
 		~FMat() {
+			//cout << "FMat-Destructor: started - data address:" << (void*)data << endl;
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
 					delete data[i];
 				}
-				//cout << "FMat-Destructor: data address:" << (void*)data << endl;
+				//cout << "FMat-Destructor: end " << endl;
 				delete data;
 			}
 		}
@@ -92,6 +103,15 @@ namespace gm {
 				data[i]->setValues(d + (i*column), column, 0);
 			}
         }
+		
+		ostream& print(ostream &o) {
+			int i, j;
+			for(i=0; i<row; i++) {
+				o << *(data[i]) << " ";
+			}
+			
+			return o;
+		}
 		
 		friend ostream& operator <<(ostream &o, const FMat &m) {
 			int i, j;
@@ -126,12 +146,13 @@ namespace gm {
 			}
 		}
 		
-		FMat<T>* transpose() {
+		FMat<T> transpose() {
 			int i, j;
-			FMat<T> *t = new FMat<T>(column, row);
+			FMat<T> t(column, row);
 			for(i=0; i<column; i++) {
 				for(j=0; j<row; j++) {
-					(*(t->operator[](i)))[j] = data[j]->operator[](i);
+					t.operator[](i).setAt(data[j]->operator[](i), j);
+					//(*(t.operator[](i)))[j] = data[j]->operator[](i);
 				}
 			}
 			return t;
@@ -143,6 +164,7 @@ namespace gm {
 
 		FMat<T>& operator =(const FMat<T> &m1) {
 			//memcpy could be faster
+			//cout << "Copy operator matrix" << endl;
 			int i;
 			row = m1.row;
 			column = m1.column;
@@ -190,14 +212,19 @@ namespace gm {
 		friend Vec<T> operator*(const Vec<T> &v, const FMat<T> &m2) {
 			int col = m2.column;
 			int l = v.size();
+			
+			if(l != m2.row) {
+				throw "Vec * FMat: Operands are not match!";
+			}
+			
 			Vec<T> result(col);
 			T s;
-			int i, j, k;
+			int i, j;
 			
 			for(i=0; i<col; i++) {
 				s = (T)0;
 				for(j=0; j<l; j++) {
-					s += v[j] * m2.data[i]->operator[](j);
+					s += v[j] * m2.data[j]->operator[](i);
 				}
 				result.setAt(s, i);
 			}
