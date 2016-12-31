@@ -40,11 +40,11 @@ namespace gm {
 		}
 		*/
 		
-		FMat(FMat<T> &m) {
+		FMat(const FMat<T> &m) {
 			cout << "Copying constructor" << endl;
             data = new Vec<T>*[m.row];
             for(int i=0; i<m.row; i++) {
-                data[i] = new Vec<T>(m[i]);
+                data[i] = new Vec<T>(m.getVec(i));
             }
 			row = m.row;
 			column = m.column;
@@ -106,6 +106,7 @@ namespace gm {
 		
 		ostream& print(ostream &o) {
 			int i, j;
+            cout << "[" << row << "x" << column << "]" << endl;
 			for(i=0; i<row; i++) {
 				o << *(data[i]) << " ";
 			}
@@ -148,15 +149,20 @@ namespace gm {
 		
 		FMat<T> transpose() {
 			int i, j;
+            
 			FMat<T> t(column, row);
 			for(i=0; i<column; i++) {
 				for(j=0; j<row; j++) {
-					t.operator[](i).setAt(data[j]->operator[](i), j);
+					t.operator[](i).setAt(this->data[j]->operator[](i), j);
 					//(*(t.operator[](i)))[j] = data[j]->operator[](i);
 				}
 			}
 			return t;
 		}
+        
+        Vec<T>& getVec(int index) const {
+            return *(data[index]);
+        }
 
 		Vec<T>& operator [](int index) { 
 			return *(data[index]);

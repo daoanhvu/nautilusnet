@@ -67,8 +67,8 @@ int main(int argc, char **args) {
                 0.14, 0.05, 0.23, 0.39, 0.2,
                 0.21, 0.18, 0.54, 0.4, 0.21,
                 0.17, 0.11, 0.87, 0.2, 0.09};
-	double theta2[] = {0.23, 0.18, 0.4, 0.74, 0.12, 0.35,
-                0.66, 0.27, 0.54, 0.4, 0.21, 0.5};
+	double theta2[] = { 0.23, 0.18, 0.4, 0.74, 0.12, 0.35,
+                        0.66, 0.27, 0.54, 0.4, 0.21, 0.5};
 	double t[2];
 	double error = 0.0;
 	NautilusNet *aNet;
@@ -78,12 +78,17 @@ int main(int argc, char **args) {
 	aNet->setWeights(0, theta1);
 	aNet->setWeights(1, theta2);
 	
+    /*
 	for(int i=0; i<number_of_labels; i++) {
 		t[i] = 0.0;
 		if( i==(int)y[0]) {
 			t[i] = 1.0;
 		}
 	}
+    */
+    t[0] = 1.0;
+    t[1] = 0.0;
+    
 	error = aNet->forward(X, t, 0.0);	
 	cout << "error = " << error << endl;
 	

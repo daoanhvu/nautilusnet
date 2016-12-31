@@ -31,7 +31,7 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	for(l=1; l<L-1; l++) {
 		preSize = layer[l-1].layerSize;
 		layer[l].layerSize = hiddenSize;
-		
+		cout << "Layer " << l << "; Hidden size = " << hiddenSize << endl;
 		//Number of row of matrix weight is this layerSize
 		//Number of column of matrix weight is preSize
 		layer[l].weight = new FMat<double>(hiddenSize, preSize + 1); //plus 1 for bias
@@ -40,7 +40,8 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	}
 	
 	//output layer
-	preSize = layer[l-2].layerSize;
+	preSize = layer[L-2].layerSize;
+    //cout << "last preSize = " << preSize << endl;
 	layer[L-1].layerSize = outputSize;
 	layer[L-1].weight = new FMat<double>(outputSize, preSize + 1); //plus 1 for bias
 	layer[L-1].a = new Vec<double>(outputSize);
@@ -75,6 +76,7 @@ void NautilusNet::setWeights(int idx, const double *w) {
 	Layer *l = (Layer*) (layer + (idx + 1));
 	int size = l->layerSize;
 	l->weight->setValues(w);
+    //l->weight->print(cout);
 }
 
 /**
@@ -96,14 +98,18 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	// Start from 1, because we hold bias at 0
 	layer[0].a->setValues(x, 4, 1);
 	
-	for(l=1; l<L; l++) {
-		(layer[l].weight->transpose()).print(cout);
-		layer[l-1].a->print(cout);
-		z = *(layer[l].weight) * (*(layer[l-1].a));
-		//z =  (*(layer[l-1].a)) * (layer[l].weight)->transpose();
-		cout << " Result: " << endl;
+    //This for loop is used for HIDDEN layers ONLY
+	for(l=1; l<L-1; l++) {
+        FMat<double> tr = layer[l].weight->transpose();
+        //layer[l].weight->print(cout);
+        //cout << "== Transpose ====>" << endl;
+		//tr.print(cout);
+		//layer[l-1].a->print(cout);
+		//z = *(layer[l].weight) * (*(layer[l-1].a));
+		z =  (*(layer[l-1].a)) * tr;
+		//cout << " Result: " << endl;
 		z.print(cout);
-		cout << "===================" << endl;
+		//cout << "===================" << endl;
 		size = z.size();
 		for(i=0; i<size; i++) {
 			layer[l].a->setAt((1.0/(1.0 + exp(-z[i]))), i+1);
@@ -111,12 +117,22 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		//cout << "vector a layer: " << l;
 		//(layer[l].a)->print(cout);
 	}
-
+    
+    //process for the lass layer (the output layer)
 	Layer *last = (Layer*) (layer + (L-1));
-	size = last->layerSize;
-	cout << "last layer size: " << size << endl;
+    z =  (*(layer[L-2].a)) * last->weight->transpose();
+    z.print(cout);
+    size = z.size();
+    for(i=0; i<size; i++) {
+		last->a->setAt((1.0/(1.0 + exp(-z[i]))), i);
+	}
+    (last->a)->print(cout);
+    
+    size = last->layerSize;
+	//cout << "last layer size: " << size << endl;
 	for(i=0; i<size; i++) {
 		tmp = last->a->operator[](i);
+        cout << "y = " << y[i] << "; tmp = " << tmp << endl;
 		j += -y[i]*log(tmp) - (1.0-y[i]) * log(1.0-tmp);
 	}
 	return j;
