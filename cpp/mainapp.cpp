@@ -59,7 +59,7 @@ int readTheta(int layer_index, const char *filename, int &row, int &col, double 
 	return 1;
 }
 
-int main(int argc, char **args) {
+int main1(int argc, char **args) {
 	double X[4] = {0.0, 1.3, 1.5, 1.0};
 	double y[1] = {1};
 	double theta1[] = {0.01, 0.015, 0.3, 0.5, 0.1,
@@ -97,7 +97,7 @@ int main(int argc, char **args) {
 	return 0;
 }
 
-int testNIMS(int argc, char **args) {
+int main(int argc, char **args) {
 	
 	if(argc <= 1) {
 		cout << "Not enough parameters." << endl;
@@ -123,7 +123,7 @@ int testNIMS(int argc, char **args) {
 	double error = 0;
 	
 	//Read number of example and number of features from filebuf
-	ifstream f("/cygdrive/d/data/coursera_data.data", ios::binary);
+	ifstream f("./coursera_data/coursera_data.data", ios::binary);
 	if( f.fail() ) {
 		cout << "Could not read data file!" << endl;
 		cout << "Program exit." << endl;
@@ -138,14 +138,14 @@ int testNIMS(int argc, char **args) {
 	
 	X = new double[ftSize];
 	
-	read1 = readTheta(1, "/cygdrive/d/data/coursera_theta1.data", row1, col1, &theta1);
+	read1 = readTheta(1, "./coursera_data/coursera_theta1.data", row1, col1, &theta1);
 	if(!read1) {
 		cout << "Failed to read theta1!" << endl;
 		delete X;
 		return 3;
 	}
 	
-	read2 = readTheta(2, "/cygdrive/d/data/coursera_theta2.data", row2, col2, &theta2);
+	read2 = readTheta(2, "./coursera_data/coursera_theta2.data", row2, col2, &theta2);
 	if(!read2) {
 		cout << "Failed to read theta2!" << endl;
 		delete X;
@@ -164,7 +164,7 @@ int testNIMS(int argc, char **args) {
 	
 	k = 0;
 	while( k<m ) {
-		if(readInputByIndex(k, "/cygdrive/d/data/coursera_data.data", ftSize, X, y)) {
+		if(readInputByIndex(k, "./coursera_data/coursera_data.data", ftSize, X, y)) {
 			
 			cout << "X[69]: " << X[69] << "; should be -0.00074 " << endl;
 			cout << "X[70]: " << X[70] << "; should be -0.00813 " << endl;
