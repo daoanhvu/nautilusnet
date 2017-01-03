@@ -202,20 +202,11 @@ int main(int argc, char **args) {
 	aNet->setWeights(1, theta2);
 	
 	//Test the first training example
-	m = 1;
+	m = 2;
 	
 	k = 0;
 	while( k<m ) {
 		if(readInputByIndex(k, "./coursera_data/coursera_data.data", ftSize, X, y)) {
-			
-			//cout << "X[69]: " << X[69] << "; should be -0.00074 " << endl;
-			//cout << "X[70]: " << X[70] << "; should be -0.00813 " << endl;
-			//cout << "X[71]: " << X[71] << "; should be -0.01861 " << endl;
-			//cout << "X[123]: " << X[123] << "; should be 0.00001 " << endl;
-			//cout << "X[124]: " << X[124] << "; should be 0.00044 " << endl;
-			
-			setX(X);
-			
 			for(i=0; i<number_output_class; i++) {
 				t[i] = 0.0;
 				if( (i+1)==(int)y) {

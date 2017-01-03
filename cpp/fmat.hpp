@@ -149,7 +149,6 @@ namespace gm {
 		
 		FMat<T> transpose() {
 			int i, j;
-            
 			FMat<T> t(column, row);
 			for(i=0; i<column; i++) {
 				for(j=0; j<row; j++) {
@@ -235,6 +234,25 @@ namespace gm {
 				result.setAt(s, i);
 			}
 			
+			return result;
+		}
+		
+		friend Vec<T> mulToTranspose(const Vec<T> &v, const FMat<T> &m2) {
+			int row = m2.row;
+			int l = v.size();
+			int i, j;
+			if(l != m2.column) {
+				throw "Vec * FMat: Operands are not match!";
+			}
+			Vec<T> result(row);
+			T s;
+			for(i=0; i<row; i++) {
+				s = (T)0;
+				for(j=0; j<l; j++) {
+					s += v[j] * m2.data[i]->operator[](j);
+				}
+				result.setAt(s, i);
+			}
 			return result;
 		}
 	};

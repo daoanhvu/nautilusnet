@@ -101,14 +101,10 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	
     //This for loop is used for HIDDEN layers ONLY
 	for(l=1; l<L-1; l++) {
-        FMat<double> tr = layer[l].weight->transpose();
-        //layer[l].weight->print(cout);
-        //cout << "== Transpose ====>" << endl;
-		//tr.print(cout);
-		//layer[l-1].a->print(cout);
-		z =  (*(layer[l-1].a)) * tr;
-		//z.print(cout);
-		//cout << "===================" << endl;
+        //FMat<double> tr = layer[l].weight->transpose();
+		//z =  (*(layer[l-1].a)) * tr;
+		
+		z = mulToTranspose(*(layer[l-1].a), *(layer[l].weight));
 		size = z.size();
 		for(i=0; i<size; i++) {
 			layer[l].a->setAt((1.0/(1.0 + exp(-z[i]))), i+1);
@@ -117,13 +113,8 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
     
     //process for the lass layer (the output layer)
 	Layer *last = (Layer*) (layer + (L-1));
-	
-	//(layer[L-2].a)->print(cout);
-	
-    z =  (*(layer[L-2].a)) * last->weight->transpose();
-	//cout << " Result: " << endl;
-    //z.print(cout);
-	//cout << "===================" << endl;
+    //z =  (*(layer[L-2].a)) * last->weight->transpose();
+	z = mulToTranspose(*(layer[L-2].a), *(last->weight));
     size = z.size();
     for(i=0; i<size; i++) {
 		last->a->setAt((1.0/(1.0 + exp(-z[i]))), i);
