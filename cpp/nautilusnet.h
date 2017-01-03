@@ -16,12 +16,17 @@ typedef struct tagLayer {
 	//This is output value of the previous layer so it's also the input of this layer
 	//THIS VECTOR IS INCLUDING BIAS
 	Vec<double> *a;
+	
+	//This vector is use to hold delta, the length of this vector equals to layerSize
+	Vec<double> *d;
 } Layer;
 
 class NautilusNet {
 	private:
 		Layer *layer;
 		int L;
+		
+		void computeDelta(int targetIdx, Vec<double> z);
 		
 	public:
 		NautilusNet();
@@ -45,6 +50,7 @@ class NautilusNet {
 		double forward(const double *x, const double *y, double lambda);
 		void backward();
         double sigmoid(double);
+		double gradientSigmoid(double z);
         double costFunction(const double **x, int m, double *y, double lambda, double *grad, int &gradSize);
 		
 };

@@ -24,6 +24,7 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	//input layer
 	layer[0].layerSize = inputSize;
 	layer[0].weight = NULL; //Input layer has no weights
+	layer[0].d = NULL; //Input layer has no delta
 	layer[0].a = new Vec<double>(inputSize + 1);
 	layer[0].a->setAt(1.0, 0);
 	
@@ -37,6 +38,8 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 		layer[l].weight = new FMat<double>(hiddenSize, preSize + 1); //plus 1 for bias
 		layer[l].a = new Vec<double>(hiddenSize + 1);
 		layer[l].a->setAt(1.0, 0);
+		
+		layer[l].d = new Vec<double>(hiddenSize);
 	}
 	
 	//output layer
@@ -45,6 +48,7 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	layer[L-1].layerSize = outputSize;
 	layer[L-1].weight = new FMat<double>(outputSize, preSize + 1); //plus 1 for bias
 	layer[L-1].a = new Vec<double>(outputSize);
+	layer[L-1].d = new Vec<double>(outputSize);
 }
 
 NautilusNet::~NautilusNet() {
@@ -63,6 +67,8 @@ NautilusNet::~NautilusNet() {
 			}
 			if(layer[l].a != NULL)
 				delete layer[l].a;
+			
+			delete layer[l].d;
 		}
 		delete layer;
 		L = 0;
@@ -128,16 +134,43 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	j = 0.0;
 	for(i=0; i<size; i++) {
 		tmp = last->a->operator[](i);
+		//cout << "output(" << i << ") = " << tmp << "; error = " << (tmp - y[i]) << endl;
 		j += -y[i]*log(tmp) - (1.0-y[i]) * log(1.0-tmp);
+		
+		//Compute delta for ouput layer
+		last->d->setAt( tmp - y[i] , i);
 	}
 	return j;
 }
 
 void NautilusNet::backward() {
+	int i, size;
+	Layer *li;
+	
+	//l2 is the next layer of li (l(i+1))
+	Layer *l2;
+	
+	for(i=L-2; i>0; i--) {
+		li = (Layer*)(layer+i);
+		l2 = (Layer*)(layer+i+1);
+		
+		//li->d = l2->weights->transpose() * (l2->d) .* g'(z(3))
+		//computeDelta(i, z);
+	}
+}
+
+void NautilusNet::computeDelta(int targetIdx, Vec<double> z) {
+	
 }
 
 double NautilusNet::sigmoid(double z) {
     return (1.0/(1.0 + exp(-z)));
+}
+
+double NautilusNet::gradientSigmoid(double z) {
+	//g = sigmoid(z) .* (1-sigmoid(z));
+	double sgm = 1.0/(1.0 + exp(-z));
+    return sgm * (1.0 - sgm);
 }
 
 /**

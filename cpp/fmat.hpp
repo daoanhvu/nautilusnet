@@ -255,6 +255,25 @@ namespace gm {
 			}
 			return result;
 		}
+		
+		friend Vec<T> mulTransposeTo(const FMat<T> &m2, const Vec<T> &v) {
+			int row = m2.row;
+			int l = v.size();
+			int i, j;
+			if(l != m2.row) {
+				throw "Vec * FMat: Operands are not match!";
+			}
+			Vec<T> result(m2.column);
+			T s;
+			for(i=0; i<m2.column; i++) {
+				s = (T)0;
+				for(j=0; j<l; j++) {
+					s += v[j] * m2.data[j]->operator[](i);
+				}
+				result.setAt(s, i);
+			}
+			return result;
+		}
 	};
 }
 
