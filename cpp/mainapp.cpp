@@ -25,9 +25,6 @@ int readInputByIndex(int index, const char *filename, int ftSize, double *X, dou
 	
 	for(i=0; i<ftSize; i++) {
 		f.read((char*)&(X[i]), sizeof(double));
-		if(i==123) {
-			cout << "x[123]" << X[i] << endl;
-		}
 	}
 	f.read((char*)&tmp, sizeof(char));
 	y = (double)tmp;
@@ -97,6 +94,51 @@ int main1(int argc, char **args) {
 	return 0;
 }
 
+void setX(double *X) {
+	X[67] = 0.00001;
+	X[69] = -0.00074;
+	X[70] = -0.00813;
+	X[71] = -0.01861;
+	
+	X[72] = -0.01874;
+	X[73] = -0.01876;
+	X[74] = -0.01910;
+	X[75] = -0.01640;
+	X[76] = -0.00378;
+	X[77] = 0.00033;
+	X[78] = 0.00001;
+	
+	X[86] = 0.00012;
+	X[87] = 0.00012;
+	X[88] = -0.01404;
+	X[89] = -0.02845;
+	X[90] = 0.08038;
+	X[91] = 0.26654;
+	X[92] = 0.27385;
+	X[93] = 0.27873;
+	X[94] = 0.27429;
+	X[95] = 0.22468;
+	
+	X[96] = 0.02776;
+	X[97] = -0.00706;
+	X[98] = 0.00023;
+	X[106] = -0.00033;
+	X[107] = -0.01387;
+	
+	X[108] = 0.08157;
+	X[109] = 0.38280;
+	X[110] = 0.85785;
+	X[111] = 1.00110;
+	X[112] = 0.96971;
+	X[113] = 0.93093;
+	X[114] = 1.00384;
+	X[115] = 0.96416;
+	X[116] = 0.44926;
+	X[117] = -0.00560;
+	X[118] = -0.00378;
+	X[123] = 0.00001;
+}
+
 int main(int argc, char **args) {
 	
 	if(argc <= 1) {
@@ -133,7 +175,7 @@ int main(int argc, char **args) {
 	f.read((char*)&m, sizeof(int));
 	cout << "Number of examples: " << m << endl;
 	f.read((char*)&ftSize, sizeof(int));
-	cout << "Number of features: " << ftSize << endl;
+	cout << "Number of features: " << ftSize << endl << "=========================" << endl << endl;
 	f.close();
 	
 	X = new double[ftSize];
@@ -152,7 +194,7 @@ int main(int argc, char **args) {
 		return 3;
 	}
 	
-	cout << "Read theta1, theta2 done!" << endl;
+	cout << "Read theta1, theta2 done!" << endl << endl;
 	
 	t = new double[number_output_class];
 	aNet = new NautilusNet(3, 400, 25, number_output_class);
@@ -166,11 +208,13 @@ int main(int argc, char **args) {
 	while( k<m ) {
 		if(readInputByIndex(k, "./coursera_data/coursera_data.data", ftSize, X, y)) {
 			
-			cout << "X[69]: " << X[69] << "; should be -0.00074 " << endl;
-			cout << "X[70]: " << X[70] << "; should be -0.00813 " << endl;
-			cout << "X[71]: " << X[71] << "; should be -0.01861 " << endl;
-			cout << "X[123]: " << X[123] << "; should be 0.00001 " << endl;
-			cout << "X[124]: " << X[124] << "; should be 0.00044 " << endl;
+			//cout << "X[69]: " << X[69] << "; should be -0.00074 " << endl;
+			//cout << "X[70]: " << X[70] << "; should be -0.00813 " << endl;
+			//cout << "X[71]: " << X[71] << "; should be -0.01861 " << endl;
+			//cout << "X[123]: " << X[123] << "; should be 0.00001 " << endl;
+			//cout << "X[124]: " << X[124] << "; should be 0.00044 " << endl;
+			
+			setX(X);
 			
 			for(i=0; i<number_output_class; i++) {
 				t[i] = 0.0;
@@ -184,8 +228,9 @@ int main(int argc, char **args) {
 	}
 	
 	error = error / m;
+	cout << "###############################################################" << endl;
 	cout << "Total error = " << error << endl;
-	
+	cout << "###############################################################" << endl << endl;
 	
 	delete t;
 	delete theta1;

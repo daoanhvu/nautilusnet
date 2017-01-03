@@ -41,7 +41,7 @@ namespace gm {
 		*/
 		
 		FMat(const FMat<T> &m) {
-			cout << "Copying constructor" << endl;
+			//cout << "Copying constructor" << endl;
             data = new Vec<T>*[m.row];
             for(int i=0; i<m.row; i++) {
                 data[i] = new Vec<T>(m.getVec(i));
