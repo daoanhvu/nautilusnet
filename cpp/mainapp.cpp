@@ -171,6 +171,7 @@ int main(int argc, char **args) {
 				}
 			}
 			error += aNet->forward(X, t, 0.01);	
+			aNet->backward();	
 		}
 		k++;
 	}

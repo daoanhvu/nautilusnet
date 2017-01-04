@@ -104,6 +104,10 @@ namespace gm {
 			}
         }
 		
+		int getRow(){ return row; }
+		
+		int getColumn() { return column; };
+		
 		ostream& print(ostream &o) {
 			int i, j;
             cout << "[" << row << "x" << column << "]" << endl;

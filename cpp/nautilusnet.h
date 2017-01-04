@@ -26,7 +26,7 @@ class NautilusNet {
 		Layer *layer;
 		int L;
 		
-		void computeDelta(int targetIdx, Vec<double> z);
+		void computeDelta(Layer *l, const Layer *l2, const Vec<double> &z);
 		
 	public:
 		NautilusNet();

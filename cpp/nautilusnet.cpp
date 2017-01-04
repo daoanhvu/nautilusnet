@@ -145,35 +145,41 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 
 void NautilusNet::backward() {
 	int i, size;
+	Layer *l0;
 	Layer *li;
-	
 	//l2 is the next layer of li (l(i+1))
 	Layer *l2;
+	Vec<double> z;
+	FMat<double> *w;
 	
 	for(i=L-2; i>0; i--) {
+		l0 = (Layer*)(layer+i-1);
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
-		
+		w = li->weight;
+		z = (*w) * (*(l0->a));
 		//li->d = l2->weights->transpose() * (l2->d) .* g'(z(3))
-		//computeDelta(i, z);
+		z.print(cout);
+		computeDelta(li, l2, z);
 	}
+	
+	//update weights
+	
 }
 
-void NautilusNet::computeDelta(int targetIdx, Vec<double> z) {
-    Layer *layer = (Layer*) (layer + targetIdx);
-    Layer *layer2 = (Layer*) (layer + targetIdx + 1);
-    
-	int row2 = layer2.row;
-    int col2 = layer2->column;
-	int l = v.size();
+void NautilusNet::computeDelta(Layer *l, const Layer *l2, const Vec<double> &z) {
+	int row2 = l2->weight->getRow();
+    int col2 = l2->weight->getColumn();
+	int lSize = l2->d->size();
 	int i, j;
     double s;
-    for(i=0; i<m2.column; i++) {
-        s = (T)0;
-        for(j=0; j<l; j++) {
-            s += v[j] * layer2->weight->operator[](j).operator[](i);
+    for(i=0; i<col2; i++) {
+        s = 0.0;
+        for(j=0; j<lSize; j++) {
+            s += l2->d->operator[](j) * l2->weight->operator[](j).operator[](i);
         }
-        layer->d->setAt(s, i);
+		s = s * gradientSigmoid(z[i]);
+        l->d->setAt(s, i);
     }
 }
 
