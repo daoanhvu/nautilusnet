@@ -11,13 +11,13 @@ void testMatrix() {
 	double vs[3] = {3.6, 1.2, 2.0};
 	double ms[6] = {5.2, 2.0, 1.4, 0.7, 4.1, 0.5};
 	FMat<double> m(ms, 2, 3);
-	Vec<double> v(vs, 3);
+	FMat<double> v(vs, 3, 1);
 
 	cout << m << endl;
 	cout << v << endl;
 	
 	//Vec<double> t = m * v;
-	Vec<double> t;
+	FMat<double> t;
 	t = m * v;
 	
 	cout << t << endl;
@@ -31,14 +31,17 @@ void testMultiplyTransposeMatrix() {
 	double ms[12] = {	0.23, 0.18, 0.40, 0.74, 0.12, 0.35,
 						0.66, 0.27, 0.54, 0.40, 0.21, 0.5};
 	FMat<double> m(ms, 2, 6);
-	Vec<double> v(vs, 6);
+	FMat<double> v(vs, 1, 6);
 
 	cout << m << endl;
 	cout << v << endl;
 	
-	Vec<double> t;
+	FMat<double> t;
 	t = v * m.transpose();
 	
+    cout << "M transpose: " << endl;
+    cout << m.transpose() << endl;
+    cout << "Result: " << endl;
 	cout << t << endl;
 }
 
@@ -74,6 +77,7 @@ void testReadFile(int argc, char **args) {
 int main(int argc, char **args) {
 	
 	//testReadFile(argc, args);
+    //testMatrix();
 	testMultiplyTransposeMatrix();
 	
 	return 0;

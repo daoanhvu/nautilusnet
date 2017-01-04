@@ -143,7 +143,7 @@ namespace gm {
 			int i, j;
 			for(i=0; i<m.row; i++) {
 				for(j=0; j<m.column; j++) {
-					o << m.data[i][j] << " \t";
+					o << m.data[i][j] << " ";
 				}
 				o << "\n";
 			}
@@ -182,7 +182,7 @@ namespace gm {
 			for(i=0; i<column; i++) {
 				for(j=0; j<row; j++) {
 					//t.operator[](i).setAt(j, this->data[j]->operator[](i));
-					t[i][j] = data[j][i][i];
+					t[i][j] = data[j][i];
 				}
 			}
 			return t;
@@ -195,6 +195,10 @@ namespace gm {
 		T* operator [](int index) { 
 			return data[index];
 		}
+        
+        T value(int r, int c) const {
+            return data[r][c];
+        }
 		
 		FMat<T>& operator +=(const FMat<T> &m) {
 			int i, j;
@@ -226,7 +230,7 @@ namespace gm {
 			
 			for(i=0; i<row; i++) {
 				//data[i]->copyFrom(m1.data[i]);
-				memcpy(data[i], m1[i], column * sizeof(T));
+				memcpy(data[i], m1.getRow(i), column * sizeof(T));
 			}
 			return *this;
 		}
@@ -237,7 +241,7 @@ namespace gm {
 			}
 			
 			FMat<T> result(row, m2.column);
-			int r, c, i, j;
+			int c, i, j;
 			int newSize = row * m2.column;
 			T s;
 			
@@ -245,11 +249,10 @@ namespace gm {
 			for(i=0; i<row; i++) {
 				for(j=0; j<m2.column; j++) {
 					s = (T)0;
-					for(r=0; r<row; r++) {
-						for(c=0; c<m2.column; c++) {
-							s += data[r][c] * m2[c][j];
-						}
-					}
+                    for(c=0; c<column; c++) {
+                        //cout << data[i][c] << " * " << m2.value(c, j) << " = " << (data[i][c] * m2.value(c,j)) << endl;
+                        s += data[i][c] * m2.value(c,j);
+                    }
 					result[i][j] = s;				
 				}
 			}
@@ -257,9 +260,14 @@ namespace gm {
 			return result;
 		}
 		
+        /**
+            This matrix multiply to transpose m2
+            params:
+                m2 a matrix
+        */
 		FMat<T> mulToTranspose(const FMat<T> &m2) {			
 			int i, j;
-			int r, c;
+			int c;
 			if(column != m2.column) {
 				throw "FMat * transpose(FMat): Operands are not match in dimensions!";
 			}
@@ -269,32 +277,35 @@ namespace gm {
 			for(i=0; i<row; i++) {
 				for(j=0; j<m2.row; j++) {
 					s = (T)0;
-					for(r=0; r<row; r++) {
-						for(c=0; c<column; c++) {
-							s += data[r][c] * m2[j][c];
-						}
-						result[i][j] = s;
-					}
+                    for(c=0; c<column; c++) {
+                        s += data[i][c] * m2.value(j,c);
+                    }
+                    result[i][j] = s;
 				}
 			}
 			return result;
 		}
 		
-		friend Vec<T> mulTransposeTo(const FMat<T> &m2, const Vec<T> &v) {
-			int row = m2.row;
-			int l = v.size();
-			int i, j;
-			if(l != m2.row) {
+        /**
+            Get transpose of this matrix and multiply to m2
+            params:
+                m2 a matrix
+        */
+		FMat<T> mulTransposeTo(const FMat<T> &m2) {
+			int i, j, c;
+			if(row != m2.row) {
 				throw "Vec * FMat: Operands are not match!";
 			}
-			Vec<T> result(m2.column);
+			FMat<T> result(column, m2.column);
 			T s;
-			for(i=0; i<m2.column; i++) {
-				s = (T)0;
-				for(j=0; j<l; j++) {
-					s += v[j] * m2.data[j]->operator[](i);
+			for(i=0; i<column; i++) {
+				for(j=0; j<m2.column; j++) {
+                    s = (T)0;
+                    for(c = 0; c<row; c++) {
+                        s += data[c][i] * m2.value(c,j);
+                    }
+                    result[i][j] = s;
 				}
-				result.setAt(i, s);
 			}
 			return result;
 		}
