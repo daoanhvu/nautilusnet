@@ -160,7 +160,21 @@ void NautilusNet::backward() {
 }
 
 void NautilusNet::computeDelta(int targetIdx, Vec<double> z) {
-	
+    Layer *layer = (Layer*) (layer + targetIdx);
+    Layer *layer2 = (Layer*) (layer + targetIdx + 1);
+    
+	int row2 = layer2.row;
+    int col2 = layer2->column;
+	int l = v.size();
+	int i, j;
+    double s;
+    for(i=0; i<m2.column; i++) {
+        s = (T)0;
+        for(j=0; j<l; j++) {
+            s += v[j] * layer2->weight->operator[](j).operator[](i);
+        }
+        layer->d->setAt(s, i);
+    }
 }
 
 double NautilusNet::sigmoid(double z) {
