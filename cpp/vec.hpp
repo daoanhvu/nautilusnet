@@ -106,7 +106,7 @@ namespace gm {
 			*/
         }
 		
-		void setAt(T v, int pos) {
+		void setAt(int pos, T v) {
             data[pos] = v;
         }
 		
@@ -193,11 +193,11 @@ namespace gm {
 			return r;
 		}
 	
-		//Vec<T> operator *(T a) {
-		//	Vec<T> r(this);
-        //  r.mul(a);
-		//	return r;
-		//}
+		friend FMat<T> operator *(T a) {
+			Vec<T> r(this);
+          r.mul(a);
+			return r;
+		}
 
 		Vec<T>& operator /=(T a) {
 			for(int i=0; i<length; i++) {

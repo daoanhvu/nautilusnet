@@ -26,7 +26,7 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	layer[0].weight = NULL; //Input layer has no weights
 	layer[0].d = NULL; //Input layer has no delta
 	layer[0].a = new Vec<double>(inputSize + 1);
-	layer[0].a->setAt(1.0, 0);
+	layer[0].a->setAt(0, 1.0);
 	
 	//hidden layers
 	for(l=1; l<L-1; l++) {
@@ -37,7 +37,7 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 		//Number of column of matrix weight is preSize
 		layer[l].weight = new FMat<double>(hiddenSize, preSize + 1); //plus 1 for bias
 		layer[l].a = new Vec<double>(hiddenSize + 1);
-		layer[l].a->setAt(1.0, 0);
+		layer[l].a->setAt(0, 1.0);
 		
 		layer[l].d = new Vec<double>(hiddenSize);
 	}
@@ -113,7 +113,7 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		z = mulToTranspose(*(layer[l-1].a), *(layer[l].weight));
 		size = z.size();
 		for(i=0; i<size; i++) {
-			layer[l].a->setAt((1.0/(1.0 + exp(-z[i]))), i+1);
+			layer[l].a->setAt(i+1, (1.0/(1.0 + exp(-z[i]))));
 		}
 	}
     
@@ -123,7 +123,7 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	z = mulToTranspose(*(layer[L-2].a), *(last->weight));
     size = z.size();
     for(i=0; i<size; i++) {
-		last->a->setAt((1.0/(1.0 + exp(-z[i]))), i);
+		last->a->setAt(i, (1.0/(1.0 + exp(-z[i]))));
 	}
 	
 	//cout << "hThetaX: " << endl;
@@ -138,7 +138,7 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		j += -y[i]*log(tmp) - (1.0-y[i]) * log(1.0-tmp);
 		
 		//Compute delta for ouput layer
-		last->d->setAt( tmp - y[i] , i);
+		last->d->setAt(i, tmp - y[i]);
 	}
 	return j;
 }
@@ -159,12 +159,13 @@ void NautilusNet::backward() {
 		w = li->weight;
 		z = (*w) * (*(l0->a));
 		//li->d = l2->weights->transpose() * (l2->d) .* g'(z(3))
-		z.print(cout);
+		//z.print(cout);
 		computeDelta(li, l2, z);
+		
+		//update weights.
+		//dw = dw + (*(l2->d)) * (li->a->transpose());
+		(*(l2->weight)) += (*(l2->d)) * (li->a->transpose());
 	}
-	
-	//update weights
-	
 }
 
 void NautilusNet::computeDelta(Layer *l, const Layer *l2, const Vec<double> &z) {
@@ -179,7 +180,7 @@ void NautilusNet::computeDelta(Layer *l, const Layer *l2, const Vec<double> &z) 
             s += l2->d->operator[](j) * l2->weight->operator[](j).operator[](i);
         }
 		s = s * gradientSigmoid(z[i]);
-        l->d->setAt(s, i);
+        l->d->setAt(i, s);
     }
 }
 
