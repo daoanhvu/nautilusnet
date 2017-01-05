@@ -78,6 +78,17 @@ namespace gm {
 			}
 		}
 		
+		void release() {
+			//cout << "FMat-Destructor: started - data address:" << (void*)data << endl;
+			if(data != NULL) {
+				for(int i=0; i<row; i++) {
+					delete data[i];
+				}
+				//cout << "FMat-Destructor: end " << endl;
+				delete data;
+			}
+		}
+		
 		void init(int r, int col) {
 			if(r == row && column == col) {
 				return;
@@ -98,6 +109,35 @@ namespace gm {
 			column = col;
 		}
 		
+		void init(int r, int col, T defaultValue) {
+			int i, j;
+			if(r == row && column == col) {
+				for(i=0; i<row; i++) {
+					for(j=0; j<column; j++) {
+						data[i][j] = defaultValue;
+					}
+				}
+			}
+			
+			if(data != NULL) {
+				for(int i=0; i<row; i++) {
+					delete data[i];
+				}
+				delete data;
+			}
+			
+			data = new T*[r];
+            for(int i=0; i<r; i++) {
+                data[i] = new T[col];
+				for(j=0; j<col; j++) {
+					data[i][j] = defaultValue;
+				}
+            }
+			
+			row = r;
+			column = col;
+		}
+		
 		void setValueToColumn(int col, T value) {
             for(int i=0; i<row; i++) {
                 data[i][col] = value;
@@ -112,6 +152,16 @@ namespace gm {
 			for(int i=0; i<row; i++) {
 				memcpy(data[i], d + (i*column), column * sizeof(T));
 			}
+        }
+		
+		void setValues(const T *d, int r, int l, int offs=0) {
+            if(data == NULL) {
+				throw "matrix's data is NULL";
+			}
+			
+			
+			memcpy(data[r] + offs, d, l * sizeof(T));
+			
         }
 		
 		void setAt(int r, int col, T d) {
@@ -136,6 +186,11 @@ namespace gm {
 				o << endl;
 			}
 			
+			return o;
+		}
+		
+		ostream& printSize(ostream &o) const {
+            cout << "[" << row << "x" << column << "]";
 			return o;
 		}
 		
@@ -202,13 +257,13 @@ namespace gm {
 		
 		FMat<T>& operator +=(const FMat<T> &m) {
 			int i, j;
-			if(this->row != m.row || this->column != m.colum) {
+			if(this->row != m.row || this->column != m.column) {
 				throw "Indexes not match!";
 			}
 			double t;
 			for(i=0; i<row; i++) {
 				for(j=0; j<column; j++) {
-					data[i][j] = data[i][j] + m[i][j];
+					data[i][j] = data[i][j] + m.value(i,j);
 				}
 			}
 			

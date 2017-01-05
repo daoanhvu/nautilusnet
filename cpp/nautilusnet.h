@@ -15,10 +15,10 @@ typedef struct tagLayer {
 	
 	//This is output value of the previous layer so it's also the input of this layer
 	//THIS VECTOR IS INCLUDING BIAS
-	Vec<double> *a;
+	FMat<double> *a;
 	
 	//This vector is use to hold delta, the length of this vector equals to layerSize
-	Vec<double> *d;
+	FMat<double> *d;
 } Layer;
 
 class NautilusNet {
@@ -26,7 +26,10 @@ class NautilusNet {
 		Layer *layer;
 		int L;
 		
-		void computeDelta(Layer *l, const Layer *l2, const Vec<double> &z);
+		//This array of matrix is used to hold gradient of weights
+		FMat<double> *dw;
+		
+		void computeDelta(Layer *l, const Layer *l2, const FMat<double> &z);
 		
 	public:
 		NautilusNet();
