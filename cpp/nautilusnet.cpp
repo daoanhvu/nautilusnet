@@ -11,6 +11,7 @@ using namespace std;
 NautilusNet::NautilusNet() {
 	L = 0;
 	layer = NULL;
+	dw = NULL;
 }
 
 /**
@@ -81,8 +82,8 @@ NautilusNet::~NautilusNet() {
 				dw[l].release();
 			}
 		}
-		delete layer;
-		delete dw;
+		delete[] layer;
+		delete[] dw;
 		L = 0;
 	}
 }
@@ -109,7 +110,7 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	FMat<double> z;
 	int size;
 	double j;
-	double tmp;
+	double hThetaX;
 	
 	//Set input data to the input layer
 	size = layer[0].layerSize;
@@ -118,9 +119,6 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	
     //This for loop is used for HIDDEN layers ONLY
 	for(l=1; l<L-1; l++) {
-        //FMat<double> tr = layer[l].weight->transpose();
-		//z =  (*(layer[l-1].a)) * tr;
-		
 		z = layer[l-1].a->mulToTranspose(*(layer[l].weight));
 		size = z.getColumn();
 		for(i=0; i<size; i++) {
@@ -132,24 +130,15 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	Layer *last = (Layer*) (layer + (L-1));
     //z =  (*(layer[L-2].a)) * last->weight->transpose();
 	z = layer[L-2].a->mulToTranspose(*(last->weight));
+	z.print(cout);
     size = z.getColumn();
-    for(i=0; i<size; i++) {
-		last->a->setAt(0, i, (1.0/(1.0 + exp(-z.value(0,i)))));
-	}
-	
-	//cout << "hThetaX: " << endl;
-    //(last->a)->print(cout);
-    
-    size = last->layerSize;
-	//cout << "last layer size: " << size << endl;
 	j = 0.0;
-	for(i=0; i<size; i++) {
-		tmp = last->a->operator[](0)[i];
-		//cout << "output(" << i << ") = " << tmp << "; error = " << (tmp - y[i]) << endl;
-		j += -y[i]*log(tmp) - (1.0-y[i]) * log(1.0-tmp);
-		
+    for(i=0; i<size; i++) {
+		hThetaX = 1.0/(1.0 + exp(-z.value(0,i)));
+		last->a->setAt(0, i, hThetaX);
+		j += -y[i]*log(hThetaX) - (1.0-y[i]) * log(1.0-hThetaX);
 		//Compute delta for ouput layer
-		last->d->setAt(0, i, tmp - y[i]);
+		last->d->setAt(0, i, hThetaX - y[i]);
 	}
 	return j;
 }
@@ -187,7 +176,8 @@ void NautilusNet::backward() {
 	for(i=0; i<L-1; i++) {
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
-		dw[i] += l2->d->transpose() * (*(li->a));
+		//dw[i] += l2->d->transpose() * (*(li->a));
+		dw[i] += l2->d->mulTransposeTo(*(li->a));
 		*(l2->weight) += dw[i];
 	}
 }

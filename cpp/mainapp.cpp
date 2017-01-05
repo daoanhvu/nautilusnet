@@ -96,7 +96,7 @@ int main1(int argc, char **args) {
 
 int main(int argc, char **args) {
 	
-	if(argc <= 1) {
+	if(argc <= 2) {
 		cout << "Not enough parameters." << endl;
 		cout << "Program exit." << endl;
 		return 1;
@@ -104,6 +104,7 @@ int main(int argc, char **args) {
 	
 	//Number of examples
 	int M, m = (int)strtol(args[1], NULL, 10);
+	int num_iter = (int)strtol(args[2], NULL, 10);
 	//Number of features
 	int ftSize;
 	
@@ -117,7 +118,7 @@ int main(int argc, char **args) {
 	double *theta2 = NULL;
 	double y;
 	double *t;
-	double error = 0;
+	double error;
 	
 	//Read number of example and number of features from filebuf
 	ifstream f("./coursera_data/coursera_data.data", ios::binary);
@@ -161,25 +162,35 @@ int main(int argc, char **args) {
 	aNet->setWeights(0, theta1);
 	aNet->setWeights(1, theta2);
 	
-	k = 0;
-	while( k<m ) {
-		if(readInputByIndex(k, "./coursera_data/coursera_data.data", ftSize, X, y)) {
-			for(i=0; i<number_output_class; i++) {
-				t[i] = 0.0;
-				if( (i+1)==(int)y) {
-					t[i] = 1.0;
-				}
-			}
-			error += aNet->forward(X, t, 0.01);	
-			aNet->backward();	
-		}
-		k++;
-	}
+	double err;
 	
-	error = error / m;
-	cout << "###############################################################" << endl;
-	cout << "Total error = " << error << endl;
-	cout << "###############################################################" << endl << endl;
+	int itr = 0;
+	while(itr < num_iter) {
+		k = 0;
+		error = 0;
+		while( k<m ) {
+			if(readInputByIndex(k, "./coursera_data/coursera_data.data", ftSize, X, y)) {
+				for(i=0; i<number_output_class; i++) {
+					t[i] = 0.0;
+					if( (i+1)==(int)y) {
+						t[i] = 1.0;
+					}
+				}
+				
+				err = aNet->forward(X, t, 0.01);
+				cout << "Err : " << err << endl;
+				error += err;
+				//aNet->backward();
+			}
+			k++;
+		}
+		
+		error = error / m;
+		cout << "###############################################################" << endl;
+		cout << "Iter: " << itr << " error = " << error << endl;
+		cout << "###############################################################" << endl << endl;
+		itr++;
+	}
 	
 	delete t;
 	delete theta1;

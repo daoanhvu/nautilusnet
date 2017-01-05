@@ -71,10 +71,10 @@ namespace gm {
 			//cout << "FMat-Destructor: started - data address:" << (void*)data << endl;
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
-					delete data[i];
+					delete[] data[i];
 				}
 				//cout << "FMat-Destructor: end " << endl;
-				delete data;
+				delete[] data;
 			}
 		}
 		
@@ -82,10 +82,11 @@ namespace gm {
 			//cout << "FMat-Destructor: started - data address:" << (void*)data << endl;
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
-					delete data[i];
+					delete[] data[i];
 				}
 				//cout << "FMat-Destructor: end " << endl;
-				delete data;
+				delete[] data;
+				data = NULL;
 			}
 		}
 		
@@ -96,9 +97,9 @@ namespace gm {
 			
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
-					delete data[i];
+					delete[] data[i];
 				}
-				delete data;
+				delete[] data;
 			}
 			
 			data = new T*[r];
@@ -121,9 +122,9 @@ namespace gm {
 			
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
-					delete data[i];
+					delete[] data[i];
 				}
-				delete data;
+				delete[] data;
 			}
 			
 			data = new T*[r];
