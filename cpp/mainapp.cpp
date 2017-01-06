@@ -144,14 +144,14 @@ int main(int argc, char **args) {
 	read1 = readTheta(1, "./coursera_data/coursera_theta1.data", row1, col1, &theta1);
 	if(!read1) {
 		cout << "Failed to read theta1!" << endl;
-		delete X;
+		delete[] X;
 		return 3;
 	}
 	
 	read2 = readTheta(2, "./coursera_data/coursera_theta2.data", row2, col2, &theta2);
 	if(!read2) {
 		cout << "Failed to read theta2!" << endl;
-		delete X;
+		delete[] X;
 		return 3;
 	}
 	
@@ -163,6 +163,7 @@ int main(int argc, char **args) {
 	aNet->setWeights(1, theta2);
 	
 	double err;
+	double lambda = 0.0;
 	
 	int itr = 0;
 	while(itr < num_iter) {
@@ -177,7 +178,7 @@ int main(int argc, char **args) {
 					}
 				}
 				
-				err = aNet->forward(X, t, 0.01);
+				err = aNet->forward(X, t, lambda);
 				cout << "Err : " << err << endl;
 				error += err;
 				aNet->backward();
@@ -192,10 +193,10 @@ int main(int argc, char **args) {
 		itr++;
 	}
 	
-	delete t;
-	delete theta1;
-	delete theta2;
-	delete X;
+	delete[] t;
+	delete[] theta1;
+	delete[] theta2;
+	delete[] X;
 	delete aNet;
 	
 	return 0;

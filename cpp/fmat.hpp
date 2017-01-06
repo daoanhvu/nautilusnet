@@ -256,6 +256,35 @@ namespace gm {
             return data[r][c];
         }
 		
+		T sumRow(int idx) {
+			int c;
+			T s = (T)0;
+			for(c=0; c<column; c++) {
+				s += data[idx][c];
+			}
+			return s;
+		}
+		
+		T sumColumn(int idx) {
+			int r;
+			T s = (T)0;
+			for(r=0; r<row; r++) {
+				s += data[r][idx];
+			}
+			return s;
+		}
+		
+		T sum() {
+			int c, r;
+			T s = (T)0;
+			for(r=0; r<row; r++) {
+				for(c=0; c<column; c++) {
+					s += data[r][c];
+				}
+			}
+			return s;
+		}
+		
 		FMat<T>& operator +=(const FMat<T> &m) {
 			int i, j;
 			if(this->row != m.row || this->column != m.column) {

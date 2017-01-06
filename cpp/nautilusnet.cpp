@@ -11,6 +11,7 @@ using namespace std;
 NautilusNet::NautilusNet() {
 	L = 0;
 	layer = NULL;
+	weight = NULL;
 	dw = NULL;
 }
 
@@ -23,11 +24,11 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	layer = new Layer[L];
 	
 	//delta matrices fo weights
+	weight = new FMat<double>[L-1];
 	dw = new FMat<double>[L-1];
 	
 	//input layer
 	layer[0].layerSize = inputSize;
-	layer[0].weight = NULL; //Input layer has no weights
 	layer[0].d = NULL; //Input layer has no delta
 	layer[0].a = new FMat<double>(1, inputSize + 1);
 	layer[0].a->setAt(0, 0, 1.0);
@@ -37,13 +38,13 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 		preSize = layer[l-1].layerSize;
 		layer[l].layerSize = hiddenSize;
 		//cout << "Layer " << l << "; Hidden size = " << hiddenSize << endl;
-		//Number of row of matrix weight is this layerSize
-		//Number of column of matrix weight is preSize
-		layer[l].weight = new FMat<double>(hiddenSize, preSize + 1); //plus 1 for bias
 		layer[l].a = new FMat<double>(1, hiddenSize + 1);
 		layer[l].a->setAt(0, 0, 1.0);
 		layer[l].d = new FMat<double>(1, hiddenSize);
 		
+		//Number of row of matrix weight is this layerSize
+		//Number of column of matrix weight is preSize
+		weight[l-1].init(hiddenSize, preSize + 1);
 		//Initialize matrices delta of weights
 		dw[l-1].init(hiddenSize, preSize + 1, 0);
 	}
@@ -52,10 +53,10 @@ NautilusNet::NautilusNet(int layerCount, int inputSize, int hiddenSize, int outp
 	preSize = layer[L-2].layerSize;
     //cout << "last preSize = " << preSize << endl;
 	layer[L-1].layerSize = outputSize;
-	layer[L-1].weight = new FMat<double>(outputSize, preSize + 1); //plus 1 for bias
 	layer[L-1].a = new FMat<double>(1, outputSize);
 	layer[L-1].d = new FMat<double>(1, outputSize);
 	
+	weight[L-2].init(outputSize, preSize + 1);
 	dw[L-2].init(outputSize, preSize + 1, 0);
 }
 
@@ -70,19 +71,18 @@ NautilusNet::~NautilusNet() {
 			#ifdef DEBUG
 				cout << "Release layer " << l << " with " << ls << " node(s) " << endl;
 			#endif
-			if(layer[l].weight != NULL) {
-				delete layer[l].weight;
-			}
 			if(layer[l].a != NULL)
 				delete layer[l].a;
 			
 			delete layer[l].d;
 			
 			if(l<L-1) {
+				weight[l].release();
 				dw[l].release();
 			}
 		}
 		delete[] layer;
+		delete[] weight;
 		delete[] dw;
 		L = 0;
 	}
@@ -92,9 +92,7 @@ void NautilusNet::setInputOutput(const double *inputs, const double* ouputs) {
 }
 
 void NautilusNet::setWeights(int idx, const double *w) {
-	Layer *l = (Layer*) (layer + (idx + 1));
-	int size = l->layerSize;
-	l->weight->setValues(w);
+	weight[idx].setValues(w);
 }
 
 /**
@@ -119,7 +117,7 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 	
     //This for loop is used for HIDDEN layers ONLY
 	for(l=1; l<L-1; l++) {
-		z = layer[l-1].a->mulToTranspose(*(layer[l].weight));
+		z = layer[l-1].a->mulToTranspose(weight[l-1]);
 		size = z.getColumn();
 		for(i=0; i<size; i++) {
 			layer[l].a->setAt(0, i+1, (1.0/(1.0 + exp(-z.value(0, i)))));
@@ -129,8 +127,8 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
     //process for the lass layer (the output layer)
 	Layer *last = (Layer*) (layer + (L-1));
     //z =  (*(layer[L-2].a)) * last->weight->transpose();
-	z = layer[L-2].a->mulToTranspose(*(last->weight));
-	z.print(cout);
+	z = layer[L-2].a->mulToTranspose(weight[L-2]);
+	//z.print(cout);
     size = z.getColumn();
 	j = 0.0;
     for(i=0; i<size; i++) {
@@ -139,10 +137,10 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		j += -y[i]*log(hThetaX) - (1.0-y[i]) * log(1.0-hThetaX);
 		//Compute delta for ouput layer
 		last->d->setAt(0, i, hThetaX - y[i]);
-        
         //cout << "d3: " << hThetaX - y[i] << endl;
 	}
-	return j;
+	
+	return (j + regulator(1, lambda));
 }
 
 /**
@@ -156,37 +154,51 @@ void NautilusNet::backward() {
 	//l2 is the next layer of li (l(i+1))
 	Layer *l2;
 	FMat<double> z;
-	FMat<double> *w;
 	
 	for(i=L-2; i>0; i--) {
 		l0 = (Layer*)(layer+i-1);
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
-		w = li->weight;
 		//z = (*w) * (*(l0->a)');
-		z = w->mulToTranspose(*(l0->a));
+		z = weight[i-1].mulToTranspose(*(l0->a));
 		
 		//w->printSize(cout) << endl;
 		//l0->a->printSize(cout) << endl;
 		
 		//li->d = l2->weights->transpose() * (l2->d) .* g'(z(3))
 		//z.print(cout);
-		computeDelta(li, l2, z);
+		computeDelta(i, li, l2, z);
 	}
 	
 	//Compute gradients and update weights
 	for(i=0; i<L-1; i++) {
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
-		//dw[i] += l2->d->transpose() * (*(li->a));
 		dw[i] += l2->d->mulTransposeTo(*(li->a));
-		*(l2->weight) += dw[i];
 	}
 }
 
-void NautilusNet::computeDelta(Layer *l, const Layer *l2, const FMat<double> &z) {
-	int row2 = l2->weight->getRow();
-    int col2 = l2->weight->getColumn();
+double NautilusNet::regulator(int m, double lambda) {
+	int i, c, r, row, column;
+	double s = 0.0;
+	double tmp = 0.0;
+	
+	for(i=0; i<L-1; i++) {
+		row = weight[i].getRow();
+		column = weight[i].getColumn();
+		for(r=0; r<row; r++) {
+			for(c=0; c<column; c++) {
+				tmp = weight[i][r][c];
+				s += (tmp * tmp);
+			}
+		}
+	}
+	return (lambda/(2.0*m)) * s;
+}
+
+void NautilusNet::computeDelta(int idx, Layer *l, const Layer *l2, const FMat<double> &z) {
+	int row2 = weight[idx].getRow();
+    int col2 = weight[idx].getColumn();
 	int lSize = l2->d->getColumn();
 	int i, j;
     double s;
@@ -199,7 +211,7 @@ void NautilusNet::computeDelta(Layer *l, const Layer *l2, const FMat<double> &z)
     for(i=0; i<col2; i++) {
         s = 0.0;
         for(j=0; j<lSize; j++) {
-            s += l2->d->value(0,j) * l2->weight->value(j, i);
+            s += l2->d->value(0,j) * weight[idx][j][i];
         }
         
 		if(i>0) {

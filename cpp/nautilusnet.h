@@ -9,10 +9,6 @@ using namespace gm;
 typedef struct tagLayer {
 	//This is number of node in this layer
 	int layerSize;
-	
-	//This is the weight matrix between the previous layer and this layer
-	FMat<double> *weight;
-	
 	//This is output value of the previous layer so it's also the input of this layer
 	//THIS VECTOR IS INCLUDING BIAS
 	FMat<double> *a;
@@ -26,19 +22,20 @@ class NautilusNet {
 		Layer *layer;
 		int L;
 		
+		//This is the weight matrix between the previous layer and this layer
+		//Length of this array is L-1
+		FMat<double> *weight;
 		//This array of matrix is used to hold gradient of weights
+		//Length of this array is L-1
 		FMat<double> *dw;
 		
-		void computeDelta(Layer *l, const Layer *l2, const FMat<double> &z);
+		double regulator(int m, double lambda);
+		void computeDelta(int idx, Layer *l, const Layer *l2, const FMat<double> &z);
 		
 	public:
 		NautilusNet();
 		NautilusNet(int layerCount, int inputSize, int hiddenSize, int outputSize);
         ~NautilusNet();
-		
-		void setL(int l) {
-			L = l;
-		}
 		
 		int getL(){
 			return L;
