@@ -180,7 +180,7 @@ int main(int argc, char **args) {
 				err = aNet->forward(X, t, 0.01);
 				cout << "Err : " << err << endl;
 				error += err;
-				//aNet->backward();
+				aNet->backward();
 			}
 			k++;
 		}

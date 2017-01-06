@@ -139,6 +139,8 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		j += -y[i]*log(hThetaX) - (1.0-y[i]) * log(1.0-hThetaX);
 		//Compute delta for ouput layer
 		last->d->setAt(0, i, hThetaX - y[i]);
+        
+        //cout << "d3: " << hThetaX - y[i] << endl;
 	}
 	return j;
 }
@@ -199,8 +201,10 @@ void NautilusNet::computeDelta(Layer *l, const Layer *l2, const FMat<double> &z)
         for(j=0; j<lSize; j++) {
             s += l2->d->value(0,j) * l2->weight->value(j, i);
         }
+        
 		if(i>0) {
 			s = s * gradientSigmoid(z.value(i-1, 0));
+            cout << s << " " << endl;
 			l->d->setAt(0, i-1, s);
 		}
     }
