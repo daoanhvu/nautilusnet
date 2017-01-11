@@ -3,6 +3,8 @@
 LRESULT CALLBACK windProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPreIns, _In_ LPSTR lpCmdLine, _In_ int nCmd) {
+    WNDCLASSEX wndex;
+    
 	return 0;
 }
 
