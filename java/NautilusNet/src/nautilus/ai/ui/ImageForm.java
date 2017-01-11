@@ -1,8 +1,11 @@
 package nautilus.ai.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -52,6 +55,7 @@ public class ImageForm extends JFrame {
 	private JButton mStartLearning;
 	private JButton btnRecognize, btnLoadTheNet;
 	private JTextField mInputImagePath;
+	private JTextField txtResult;
 	private JButton mBrowse;
 	
 	HWRNet mTheNet;
@@ -159,8 +163,21 @@ public class ImageForm extends JFrame {
 		imagePane.add(mTargetmagePane);
 		mainPane.add(imagePane, BorderLayout.CENTER);
 		
+		JPanel pnSouthPane = new JPanel(new GridLayout(2, 1));
+		
+		JPanel pnResultPane = new JPanel();
+		pnSouthPane.add(pnResultPane);
+		txtResult = new JTextField(15);
+		txtResult.setBorder(BorderFactory.createLineBorder(Color.black));
+		txtResult.setForeground(Color.BLUE);
+		Font bigFont = txtResult.getFont().deriveFont(Font.PLAIN, 25.5f);
+		txtResult.setFont(bigFont);
+		txtResult.setHorizontalAlignment(SwingConstants.CENTER);
+		pnResultPane.add(txtResult);
+		
 		//Button pane
 		mButtonPane = new JPanel();
+		pnSouthPane.add(mButtonPane);
 		
 		mStartLearning = new JButton("Test Process Image");
 		mButtonPane.add(mStartLearning);
@@ -170,7 +187,7 @@ public class ImageForm extends JFrame {
 		
 		btnRecognize = new JButton("Recognize");
 		mButtonPane.add(btnRecognize);
-		mainPane.add(mButtonPane, BorderLayout.SOUTH);
+		mainPane.add(pnSouthPane, BorderLayout.SOUTH);
 		
 		//Add main pane to frame
 		c.add(mainPane, BorderLayout.CENTER);
@@ -193,7 +210,6 @@ public class ImageForm extends JFrame {
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
 			}
-			
 		});
 		
 		mBrowse.addActionListener(new ActionListener() {
@@ -228,6 +244,8 @@ public class ImageForm extends JFrame {
 							result = ImageFilter.lowpassFilter(bimage);
 							result = ImageFilter.fixImage(result);
 							result = ImageFilter.resize2(result, HWRNet.SAMPLE_WIDTH, HWRNet.SAMPLE_HEIGHT);
+							
+//							ImageIO.write(result, "png", new File("d:\\d7.png"));
 						} catch (Exception ex) {
 							ex.printStackTrace();
 							return null;
@@ -293,7 +311,8 @@ public class ImageForm extends JFrame {
 							char ch;
 							result = get();
 							ch = HWRNet.getCharacter(result);
-							mImageSizeLabel.setText("Recognizing done! Result: " + ch);
+							//mImageSizeLabel.setText("Recognizing done! Result: " + ch);
+							txtResult.setText("" + ch);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

@@ -84,7 +84,7 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		c.setLayout(new BorderLayout());
 		
 		//Input File Path pane
-		JPanel northPane = new JPanel(new GridLayout(3, 1));
+		JPanel centerPane = new JPanel(new GridLayout(3, 1));
 		JPanel inputPane = new JPanel();
 		txtSampleDir = new JTextField(30);
 		mSampleDirBrowse = new JButton("Browse");
@@ -108,9 +108,9 @@ public class TrainingForm extends JFrame implements PropertyChangeListener {
 		btnSaveTheNet = new JButton("Save Weights");
 		pnButtonPane.add(btnSaveTheNet);
 		
-		northPane.add(inputPane);
-		northPane.add(pnButtonPane);
-		c.add(northPane, BorderLayout.CENTER);
+		centerPane.add(inputPane);
+		centerPane.add(pnButtonPane);
+		c.add(centerPane, BorderLayout.CENTER);
 		
 		GridBagLayout gbl = new GridBagLayout();
 		JPanel statusBar = new JPanel(gbl);

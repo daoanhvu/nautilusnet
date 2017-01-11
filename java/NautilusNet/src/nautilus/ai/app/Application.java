@@ -1,5 +1,6 @@
 package nautilus.ai.app;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ public class Application {
 	public static final int SIMPLE_STEP = 1;
 	public static final int NETWORK_STEP = 2;
 	
-	public static final String DATA_DIR = "network_data_dir";
+	private static final String RDF_FILE_PATH = "data_file";
 	public static final String INPUT_SAMPLE_DIR = "input_sample_dir";
 	public static final String OUTPUT_SAMPLE_DIR = "output_sample_dir";
 	public static final String NETWORK_DATA_FILE = "network_data_file";
@@ -26,6 +27,12 @@ public class Application {
 	private Properties prop = new Properties();
 	
 	private Application() {
+	}
+	
+	public File getRDFFile() {
+		File f = new File(prop.getProperty(RDF_FILE_PATH));
+		
+		return f;
 	}
 	
 	public static Application getInstance() {
