@@ -1,0 +1,1 @@
+cl /EHsc /D"DEBUG" ../nautilusnet.cpp NautilusMind.cpp /I"..\" user32.lib
