@@ -3,6 +3,10 @@
 LPCTSTR ClsName = "NautilusNet";
 LPCTSTR WndName = "Nautilus Mind 1.0";
 
+/* FOR DOUBLE BUFFERING  **/
+HDC memDC;
+HBITMAP bufferBmp;
+
 LRESULT CALLBACK windProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPreIns, _In_ LPSTR lpCmdLine, _In_ int nCmd) {
@@ -57,7 +61,21 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_ HINSTANCE hPreIns, _In_ LPST
 }
 
 LRESULT CALLBACK windProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    
+    HDC hDC;
+    PAINTSTRUCT ps;
+    
 	switch(msg) {
+        
+        case WM_PAINT:
+            hDC = BeginPaint(hwnd, &ps);
+            EndPaint(hwnd, &ps);
+        break;
+        
+        case WM_ERASEBKGND:
+            return 1;
+        break;
+        
 		case WM_DESTROY:
 			PostQuitMessage(WM_QUIT);
 		break;
