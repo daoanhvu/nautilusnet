@@ -1,2 +1,2 @@
-cl /c /Oy /EHsc /D "DEBUG" /nologo ../nautilusnet.cpp NautilusMind.cpp /I"..\"
+cl /c /Oy /EHsc /D"DEBUG" /nologo ../nautilusnet.cpp NautilusMind.cpp /I"..\"
 link /SUBSYSTEM:Windows nautilusnet.obj NautilusMind.obj "kernel32.lib" "user32.lib" "gdi32.lib" "winspool.lib" "comdlg32.lib" "advapi32.lib" "shell32.lib" "ole32.lib" /out:NautilusMind.exe
