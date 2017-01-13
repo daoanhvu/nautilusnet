@@ -59,19 +59,19 @@ int readTheta(int layer_index, const char *filename, int &row, int &col, double 
 int main1(int argc, char **args) {
 	double X[4] = {0.0, 1.3, 1.5, 1.0};
 	double y[1] = {1};
-	double theta1[] = {0.01, 0.015, 0.3, 0.5, 0.1,
-                0.18, 0.06, 0.1, 0.25, 0.71,
-                0.14, 0.05, 0.23, 0.39, 0.2,
-                0.21, 0.18, 0.54, 0.4, 0.21,
-                0.17, 0.11, 0.87, 0.2, 0.09};
+	double theta1[] = {	0.01, 0.015, 0.3, 0.5, 0.1,
+						0.18, 0.06, 0.1, 0.25, 0.71,
+						0.14, 0.05, 0.23, 0.39, 0.2,
+						0.21, 0.18, 0.54, 0.4, 0.21,
+						0.17, 0.11, 0.87, 0.2, 0.09};
 	double theta2[] = { 0.23, 0.18, 0.4, 0.74, 0.12, 0.35,
                         0.66, 0.27, 0.54, 0.4, 0.21, 0.5};
 	double t[2];
 	double error = 0.0;
 	NautilusNet *aNet;
-	const int number_of_labels = 2;
+	const int number_of_labels = 3;
 	
-	aNet = new NautilusNet(3, 4, 5, number_of_labels);
+	aNet = new NautilusNet(3, 3, 5, number_of_labels);
 	aNet->setWeights(0, theta1);
 	aNet->setWeights(1, theta2);
 	
