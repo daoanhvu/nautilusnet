@@ -162,19 +162,24 @@ void NautilusNet::backward() {
 		//z = (*w) * (*(l0->a)');
 		z = weight[i-1].mulToTranspose(*(l0->a));
 		
-		//w->printSize(cout) << endl;
-		//l0->a->printSize(cout) << endl;
-		
 		//li->d = l2->weights->transpose() * (l2->d) .* g'(z(3))
-		//z.print(cout);
 		computeDelta(i, li, l2, z);
 	}
 	
-	//Compute gradients and update weights
+	//Compute gradients
 	for(i=0; i<L-1; i++) {
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
 		dw[i] += l2->d->mulTransposeTo(*(li->a));
+	}
+}
+/** 
+	Update weights
+*/
+void NautilusNet::updateWeights(int m, double lambda) {
+	int i;
+	for(i=0; i<L-1; i++) {
+		weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i];
 	}
 }
 
@@ -216,7 +221,7 @@ void NautilusNet::computeDelta(int idx, Layer *l, const Layer *l2, const FMat<do
         
 		if(i>0) {
 			s = s * gradientSigmoid(z.value(i-1, 0));
-            cout << s << " " << endl;
+            //cout << s << " " << endl;
 			l->d->setAt(0, i-1, s);
 		}
     }

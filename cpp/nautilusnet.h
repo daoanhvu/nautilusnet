@@ -49,6 +49,7 @@ class NautilusNet {
 		void setInputOutput(const double *inputs, const double* ouputs);
 		double forward(const double *x, const double *y, double lambda);
 		void backward();
+		void updateWeights(int m, double lambda);
         double sigmoid(double);
 		double gradientSigmoid(double z);
         double costFunction(const double **x, int m, double *y, double lambda, double *grad, int &gradSize);

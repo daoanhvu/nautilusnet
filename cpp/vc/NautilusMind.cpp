@@ -1,5 +1,10 @@
 #include <Windows.h>
 
+/**
+	References:
+		http://progtrick.blogspot.nl/2015/12/how-to-draw-opencv-mat-data-into-native.html
+*/
+
 LPCTSTR ClsName = "NautilusNet";
 LPCTSTR WndName = "Nautilus Mind 1.0";
 
@@ -69,26 +74,12 @@ LRESULT CALLBACK windProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     
     HDC hDC;
     PAINTSTRUCT ps;
-	HBRUSH brush;
-    
 	switch(msg) {
         
         case WM_PAINT:
             hDC = BeginPaint(hwnd, &ps);
-			
-			GetClientRect(hwnd, &clientRect);
-	
-			clientWidth = clientRect.right - clientRect.left;
-			clientHeight = clientRect.bottom - clientRect.top;
-			
-			brush = CreateSolidBrush(RGB(25,25,25));
-			SelectObject(memDC, bufferBmp);
-			FillRect(memDC, &clientRect, brush);
 			BitBlt(hDC, 0, 0, clientWidth, clientHeight, memDC, 0, 0, SRCCOPY);
 			DeleteDC (hDC);
-			DeleteObject(brush);
-			
-			
             EndPaint(hwnd, &ps);
         break;
         
@@ -119,19 +110,26 @@ void onSizeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 	PAINTSTRUCT ps;
 	int width = LOWORD(lParam);
 	int height = HIWORD(lParam);
-	//HBRUSH brush = CreateSolidBrush(RGB(245,245,245));
+	HBRUSH brush = CreateSolidBrush(RGB(245,245,245));
 	
 	GetClientRect(hwnd, &clientRect);
 	
 	clientWidth = clientRect.right - clientRect.left;
 	clientHeight = clientRect.bottom - clientRect.top;
 	
+	if(memDC!=NULL && bufferBmp!=NULL) {
+		SelectObject(memDC, oldMemBMP);
+		DeleteObject(bufferBmp);
+		DeleteDC (memDC);
+	}
+	
 	hDC = BeginPaint(hwnd, &ps);
 	memDC = CreateCompatibleDC(hDC);
 	bufferBmp = CreateCompatibleBitmap(hDC, clientWidth, clientHeight);
 	oldMemBMP = SelectObject(memDC, bufferBmp);
-	//FillRect(memDC, &clientRect, brush);
+	FillRect(memDC, &clientRect, brush);
 	DeleteDC(hDC);
-	//DeleteObject(brush);
+	DeleteObject(brush);
     EndPaint(hwnd, &ps);
+	InvalidateRect(hwnd, NULL, TRUE);
 }

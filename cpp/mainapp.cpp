@@ -185,11 +185,13 @@ int main(int argc, char **args) {
 			}
 			k++;
 		}
-		
 		error = error / m;
 		cout << "###############################################################" << endl;
 		cout << "Iter: " << itr << " error = " << error << endl;
 		cout << "###############################################################" << endl << endl;
+		
+		aNet->updateWeights(m, lambda);
+		
 		itr++;
 	}
 	
