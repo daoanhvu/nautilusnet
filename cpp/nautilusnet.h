@@ -40,6 +40,10 @@ class NautilusNet {
 		int getL(){
 			return L;
 		}
+
+		FMat<double> getWeights(int index) {
+			return weight[index];
+		}
 		
 		/**
 			set weights to the net at the middle of layer idx and (idx + 1)

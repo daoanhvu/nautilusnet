@@ -56,45 +56,66 @@ int readTheta(int layer_index, const char *filename, int &row, int &col, double 
 	return 1;
 }
 
-int main1(int argc, char **args) {
-	double X[4] = {0.0, 1.3, 1.5, 1.0};
-	double y[1] = {1};
-	double theta1[] = {	0.01, 0.015, 0.3, 0.5, 0.1,
-						0.18, 0.06, 0.1, 0.25, 0.71,
-						0.14, 0.05, 0.23, 0.39, 0.2,
-						0.21, 0.18, 0.54, 0.4, 0.21,
-						0.17, 0.11, 0.87, 0.2, 0.09};
-	double theta2[] = { 0.23, 0.18, 0.4, 0.74, 0.12, 0.35,
-                        0.66, 0.27, 0.54, 0.4, 0.21, 0.5};
-	double t[2];
-	double error = 0.0;
+int main(int argc, char **args) {
+	const int m = 5;
+	int k;
+	int i;
+	double X[5][3] = {
+		{0.084147,  -0.027942, -0.099999},
+	    {0.090930,  0.065699,  -0.053657},
+	    {0.014112,  0.098936,  0.042017},
+	    {-0.075680, 0.041212,  0.099061},
+	    {-0.095892, -0.054402, 0.065029}};
+	double y[m] = {2,3,1,2,3};
+	double theta1[] = { 	0.084147, -0.027942, -0.099999, -0.028790,
+							0.090930,  0.065699, -0.053657, -0.096140,
+						   0.014112,   0.098936,   0.042017, -0.075099,
+						  -0.075680,   0.041212,   0.099061,   0.014988,
+						  -0.095892,  -0.054402,   0.065029,   0.091295};
+
+	double theta2[] = { 
+		0.084147,  -0.075680,   0.065699,  -0.054402,   0.042017,  -0.028790,
+	    0.090930,  -0.095892,   0.098936,  -0.099999,   0.099061,  -0.096140,
+	    0.014112,  -0.027942,   0.041212,  -0.053657,   0.065029,  -0.075099};
+
+	double err, error = 0.0;
+	double lambda = 3.0; 
 	NautilusNet *aNet;
 	const int number_of_labels = 3;
+	double t[number_of_labels];
+	FMat<double> w;
 	
 	aNet = new NautilusNet(3, 3, 5, number_of_labels);
 	aNet->setWeights(0, theta1);
 	aNet->setWeights(1, theta2);
 	
-    /*
-	for(int i=0; i<number_of_labels; i++) {
-		t[i] = 0.0;
-		if( i==(int)y[0]) {
-			t[i] = 1.0;
+    while( k<m ) {
+		for(i=0; i<number_of_labels; i++) {
+			t[i] = 0.0;
+			if( (i+1)==(int)y[k]) {
+				t[i] = 1.0;
+			}
 		}
+		err = aNet->forward(X[k], t, lambda);
+		cout << "Err : " << err << endl;
+		error += err;
+		aNet->backward();
+		
+		k++;
 	}
-    */
-    t[0] = 1.0;
-    t[1] = 0.0;
-    
-	error = aNet->forward(X, t, 0.0);	
-	cout << "error = " << error << endl;
+
+	aNet->updateWeights(m, lambda);
+
+	w = aNet->getWeights(0);
+
+	cout << "\n" << w << endl;
 	
 	delete aNet;
 	
 	return 0;
 }
 
-int main(int argc, char **args) {
+int main1(int argc, char **args) {
 	
 	if(argc <= 2) {
 		cout << "Not enough parameters." << endl;
