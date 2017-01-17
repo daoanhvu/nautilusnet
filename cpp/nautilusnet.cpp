@@ -130,6 +130,7 @@ double NautilusNet::forward(int m, const double *x, const double *y, double lamb
     //z =  (*(layer[L-2].a)) * last->weight->transpose();
 	z = layer[L-2].a->mulToTranspose(weight[L-2]);
 	//z.print(cout);
+
     size = z.getColumn();
 	j = 0.0;
     for(i=0; i<size; i++) {
@@ -137,8 +138,8 @@ double NautilusNet::forward(int m, const double *x, const double *y, double lamb
 		last->a->setAt(0, i, hThetaX);
 		j += -y[i]*log(hThetaX) - (1.0-y[i]) * log(1.0-hThetaX);
 		//Compute delta for ouput layer
-		last->d->setAt(0, i, hThetaX - y[i]);
-        //cout << "d3: " << hThetaX - y[i] << endl;
+		last->d->setAt(0, i, hThetaX - y[i]);		
+        //cout << "a3: "<< hThetaX << " d3: " << hThetaX - y[i] << endl;
 	}
 
 	//double rg = regulator(1, lambda);
@@ -176,9 +177,9 @@ void NautilusNet::backward() {
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
 
-		if(i==0) {
-			cout << *(l2->d) << endl;
-		}
+		// if(i==0) {
+		// 	cout << endl << *(l2->d) << endl;
+		// }
 
 		dw[i] += l2->d->mulTransposeTo(*(li->a));
 
@@ -221,48 +222,39 @@ double NautilusNet::regulator(int m, double lambda) {
 }
 
 void NautilusNet::computeDelta(int idx, Layer *l, const Layer *l2, const FMat<double> &z) {
-	int row2 = weight[idx].getRow();
-    int col2 = weight[idx].getColumn();
-	int lSize = l2->d->getColumn();
-	int i, j;
-    double s;
+	int row2;
+	int i;
+    FMat<double> dt = weight[idx].mulTransposeTo(l2->d->transpose());
 	
 	//z.printSize(cout) << " " << col2 << endl;
 	//l->d->printSize(cout);
 	/**
 		Here, we get transpose of weight then multiply to delta
 	*/
-	FMat<double> dt;
-	cout << "weight: "<< idx << endl;
-	weight[idx].printSize(cout);
-	cout << " l2->d: " << endl;
-	l2->d->printSize(cout);
-	cout << "z: " << endl;
-	z.printSize(cout);
 
-	dt = weight[idx].mulTransposeTo(l2->d->transpose());
+    // if(idx==1)
+    // 	cout << "d3:" << endl << *(l2->d);
+		//cout << "mulTransposeTo m:" << endl << dt;
+	// weight[idx].printSize(cout);
+	// cout << endl;
+	
+	// cout << " l2->d: " ;
+	// l2->d->printSize(cout);
+	// cout << endl;
+
+	// cout << "z: " ;
+	// z.printSize(cout);
+	// cout << endl;
+
+	// cout << "l->d: ";
+	// l->d->printSize(cout);
+	// cout << endl;
+
 	row2 = dt.getRow();
-	col2 = dt.getColumn();
+	//col2 = dt.getColumn();
 	for(i=1; i<row2; i++) {
-		l->d->setAt(0, i-0, dt.value(i, 0) * gradientSigmoid(z.value(i-1, 0)));
+		l->d->setAt(0, i-1, dt.value(i, 0) * gradientSigmoid(z.value(i-1, 0)));
 	}
-
-	l->d->printSize(cout);
-
-	//l->d->
-
-  //   for(i=0; i<col2; i++) {
-  //       s = 0.0;
-  //       for(j=0; j<lSize; j++) {
-  //           s += l2->d->value(0,j) * weight[idx][j][i];
-  //       }
-        
-		// if(i>0) {
-		// 	s = s * gradientSigmoid(z.value(i-1, 0));
-  //           //cout << s << " " << endl;
-		// 	l->d->setAt(0, i-1, s);
-		// }
-  //   }
 }
 
 double NautilusNet::sigmoid(double z) {
