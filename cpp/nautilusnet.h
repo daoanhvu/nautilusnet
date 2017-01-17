@@ -61,6 +61,7 @@ class NautilusNet {
 		void updateWeights(int m, double lambda);
         double sigmoid(double);
 		double gradientSigmoid(double z);
+		FMat<double> gradientSigmoidM(FMat<double> z);
         double costFunction(const double **x, int m, double *y, double lambda, double *grad, int &gradSize);
 		
 };

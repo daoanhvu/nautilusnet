@@ -175,7 +175,15 @@ void NautilusNet::backward() {
 	for(i=0; i<L-1; i++) {
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
+
+		if(i==0) {
+			cout << *(l2->d) << endl;
+		}
+
 		dw[i] += l2->d->mulTransposeTo(*(li->a));
+
+		//Reset d matrix
+		l2->d->setZero();
 	}
 }
 /** 
@@ -186,7 +194,8 @@ void NautilusNet::updateWeights(int m, double lambda) {
 	for(i=0; i<L-1; i++) {
 		//cout << weight[i].replaceColumnBy(0, 0.0) << endl;
 		weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i].replaceColumnBy(0, 0.0);
-		//weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i];
+		
+		dw[i].setZero();
 	}
 }
 
@@ -223,22 +232,54 @@ void NautilusNet::computeDelta(int idx, Layer *l, const Layer *l2, const FMat<do
 	/**
 		Here, we get transpose of weight then multiply to delta
 	*/
-    for(i=0; i<col2; i++) {
-        s = 0.0;
-        for(j=0; j<lSize; j++) {
-            s += l2->d->value(0,j) * weight[idx][j][i];
-        }
+	FMat<double> dt;
+	cout << "weight: "<< idx << endl;
+	weight[idx].printSize(cout);
+	cout << " l2->d: " << endl;
+	l2->d->printSize(cout);
+	cout << "z: " << endl;
+	z.printSize(cout);
+
+	weight[idx].mulTransposeTo(*(l2->d));
+
+	//weight[idx].mulTransposeTo(*(l2->d)).printSize(cout);
+	//dt = weight[idx].mulTransposeTo(*(l2->d)).mulElement(gradientSigmoidM(z));
+	dt.printSize(cout);
+
+	l->d->printSize(cout);
+
+	//l->d->
+
+  //   for(i=0; i<col2; i++) {
+  //       s = 0.0;
+  //       for(j=0; j<lSize; j++) {
+  //           s += l2->d->value(0,j) * weight[idx][j][i];
+  //       }
         
-		if(i>0) {
-			s = s * gradientSigmoid(z.value(i-1, 0));
-            //cout << s << " " << endl;
-			l->d->setAt(0, i-1, s);
-		}
-    }
+		// if(i>0) {
+		// 	s = s * gradientSigmoid(z.value(i-1, 0));
+  //           //cout << s << " " << endl;
+		// 	l->d->setAt(0, i-1, s);
+		// }
+  //   }
 }
 
 double NautilusNet::sigmoid(double z) {
     return (1.0/(1.0 + exp(-z)));
+}
+
+FMat<double> NautilusNet::gradientSigmoidM(FMat<double> z) {
+	int row = z.getRow();
+	int column = z.getColumn();
+	FMat<double> r(row, column);
+
+	for(int i=0; i<row; i++) {
+		for(int j=0; j<column; j++) {
+			r[i][j] = gradientSigmoid(z.value(i,j));
+		}
+	}
+
+	return r;
 }
 
 double NautilusNet::gradientSigmoid(double z) {

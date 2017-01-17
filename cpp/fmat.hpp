@@ -172,6 +172,15 @@ namespace gm {
 			
 			data[r][col] = d;
         }
+
+        void setZero() {
+        	int i, j;
+			for(i=0; i<row; i++) {
+				for(j=0; j<column; j++) {
+					data[i][j] = (T)0;
+				}
+			}
+        }
 		
 		int getRow(){ return row; }
 		
@@ -207,18 +216,19 @@ namespace gm {
 			return o;
 		}
 		
-		/*
-		void mulToTranspose(const FMat<T> &m2, FMat<T> &result) {
+		
+		FMat mulElement(const FMat<T> &m2) {
 			int i, j;
-			result.init(column, row);
-			for(i=0; i<column; i++) {
-				for(j=0; j<row; j++) {
-					//(*(result.operator[](i)))[j] = data[j]->operator[](i);
-					result[].setAt(i, j, data[i][j]);
+			FMat<T> result(row, column);
+			for(i=0; i<row; i++) {
+				for(j=0; j<column; j++) {
+					result[i][j] = data[i][j] * m2.value(i, j);
 				}
 			}
+
+			return result;
 		}
-		*/
+		
 
 		void setIdentity() {
 			int i, j;
