@@ -240,11 +240,12 @@ void NautilusNet::computeDelta(int idx, Layer *l, const Layer *l2, const FMat<do
 	cout << "z: " << endl;
 	z.printSize(cout);
 
-	weight[idx].mulTransposeTo(*(l2->d));
-
-	//weight[idx].mulTransposeTo(*(l2->d)).printSize(cout);
-	//dt = weight[idx].mulTransposeTo(*(l2->d)).mulElement(gradientSigmoidM(z));
-	dt.printSize(cout);
+	dt = weight[idx].mulTransposeTo(l2->d->transpose());
+	row2 = dt.getRow();
+	col2 = dt.getColumn();
+	for(i=1; i<row2; i++) {
+		l->d->setAt(0, i-0, dt.value(i, 0) * gradientSigmoid(z.value(i-1, 0)));
+	}
 
 	l->d->printSize(cout);
 
