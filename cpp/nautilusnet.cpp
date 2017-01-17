@@ -98,11 +98,12 @@ void NautilusNet::setWeights(int idx, const double *w) {
 /**
 	This method returns the error value of the forward circle.
 	Params:
+		m int the total number of training example
 		x input vertor
 		y this is the target vector has size number-of-class that is the 'right' class of input x,
 		if this is target k-th then y[k] = 1.0 otherwise y[k] = 0
 */
-double NautilusNet::forward(const double *x, const double *y, double lambda) {
+double NautilusNet::forward(int m, const double *x, const double *y, double lambda) {
 	int l, i;
 	
 	FMat<double> z;
@@ -139,8 +140,12 @@ double NautilusNet::forward(const double *x, const double *y, double lambda) {
 		last->d->setAt(0, i, hThetaX - y[i]);
         //cout << "d3: " << hThetaX - y[i] << endl;
 	}
+
+	//double rg = regulator(1, lambda);
+	//double rg = regulator(m, lambda);
+	//cout << "\nregulator: " << rg << endl;
 	
-	return (j + regulator(1, lambda));
+	return (j + regulator(m, lambda));
 }
 
 /**
@@ -179,7 +184,9 @@ void NautilusNet::backward() {
 void NautilusNet::updateWeights(int m, double lambda) {
 	int i;
 	for(i=0; i<L-1; i++) {
-		weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i];
+		//cout << weight[i].replaceColumnBy(0, 0.0) << endl;
+		weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i].replaceColumnBy(0, 0.0);
+		//weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i];
 	}
 }
 
@@ -192,12 +199,15 @@ double NautilusNet::regulator(int m, double lambda) {
 		row = weight[i].getRow();
 		column = weight[i].getColumn();
 		for(r=0; r<row; r++) {
-			for(c=0; c<column; c++) {
+			//for(c=0; c<column; c++) {
+			//We don't include bias's weight into regulator
+			for(c=1; c<column; c++) {
 				tmp = weight[i][r][c];
 				s += (tmp * tmp);
 			}
 		}
 	}
+	//cout << "\nSum theta: " << s << endl << (lambda/(2.0*m)) << endl;
 	return (lambda/(2.0*m)) * s;
 }
 

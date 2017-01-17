@@ -56,7 +56,7 @@ int readTheta(int layer_index, const char *filename, int &row, int &col, double 
 	return 1;
 }
 
-int main(int argc, char **args) {
+int main1(int argc, char **args) {
 	const int m = 5;
 	int k;
 	int i;
@@ -67,11 +67,11 @@ int main(int argc, char **args) {
 	    {-0.075680, 0.041212,  0.099061},
 	    {-0.095892, -0.054402, 0.065029}};
 	double y[m] = {2,3,1,2,3};
-	double theta1[] = { 	0.084147, -0.027942, -0.099999, -0.028790,
-							0.090930,  0.065699, -0.053657, -0.096140,
-						   0.014112,   0.098936,   0.042017, -0.075099,
-						  -0.075680,   0.041212,   0.099061,   0.014988,
-						  -0.095892,  -0.054402,   0.065029,   0.091295};
+	double theta1[] = {	0.084147, -0.027942, -0.099999, -0.028790,
+						0.090930,  0.065699, -0.053657, -0.096140,
+						0.014112,  0.098936, 0.042017, -0.075099,
+						-0.075680, 0.041212, 0.099061, 0.014988,
+						-0.095892,-0.054402, 0.065029, 0.091295};
 
 	double theta2[] = { 
 		0.084147,  -0.075680,   0.065699,  -0.054402,   0.042017,  -0.028790,
@@ -89,35 +89,36 @@ int main(int argc, char **args) {
 	aNet->setWeights(0, theta1);
 	aNet->setWeights(1, theta2);
 	
-    while( k<m ) {
+    while( k < m ) {
 		for(i=0; i<number_of_labels; i++) {
 			t[i] = 0.0;
 			if( (i+1)==(int)y[k]) {
 				t[i] = 1.0;
 			}
 		}
-		err = aNet->forward(X[k], t, lambda);
+		err = aNet->forward(m, X[k], t, lambda);
 		cout << "Err : " << err << endl;
 		error += err;
 		aNet->backward();
-		
+		cout << "\n grad1: \n" << aNet->getGradients(0) << endl;
+		cout << "\n grad2: \n" << aNet->getGradients(1) << endl;
 		k++;
 	}
 
 	aNet->updateWeights(m, lambda);
 
 	w = aNet->getWeights(0);
-
 	cout << "\n" << w << endl;
+	cout << "\n" << aNet->getWeights(1) << endl;
 	
 	delete aNet;
 	
 	return 0;
 }
 
-int main1(int argc, char **args) {
+int main(int argc, char **args) {
 	
-	if(argc <= 2) {
+	if(argc <= 3) {
 		cout << "Not enough parameters." << endl;
 		cout << "Program exit." << endl;
 		return 1;
@@ -184,7 +185,7 @@ int main1(int argc, char **args) {
 	aNet->setWeights(1, theta2);
 	
 	double err;
-	double lambda = 0.0;
+	double lambda = atof(args[3]);
 	
 	int itr = 0;
 	while(itr < num_iter) {
@@ -199,8 +200,8 @@ int main1(int argc, char **args) {
 					}
 				}
 				
-				err = aNet->forward(X, t, lambda);
-				cout << "Err : " << err << endl;
+				err = aNet->forward(m, X, t, lambda);
+				//cout << "Err : " << err << endl;
 				error += err;
 				aNet->backward();
 			}

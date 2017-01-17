@@ -243,6 +243,21 @@ namespace gm {
 			}
 			return t;
 		}
+
+		FMat<T> replaceColumnBy(int colIdx, T val) {
+			int i, j;
+			FMat<T> t(row, column);
+			for(i=0; i<row; i++) {
+				for(j=0; j<column; j++) {
+					if(j != colIdx) {
+						t[i][j] = data[i][j];
+					} else {
+						t[i][j] = val;
+					}
+				}
+			}
+			return t;
+		}
         
         T* getRow(int index) const {
             return data[index];

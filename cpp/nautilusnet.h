@@ -44,6 +44,11 @@ class NautilusNet {
 		FMat<double> getWeights(int index) {
 			return weight[index];
 		}
+
+		//for debuging
+		FMat<double> getGradients(int index) {
+			return dw[index];
+		}
 		
 		/**
 			set weights to the net at the middle of layer idx and (idx + 1)
@@ -51,7 +56,7 @@ class NautilusNet {
 		void setWeights(int idx, const double *w);
 		
 		void setInputOutput(const double *inputs, const double* ouputs);
-		double forward(const double *x, const double *y, double lambda);
+		double forward(int m, const double *x, const double *y, double lambda);
 		void backward();
 		void updateWeights(int m, double lambda);
         double sigmoid(double);
