@@ -309,6 +309,30 @@ namespace gm {
 			}
 			return s;
 		}
+
+		FMat<T> operator +(T value) {
+			int i, j;
+			FMat<T> r(row, column);
+			for(i=0; i<row; i++) {
+				for(j=0; j<column; j++) {
+					r[i][j] = data[i][j] + value;
+				}
+			}
+			
+			return r;
+		}
+
+		FMat<T> operator -(T value) {
+			int i, j;
+			FMat<T> r(row, column);
+			for(i=0; i<row; i++) {
+				for(j=0; j<column; j++) {
+					r[i][j] = data[i][j] - value;
+				}
+			}
+			
+			return r;
+		}
 		
 		FMat<T> operator +(const FMat<T> &m) {
 			int i, j;
@@ -317,10 +341,25 @@ namespace gm {
 			}
 			
 			FMat<T> r(row, column);
-			double t;
 			for(i=0; i<row; i++) {
 				for(j=0; j<column; j++) {
 					r[i][j] = data[i][j] + m.value(i,j);
+				}
+			}
+			
+			return r;
+		}
+
+		FMat<T> operator -(const FMat<T> &m) {
+			int i, j;
+			if(this->row != m.row || this->column != m.column) {
+				throw "Indexes not match!";
+			}
+			
+			FMat<T> r(row, column);
+			for(i=0; i<row; i++) {
+				for(j=0; j<column; j++) {
+					r[i][j] = data[i][j] - m.value(i,j);
 				}
 			}
 			

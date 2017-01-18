@@ -119,13 +119,17 @@ int main(int argc, char **args) {
 		error = error / m;
 		cout << "Iter: " << itr << " J = " << error << endl;
 
+		cout << "Theta before change: " << endl;
+		cout << "\n Theta1: \n" << aNet->getWeights(0) << endl;
+		cout << "\n Theta2: \n" << aNet->getWeights(1) << endl;
+		cout << "Gradients: " << endl;
+		cout << "\n grad1: \n" << aNet->getGradients(0) << endl;
+		cout << "\n grad2: \n" << aNet->getGradients(1) << endl;
+		aNet->updateWeights(m, lambda);
+		cout << "Theta AFTER change: " << endl;
 		cout << "\n Theta1: \n" << aNet->getWeights(0) << endl;
 		cout << "\n Theta2: \n" << aNet->getWeights(1) << endl;
 		
-		aNet->updateWeights(m, lambda);
-
-		//cout << "\n grad1: \n" << aNet->getGradients(0) << endl;
-		//cout << "\n grad2: \n" << aNet->getGradients(1) << endl;
 		cout << "###############################################################" << endl << endl;
 		itr++;
 	}

@@ -177,24 +177,24 @@ void NautilusNet::backward() {
 		li = (Layer*)(layer+i);
 		l2 = (Layer*)(layer+i+1);
 
-		// if(i==0) {
-		// 	cout << endl << *(l2->d) << endl;
-		// }
-
 		dw[i] += l2->d->mulTransposeTo(*(li->a));
 
 		//Reset d matrix
 		l2->d->setZero();
 	}
+
+
 }
 /** 
+	TODO: this is not correct, please fix it as soon as possible;
 	Update weights
 */
 void NautilusNet::updateWeights(int m, double lambda) {
 	int i;
 	for(i=0; i<L-1; i++) {
 		//cout << weight[i].replaceColumnBy(0, 0.0) << endl;
-		weight[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i].replaceColumnBy(0, 0.0);
+		dw[i] = (1.0/m) * dw[i] + (lambda/m) * weight[i].replaceColumnBy(0, 0.0);
+		weight[i] = weight[i] - dw[i];
 		
 		dw[i].setZero();
 	}
