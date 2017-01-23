@@ -152,6 +152,8 @@ double NautilusNet::forward(int m, const double *x, const double *y, double lamb
 /**
 	This backward is computing deltas just for hidden layers only,
 	delta values for the last layer is already computed in forward step
+
+	Call this  routine after each training iteration
 */
 void NautilusNet::backward() {
 	int i, size;

@@ -2,6 +2,7 @@
 #define _OPENCVIMAGEHANDLER_H
 
 #include <opencv2/core.hpp>
+//#include "D:\programs\opencv\build\include\opencv2\core\core.hpp"
 
 class OpenCVImageHandler {
 	public:
