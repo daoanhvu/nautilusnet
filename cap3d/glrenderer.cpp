@@ -95,7 +95,8 @@ int GLRenderer::storeScene(GLuint x, GLuint y, GLuint width, GLuint height) {
 void GLRenderer::initGL() {
 	int link_result = 0;
 	ifstream *f;
-	f = new ifstream("C:\\Users\\vdao5\\Documents\\cap3dvs\\Debug\\vertex.shader");
+	//f = new ifstream("C:\\Users\\vdao5\\Documents\\cap3dvs\\Debug\\vertex.shader");
+	f = new ifstream("vertex.shader");
 	if (f->fail()) {
 		throw new string("Vertex shader not found of could not be opened!");
 	}
@@ -109,7 +110,8 @@ void GLRenderer::initGL() {
 
 	this->vertexShaderId = createShader(GL_VERTEX_SHADER, shader_src);
 
-	f = new ifstream("C:\\Users\\vdao5\\Documents\\cap3dvs\\Debug\\fragment.shader");
+	//f = new ifstream("/media/davu/data/projects/nautilusnet/cap3d/fragment.shader");
+	f = new ifstream("fragment.shader");
 	if (f->fail()) {
 		throw new string("Fragment shader not found of could not be opened!");
 	}

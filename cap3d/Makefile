@@ -3,7 +3,7 @@ GM_SRC = gm/gm.hpp gm/quat.hpp gm/vec3.hpp gm/vec4.hpp gm/fmat4.hpp
 SOURCE = cap3d.cpp
 CPFLAGS =-I. -I./include -I./gm -I/usr/include -I/media/davu/data/projects/glm-0.9.8.4
 CXXFLAGS = -std=c++11 -Wall -g
-BUILD = ./build/camera.o ./build/cap3d.o
+BUILD = ./build/camera.o ./build/cap3d.o ./build/glrenderer.o
 GLBUILD = ./build/glrenderer.o
 OPENCV_LIB_DIR = -L./linuxlib -L/usr/lib -L/usr/local/lib
 LIBS = -lopencv_core -lopencv_calib3d -lopencv_highgui -lopencv_features2d -lopencv_ml -lopencv_imgcodecs -lopencv_imgproc
@@ -19,3 +19,4 @@ all: $(BUILD)
 
 clean:
 	rm ./build/*
+	cp *.shader ./build/

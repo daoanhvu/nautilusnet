@@ -7,6 +7,7 @@
 #include <gm.hpp>
 #include <camera.h>
 
+#include <plyfile.hpp>
 #include <glrenderer.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -15,6 +16,8 @@
 
 #define RAD(x) (x*3.14159f/180.0f)
 #define BYTES_PER_PROP 4
+
+#define OK 0
 
 using namespace std;
 using namespace gm;
@@ -36,21 +39,12 @@ typedef struct tagModel {
 	}
 } TModel;
 
-typedef struct tagBBox3D {
-	float minx;
-	float maxx;
-	float miny;
-	float maxy;
-	float minz;
-	float maxz;
-} BBox3d;
-
-unsigned char* readObject(const char* filename, int &size);
-int readPly(const char* filename, TModel *model, BBox3d *bbox);
-
-void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const TModel *model);
-
-void exportImage(const TModel* model);
+// unsigned char* readObject(const char* filename, int &size);
+// int readPly(const char* filename, TModel *model, BBox3d *bbox);
+//
+// void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const TModel *model);
+//
+// void exportImage(const TModel* model);
 
 int main(int argc, char* args[]) {
 
@@ -88,19 +82,30 @@ int main(int argc, char* args[]) {
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
 
+	//Do our rendering here
+	GLRenderer renderer;
+	PlyFile f;
+
+	//load model
+	if(f.load(args[1]) != OK) {
+		cout << args << endl;
+		glfwTerminate();
+		return 1;
+	}
+
 	do{
 		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
 		glClear( GL_COLOR_BUFFER_BIT );
 
 		// Draw nothing, see you in tutorial 2 !
-
+		//renderer.initGL();
 
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-	} // Check if the ESC key was pressed or the window was closed
-	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+ // Check if the ESC key was pressed or the window was closed
+	}while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0 );
 
 	// Close OpenGL window and terminate GLFW
@@ -108,6 +113,7 @@ int main(int argc, char* args[]) {
 	return 0;
 }
 
+/*
 void exportImage(const char* filename){
 	BBox3d bbox;
 	TModel model;
@@ -176,87 +182,4 @@ void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, co
 	//release memories
 	delete[] out;
 }
-
-int readPly(const char* filename, TModel *model, BBox3d *bbox) {
-	ifstream f(filename);
-	char line[128];
-	int i;
-	float x, y, z;
-
-	bbox->minx = 999999.0f;
-	bbox->maxx = -9999.0f;
-	bbox->miny = 999999.0f;
-	bbox->maxy = -9999.0f;
-	bbox->minz = 999999.0f;
-	bbox->maxz = -9999.0f;
-
-	if(f.fail()) {
-		cout << "Fail to open the input file.\n";
-		return 0;
-	}
-
-	while(!f.eof()) {
-		f.getline(line, 128);
-		istringstream ls(line);
-		string token;
-		ls >> token;
-
-		if(token == "end_header") {
-
-			model->vertices = new float[model->vertices_count * model->property_count];
-			int offs;
-			for(i=0; i<model->vertices_count; i++) {
-				offs = i * model->property_count;
-				f.getline(line, 64);
-				istringstream ls1(line);
-				ls1 >> x;
-				ls1 >> y;
-				ls1 >> z;
-
-				if(x < bbox->minx)
-					bbox->minx = x;
-				if(x > bbox->maxx)
-					bbox->maxx = x;
-
-				if(y < bbox->miny)
-					bbox->miny = y;
-				if(y > bbox->maxy)
-					bbox->maxy = y;
-
-				if(z < bbox->minz)
-					bbox->minz = z;
-				if(z > bbox->maxz)
-					bbox->maxz = z;
-
-				model->vertices[offs] = x/150.0f;
-				model->vertices[offs + 1] = y/150.0f;
-				model->vertices[offs + 2] = z/150.0f;
-			}
-
-			//read faces
-			for(i=0; i<model->face_count; i++) {
-
-			}
-
-			break;
-		} else if(token == "element") {
-			string tk2;
-			ls >> tk2;
-			if(tk2 == "vertex"){
-				ls >> model->vertices_count;
-				cout << "Number of vertex " << model->vertices_count << std::endl;
-			} else if(tk2 == "face") {
-				ls >> model->face_count;
-			}
-			cout << " " << tk2 << std::endl;
-		} else if(token == "property") {
-
-		}
-		//cout << line << std::endl;
-	}
-
-
-	cout << "Going to close file. \n";
-	f.close();
-	return 1;
-}
+*/
