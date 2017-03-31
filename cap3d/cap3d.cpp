@@ -1,12 +1,15 @@
 #include <iostream>
 #include <fstream>
-
+#include <exception>
 #include <string>
 #include <cstring>
 #include <sstream>
 #include <gm.hpp>
 #include <camera.h>
 
+#include <glrenderer.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -50,17 +53,66 @@ void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, co
 void exportImage(const TModel* model);
 
 int main(int argc, char* args[]) {
-	
+
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
 		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
 		return 1;
 	}
 
+	GLFWwindow *window;
+	if(!glfwInit()) {
+		cout << "Failed to initialize GLFW!!" << endl;
+		return -1;
+	}
+
+	window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+	if (!window) {
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	} //Failed to create window
+
+	//Make our window current
+	glfwMakeContextCurrent(window);
+
+	//MUST initialize glew
+	GLenum err = glewInit();
+	if (err != GLEW_OK) {
+		cout << "Initialize glew failed!!!!! \n";
+		return 1;
+	}
+
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+	// Dark blue background
+	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+
+	do{
+		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
+		glClear( GL_COLOR_BUFFER_BIT );
+
+		// Draw nothing, see you in tutorial 2 !
+
+
+		// Swap buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
+	} // Check if the ESC key was pressed or the window was closed
+	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+		   glfwWindowShouldClose(window) == 0 );
+
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+	return 0;
+}
+
+void exportImage(const char* filename){
 	BBox3d bbox;
 	TModel model;
 
-	readPly(args[1], &model, &bbox);
+	readPly(filename, &model, &bbox);
 
 	if(model.vertices != 0) {
 
@@ -72,12 +124,6 @@ int main(int argc, char* args[]) {
 
 		delete[] model.vertices;
 	}
-
-	return 0;
-}
-
-void exportImage(const TModel* model){
-	cv::Mat a;
 }
 
 unsigned char* readObject(const char* filename, int &size) {
@@ -95,7 +141,7 @@ unsigned char* readObject(const char* filename, int &size) {
 
 void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const TModel *model){
 	Camera cam;
-	
+
 	cam.setViewport(0, 0, 200, 200);
 	cam.lookAt(ex, ey, ez, cx, cy, cz, 0.0f, 1.0f, 0.0f);
 	float fov = RAD(45.0f) ;
@@ -156,7 +202,7 @@ int readPly(const char* filename, TModel *model, BBox3d *bbox) {
 		ls >> token;
 
 		if(token == "end_header") {
-			
+
 			model->vertices = new float[model->vertices_count * model->property_count];
 			int offs;
 			for(i=0; i<model->vertices_count; i++) {
@@ -189,7 +235,7 @@ int readPly(const char* filename, TModel *model, BBox3d *bbox) {
 
 			//read faces
 			for(i=0; i<model->face_count; i++) {
-				
+
 			}
 
 			break;
