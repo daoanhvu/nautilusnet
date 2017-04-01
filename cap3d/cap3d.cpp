@@ -7,7 +7,7 @@
 #include <gm.hpp>
 #include <camera.h>
 
-#include <plyfile.hpp>
+#include <plyfile.h>
 #include <glrenderer.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -22,22 +22,6 @@
 using namespace std;
 using namespace gm;
 using namespace fp;
-
-typedef struct tagModel {
-	int stride;
-	char hasColor;
-	int vertices_count;
-	int face_count;
-	int property_count;
-	int *faces;
-	float *vertices;
-
-	tagModel() {
-		property_count = 3;
-		faces = 0;
-		vertices = 0;
-	}
-} TModel;
 
 // unsigned char* readObject(const char* filename, int &size);
 // int readPly(const char* filename, TModel *model, BBox3d *bbox);
@@ -60,6 +44,12 @@ int main(int argc, char* args[]) {
 		return -1;
 	}
 
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
 	if (!window) {
 		glfwTerminate();
@@ -73,6 +63,7 @@ int main(int argc, char* args[]) {
 	GLenum err = glewInit();
 	if (err != GLEW_OK) {
 		cout << "Initialize glew failed!!!!! \n";
+		glfwTerminate();
 		return 1;
 	}
 
@@ -87,18 +78,61 @@ int main(int argc, char* args[]) {
 	PlyFile f;
 
 	//load model
-	if(f.load(args[1]) != OK) {
+	 if(f.load(args[1]) != OK) {
 		cout << args << endl;
 		glfwTerminate();
 		return 1;
 	}
+	cout << "Before initialization!!!\n";
+	renderer.initGL();
+
+
+	//export 2d images
+	renderer.moveCameraTo(0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose1.jpg");
+	renderer.moveCameraTo(0.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose2.jpg");
+	renderer.moveCameraTo(0.0f, -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose3.jpg");
+	renderer.moveCameraTo(0.0f, -1.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose4.jpg");
+	renderer.moveCameraTo(1.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose5.jpg");
+	renderer.moveCameraTo(1.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose6.jpg");
+
+	GLuint VertexArrayID;
+	//glGenVertexArrays(1, &VertexArrayID);
+	//glBindVertexArray(VertexArrayID);
+
+	static const GLfloat g_vertex_buffer_data[] = {
+		-1.0f, -1.0f, 0.0f,
+		 1.0f, -1.0f, 0.0f,
+		 0.0f,  1.0f, 0.0f,
+	};
+
+	// GLuint vertex_buffer;
+	// glGenBuffers(1, &vertex_buffer);
+	// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	// glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	do{
 		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
 		glClear( GL_COLOR_BUFFER_BIT );
 
 		// Draw nothing, see you in tutorial 2 !
-		//renderer.initGL();
+		// glUseProgram(renderer.getProgramId());
+		//
+		// // 1rst attribute buffer : vertices
+		// glEnableVertexAttribArray(0);
+		// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+		// glVertexAttribPointer(
+		// 	0,
+		// 	3,
+		// 	GL_FLOAT,
+		// 	GL_FLOAT,
+		// 	0,				/*stride*/
+		// 	(void*)0 /*Array buffer offset*/
+		// );
+		//
+		// // Draw the triangle !
+		// glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+		//
+		// glDisableVertexAttribArray(0);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -107,6 +141,10 @@ int main(int argc, char* args[]) {
  // Check if the ESC key was pressed or the window was closed
 	}while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0 );
+
+	// Cleanup VBO
+	//glDeleteBuffers(1, &vertex_buffer);
+	//glDeleteVertexArrays(1, &VertexArrayID);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
@@ -145,41 +183,5 @@ unsigned char* readObject(const char* filename, int &size) {
 	return data;
 }
 
-void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const TModel *model){
-	Camera cam;
 
-	cam.setViewport(0, 0, 200, 200);
-	cam.lookAt(ex, ey, ez, cx, cy, cz, 0.0f, 1.0f, 0.0f);
-	float fov = RAD(45.0f) ;
-	cam.setPerspective(fov, 0.1f, 99.0f);
-
-	cv::Vec3b color;
-	color[0] = 0;
-	color[0] = 0;
-	color[0] = 255;
-
-	cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0, 0, 0));
-	float *out = new float[model->property_count * model->vertices_count];
-	float p[3];
-	int i, offs;
-	int x, y;
-	for(i=0; i<model->vertices_count; i++) {
-		offs = i * model->property_count;
-		cam.project(out + offs, model->vertices + offs);
-		//cout << "x= " << out[offs] << "; y= " << out[offs + 1] << std::endl;
-
-		x = (int) out[offs];
-		y = (int) out[offs + 1];
-		img.at<cv::Vec3b>(x, y) = color;
-	}
-
-
-	//write image matrice to file
-	imwrite("pose2.jpg", img);
-
-
-
-	//release memories
-	delete[] out;
-}
 */

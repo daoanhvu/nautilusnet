@@ -1,61 +1,5 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <gm.hpp>
 
-using namespace std;
-
-typedef struct tagProp {
-	string name;
-	int datatype;
-} PlyProperty;
-
-typedef struct tagFace {
-	unsigned char vertex_count;
-	int vertex_indices[5];
-} Face;
-
-struct OpenFileException : public exception {
-   const char * what () const throw () {
-      return "Could not open this file.";
-   }
-};
-
-typedef struct tagBBox3D {
-	float minx;
-	float maxx;
-	float miny;
-	float maxy;
-	float minz;
-	float maxz;
-} BBox3d;
-
-class PlyFile {
-	private:
-		vector<PlyProperty> properties;
-		float *vertices;
-		unsigned int vertex_count;
-		Face* faces;
-		unsigned int face_count;
-
-	public:
-		PlyFile();
-		PlyFile(const char *filename);
-		PlyFile(string filename);
-		~PlyFile() {
-			if(vertices != 0) {
-				delete[] vertices;
-			}
-
-			if(faces != 0) {
-				delete[] faces;
-			}
-		}
-
-		int load(const char *filename);
-
-};
+#include <plyfile.h>
 
 PlyFile::PlyFile() {
 	vertices = 0; //NULL
@@ -123,10 +67,12 @@ int PlyFile::load(const char* filename) {
 
 		if(token == "end_header") {
 
-			this->vertices = new float[vertex_count * properties.size()];
+			//this->vertices = new float[vertex_count * properties.size()];
+			this->vertices = new float[vertex_count * 3];
 			int offs;
 			for(i=0; i<this->vertex_count; i++) {
-				offs = i * properties.size();
+				// offs = i * properties.size();
+				offs = i * 3;
 				f.getline(line, 64);
 				istringstream ls1(line);
 				ls1 >> x;
@@ -151,8 +97,11 @@ int PlyFile::load(const char* filename) {
 				this->vertices[offs] = x/150.0f;
 				this->vertices[offs + 1] = y/150.0f;
 				this->vertices[offs + 2] = z/150.0f;
-			}
 
+				if(i<10)
+					printf("(%f %f %f)\n", vertices[offs], vertices[offs+1], vertices[offs+2]);
+			}
+			cout << "Start reading faces\n";
 			//read faces
 			faces = new Face[face_count];
 			for(i=0; i<face_count; i++) {
