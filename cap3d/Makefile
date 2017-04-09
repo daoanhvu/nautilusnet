@@ -1,7 +1,8 @@
 CXX = g++
 GM_SRC = gm/gm.hpp gm/quat.hpp gm/vec3.hpp gm/vec4.hpp gm/fmat4.hpp
 SOURCE = cap3d.cpp
-CPFLAGS =-I. -I./include -I./gm -I/usr/include -I/media/davu/data/projects/glm-0.9.8.4
+#CPFLAGS =-I. -I./include -I./gm -I/usr/include -I/media/davu/data/projects/glm-0.9.8.4
+CPFLAGS =-I. -I./include -I./gm -I/usr/include -I/home/davu/projects/glm-0.9.8.4
 CXXFLAGS = -std=c++11 -Wall -g
 BUILD = ./build/camera.o ./build/cap3d.o ./build/glrenderer.o ./build/plyfile.o
 GLBUILD = ./build/glrenderer.o

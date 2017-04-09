@@ -22,12 +22,20 @@ class GLRenderer {
 		GLuint vertexShaderId;
 		GLuint fragmentShaderId;
 
+		//Light position
+		float lx;
+		float ly;
+		float lz;
+
+		//light color
+		float lcr;
+		float lcg;
+		float lcb;
+
 		//Camera position
 		float ex;
 		float ey;
 		float ez;
-
-
 
 		glm::mat4 view_matrix;
 		glm::mat4 pp_matrix;
