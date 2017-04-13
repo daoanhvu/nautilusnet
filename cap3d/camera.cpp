@@ -37,7 +37,7 @@ void Camera::lookAt(float ex, float ey, float ez,
 	eyeZ = ez;
 
 	for(i=0; i<4; i++)
-		for(j=0; j=0; j++)
+		for(j=0; j<4; j++)
 			view[i][j] = 1;
 
 	view[0][0] = s[0]; //s.x
