@@ -6,7 +6,6 @@ class BaseNet(object):
             Params:
                 name of Variable
                 initializer of Variable
-
             return variable tensor
         """
         with tf.device('/cpu:0'):
@@ -21,7 +20,6 @@ class BaseNet(object):
         """
             Params:
                 name of Variable
-
             Returns:
                 Variable Tensor
         """

@@ -4,35 +4,27 @@ import tensorflow.contrib.slim as slim
 import tensorflow as tf
 import cv2
 
+from tools.process_config import process_configure
+from optparse import OptionParser
 from yolo import YOLO
 
-def read_data(datafile):
-    """Read test data"""
-    f = open(datafile, "r")
-    input_files = f.readlines()
-    for i in input_files:
-        fname = i.replace("\n", "")
-        print(fname)
-    #img = cv2.imread('', 0)
-    #Read list of file
-
-def loss():
-    S = 7
-    B = 2
-    C = 5
-    SS = S * S
-    for i in range(SS):
-        for b in range(B):
-            print (i)
 
 def main():
-    sess = tf.InteractiveSession()
-    input_data = tf.placeholder(tf.float32, shape=[None, 200704, 3])
+    parser = OptionParser()
+    parser.add_option("-c", "--conf", dest="configure", help="configure filename")
+    (options, args) = parser.parse_args()
+    if options.configure:
+        config_file = str(options.configure)
+        print(config_file)
+    else:
+        print("Please feed argument configure filename!")
+        exit(0)
 
+    process_configure(config_file)
 
-    yolo = YOLO()
-
-    print(yolo)
-
+    #sess = tf.InteractiveSession()
+    #input_data = tf.placeholder(tf.float32, shape=[None, 200704, 3])
+    #yolo = YOLO()
+    #print(yolo)
 
 main()

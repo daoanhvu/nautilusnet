@@ -53,7 +53,15 @@ class YOLO(BaseNet):
                         padding="SAME")
 
     def ful_conn(self, scope, input, in_dimension, out_dimension, leaky=True, pretrain=True, train=True):
-        """Fully Connected layer"""
+        """
+        Fully Connected layer
+        Args:
+          scope: variable_scope name
+          input: [batch_size, ???]
+          out_dimension: int32
+        Return:
+          output: 2-D tensor [batch_size, out_dimension]
+        """
         with tf.variable_scope(scope) as scope:
             reshape = tf.reshape(input, [tf.shape(input)[0], -1])
             weights = self.variable_with_weight_decay("weights", shape=[in_dimension, out_dimension],
@@ -61,30 +69,8 @@ class YOLO(BaseNet):
             biases = self.variable_on_cpu('biases', [out_dimension], tf.constant_initializer(0.0), pretrain, train)
             local = tf.matmul(reshape, weights) + biases
             if leaky:
-                local 
-
-
-        def local(self, scope, input, in_dimension, out_dimension, leaky=True, pretrain=True, train=True):
-          """Fully connection layer
-
-          Args:
-            scope: variable_scope name
-            input: [batch_size, ???]
-            out_dimension: int32
-          Return:
-            output: 2-D tensor [batch_size, out_dimension]
-          """
-          with tf.variable_scope(scope) as scope:
-            reshape = tf.reshape(input, [tf.shape(input)[0], -1])
-
-            weights = self._variable_with_weight_decay('weights', shape=[in_dimension, out_dimension],
-                                stddev=0.04, wd=self.weight_decay, pretrain=pretrain, train=train)
-            biases = self._variable_on_cpu('biases', [out_dimension], tf.constant_initializer(0.0), pretrain, train)
-            local = tf.matmul(reshape, weights) + biases
-
-            if leaky:
-              local = self.leaky_relu(local)
+                local = self.leaky_relu(local)
             else:
-              local = tf.identity(local, name=scope.name)
+                local = tf.identity(local, name=scope.name)
 
-          return local
+        return local
