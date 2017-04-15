@@ -4,7 +4,6 @@
 #include <string>
 #include <cstring>
 #include <sstream>
-#include <gm.hpp>
 #include <camera.h>
 
 #include <plyfile.h>
@@ -14,13 +13,12 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
-#define RAD(x) (x*3.14159f/180.0f)
+#define RAD(x) ( x * 3.14159f / 180.0f )
 #define BYTES_PER_PROP 4
 
 #define OK 0
 
 using namespace std;
-using namespace gm;
 using namespace fp;
 
 // unsigned char* readObject(const char* filename, int &size);
@@ -28,7 +26,9 @@ using namespace fp;
 //
 // void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const TModel *model);
 //
-// void exportImage(const TModel* model);
+void viewTriangle() {
+
+}
 
 int main(int argc, char* args[]) {
 
@@ -110,7 +110,7 @@ int main(int argc, char* args[]) {
 	// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 	// glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-	do{
+	do {
 		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
 		glClear( GL_COLOR_BUFFER_BIT );
 
@@ -139,7 +139,7 @@ int main(int argc, char* args[]) {
 		glfwPollEvents();
 
  // Check if the ESC key was pressed or the window was closed
-	}while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0 );
 
 	// Cleanup VBO
@@ -150,38 +150,3 @@ int main(int argc, char* args[]) {
 	glfwTerminate();
 	return 0;
 }
-
-/*
-void exportImage(const char* filename){
-	BBox3d bbox;
-	TModel model;
-
-	readPly(filename, &model, &bbox);
-
-	if(model.vertices != 0) {
-
-		cout << "Min x: " << bbox.minx << "; Max x: " << bbox.maxx << std::endl;
-		cout << "Min y: " << bbox.miny << "; Max y: " << bbox.maxy << std::endl;
-		cout << "Min z: " << bbox.minz << "; Max z: " << bbox.maxz << std::endl;
-
-		moveCameraTo(1.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &model);
-
-		delete[] model.vertices;
-	}
-}
-
-unsigned char* readObject(const char* filename, int &size) {
-	unsigned char *data;
-	ifstream f(filename, ios::binary);
-
-	if(f.fail()) {
-		return 0;
-	}
-
-	f.close();
-
-	return data;
-}
-
-
-*/

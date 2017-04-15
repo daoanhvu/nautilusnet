@@ -1,16 +1,16 @@
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
-#include <gm.hpp>
+#include <glm/glm.hpp>
 
 namespace fp {
 	class Camera {
 	private:
-		gm::mat4 mvp;
-		gm::mat4 view;
-		gm::mat4 mModel;
-		gm::mat4 perspective;
-		gm::mat4 orthor;
+		glm::mat4 mvp;
+		glm::mat4 view;
+		glm::mat4 mModel;
+		glm::mat4 perspective;
+		glm::mat4 orthor;
 		float viewport[4];
 
 		float centerX;
@@ -21,17 +21,17 @@ namespace fp {
 		float eyeY;
 		float eyeZ;
 
-		gm::vec3 up;
+		glm::vec3 up;
 
 		float pitchAccum;
 		float yawAccum;
 		float rollAccum;
 
-		gm::mat4 inverted;
-		gm::mat4 rotation;
-		gm::mat4 temp;
-		gm::vec4 xAxis, yAxis;
-		gm::vec4 rotationAxisX, rotationAxisY;
+		glm::mat4 inverted;
+		glm::mat4 rotation;
+		glm::mat4 temp;
+		glm::vec4 xAxis, yAxis;
+		glm::vec4 rotationAxisX, rotationAxisY;
 		float rotX;
 		float rotY;
 
@@ -55,8 +55,8 @@ namespace fp {
 
 		//on testing method
 		void moveAlongForward(float d);
-		
-		void getView(float *v) { 
+
+		void getView(float *v) {
 			for(int i=0; i<4; i++) { //column
 				for(int j=0; j<4; j++) { //row
 					v[i*4 + j] = view[i][j];

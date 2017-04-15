@@ -1,9 +1,9 @@
 import numpy as np
 import os
 
-from basenet import BaseNet
+from . import basenet
 
-class YOLO(BaseNet):
+class YOLO(basenet.BaseNet):
     def __init__(self):
         self.pretrained_collection = []
         self.trainable_collection = []

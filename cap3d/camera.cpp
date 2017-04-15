@@ -1,31 +1,24 @@
 #include "camera.h"
 #include <math.h>
 #include <fstream>
-#ifdef _ADEBUG
-//#include <stdio.h>
-//#include <iostream>
-#include <android/log.h>
-#define LOG_TAG "NativeCamera"
-#define LOG_LEVEL 10
-#define LOGI(level, ...) if (level <= LOG_LEVEL) {__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__);}
-#define LOGE(level, ...) if (level <= LOG_LEVEL) {__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__);}
-#endif
+
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace std;
 using namespace fp;
 
 Camera::Camera(): pitchAccum(0), yawAccum(0), rollAccum(0) {
-	xAxis = gm::vec4(1, 0, 0, 0);
-	yAxis = gm::vec4(0, 1, 0, 0);
+	xAxis = glm::vec4(1, 0, 0, 0);
+	yAxis = glm::vec4(0, 1, 0, 0);
 }
 
 void Camera::lookAt(float ex, float ey, float ez,
 			float cx, float cy, float cz, float ux, float uy, float uz) {
-	gm::vec3 f = gm::normalize(cx-ex, cy-ey, cz-ez);
-	up = gm::vec3(ux, uy, uz);
-	gm::vec3 s = gm::normalize(gm::cross(f, up));
-	gm::vec3 u = gm::cross(s, f);
-	gm::vec3 eye(ex, ey, ez);
+	glm::vec3 f = glm::normalize(glm::vec3(cx-ex, cy-ey, cz-ez));
+	up = glm::vec3(ux, uy, uz);
+	glm::vec3 s = glm::normalize(glm::cross(f, up));
+	glm::vec3 u = glm::cross(s, f);
+	glm::vec3 eye(ex, ey, ez);
 	int i, j;
 
 	centerX = cx;
@@ -49,9 +42,9 @@ void Camera::lookAt(float ex, float ey, float ez,
 	view[0][2] =-f[0];
 	view[1][2] =-f[1];
 	view[2][2] =-f[2];
-	view[3][0] =-gm::dot(s, eye);
-	view[3][1] =-gm::dot(u, eye);
-	view[3][2] = gm::dot(f, eye);
+	view[3][0] =-glm::dot(s, eye);
+	view[3][1] =-glm::dot(u, eye);
+	view[3][2] = glm::dot(f, eye);
 }
 
 void Camera::setPerspective(float fov, float nearPlane, float farPlane) {
@@ -103,28 +96,27 @@ void Camera::rotate(float yawR, float pitchR, float roll) {
 //	f << "\n New Rotation dx = " << yawR << ", dy = " << pitchR << "\n";
 //	f << "model matrix: \n";
 //	f << mModel;
-	mModel.inverse2(inverted);
+	mModel = glm::inverse(mModel);
 //	f << "\n inverted model matrix 1: \n";
 //	f << inverted;
 	rotationAxisX = inverted * xAxis;
 //	f << "\n RotationAsixX: \n";
 //	f << rotationAxisX;
-	gm::rotateM(mModel, rotX, rotationAxisX);
+	// mModel = glm::rotate(mModel, rotX, glm::vec4(rotationAxisX, 0, 0, 0));
 //	rotation = gm::rotate(rotX, rotationAxisX);
 //	f << "\n Rotation matrix about RotationAxisX: \n";
 //	f << rotation;
 //	temp = mModel * rotation;
 //	f << "\n Model matrix after rotate by RotationAxisX: \n";
 //	f << temp;
-
-	mModel.inverse2(inverted);
+	mModel = glm::inverse(mModel);
 	//temp.inverse2(inverted);
 //	f << "\n inverted model matrix 2: \n";
 //	f << inverted;
 	rotationAxisY = inverted * yAxis;
 //	f << "\n RotationAsixY: \n";
 //	f << rotationAxisY;
-	gm::rotateM(mModel, rotY, rotationAxisY);
+	// mModel = glm::rotate(mModel, rotY, glm::vec4(0, rotationAxisY, 0, 0));
 //	rotation = gm::rotate(rotY, rotationAxisY);
 //	f << "\n Rotation matrix about RotationAxisY: \n";
 //	f << rotation;
@@ -140,7 +132,7 @@ void Camera::rotate(float yawR, float pitchR, float roll) {
 	@param out 3D point on screen
 */
 void Camera::project(float *out, const float *obj) {
-	gm::vec4 tmp(obj[0], obj[1], obj[2], 1);
+	glm::vec4 tmp(obj[0], obj[1], obj[2], 1);
 	tmp = (view * mModel) * tmp;
 	tmp = perspective * tmp;
 	tmp /= tmp[3]; //tmp.w
@@ -156,7 +148,7 @@ void Camera::project(float *out, const float *obj) {
  */
 void Camera::project(float *out, float objX, float objY, float objZ) {
 	float result;
-	gm::vec4 tmp(objX, objY, objZ, 1);
+	glm::vec4 tmp(objX, objY, objZ, 1);
 	tmp = (view * mModel) * tmp;
 	tmp = perspective * tmp;
 	tmp /= tmp[3]; //tmp.w
@@ -168,7 +160,7 @@ void Camera::project(float *out, float objX, float objY, float objZ) {
 }
 
 void Camera::projectOrthor(float *out, const float *obj) {
-	gm::vec4 tmp(obj[0], obj[1], obj[2], 1);
+	glm::vec4 tmp(obj[0], obj[1], obj[2], 1);
 	tmp = (view * mModel) * tmp;
 	tmp = orthor * tmp;
 	tmp /= tmp[3];
@@ -182,7 +174,7 @@ void Camera::projectOrthor(float *out, const float *obj) {
 
 void Camera::projectOrthor(float *out, float objX, float objY, float objZ) {
 	float result;
-	gm::vec4 tmp(objX, objY, objZ, 1);
+	glm::vec4 tmp(objX, objY, objZ, 1);
 	tmp = (view * mModel) * tmp;
 	tmp = orthor * tmp;
 	tmp /= tmp[3]; //tmp.w
@@ -197,8 +189,8 @@ void Camera::projectOrthor(float *out, float objX, float objY, float objZ) {
  * on testing method
  */
 void Camera::moveAlongForward(float d) {
-	gm::vec3 f = gm::normalize(centerX - eyeX, centerY-eyeY, centerZ-eyeZ);
-	gm::vec3 translate = f*d - f;
+	glm::vec3 f = glm::normalize(glm::vec3(centerX - eyeX, centerY-eyeY, centerZ-eyeZ));
+	glm::vec3 translate = f*d - f;
 
 	eyeX += translate[0];
 	eyeY += translate[1];
@@ -208,9 +200,9 @@ void Camera::moveAlongForward(float d) {
 	centerY += translate[1];
 	centerZ += translate[2];
 
-	gm::vec3 eye(eyeX, eyeY, eyeZ);
-	gm::vec3 s = gm::normalize(gm::cross(f, up));
-	gm::vec3 u = gm::cross(s, f);
+	glm::vec3 eye(eyeX, eyeY, eyeZ);
+	glm::vec3 s = glm::normalize(glm::cross(f, up));
+	glm::vec3 u = glm::cross(s, f);
 
 	view[0][0] = s[0]; //s.x
 	view[1][0] = s[1]; //s.y
@@ -221,8 +213,8 @@ void Camera::moveAlongForward(float d) {
 	view[0][2] =-f[0];
 	view[1][2] =-f[1];
 	view[2][2] =-f[2];
-	view[3][0] =-gm::dot(s, eye);
-	view[3][1] =-gm::dot(u, eye);
-	view[3][2] = gm::dot(f, eye);
+	view[3][0] =-glm::dot(s, eye);
+	view[3][1] =-glm::dot(u, eye);
+	view[3][2] = glm::dot(f, eye);
 
 }
