@@ -27,6 +27,7 @@ using namespace std;
 #define CODE_VERTEX		15
 #define CODE_VERTEX_INDICES		16
 #define CODE_UNIT32	17
+#define CODE_UNIT8	18
 
 typedef struct tagTK {
 		int code;
@@ -98,10 +99,11 @@ class PlyFile {
 		}
 
 		int load(const char *filename);
+		int load2(const char *filename);
 		int add_normal_vectors();
 
 		void parse_line(string line, vector<Token> &v);
-		void parse_line(char *line, int len);
+		int parse_line2(string line, vector<Token> &v);
 
 };
 

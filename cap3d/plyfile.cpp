@@ -133,7 +133,93 @@ void PlyFile::parse_line(string line, vector<Token> &v) {
 	}
 }
 
+
+int PlyFile::parse_line2(string line, vector<Token> &v) {
+	int error = 0;
+	istringstream str(line);
+	string tk;
+	float val;
+
+	while(!str.eof()) {
+		str >> tk;
+
+		if(tk == "ply") {
+			Token t(CODE_PLY);
+			v.add(t);
+		} else if(tk == "property") {
+			Token t(CODE_PROPERTY);
+			v.add(t);
+		} else if(tk == "uint8") {
+			Token t(CODE_UNIT8);
+			v.add(t);
+		}	else if(tk == "uint32") {
+			Token t(CODE_UNIT32);
+			v.add(t);
+		} else if(tk == "float32") {
+			Token t(CODE_FLOAT32);
+			v.add(t);
+		} else if(tk == "list") {
+			Token t(CODE_LIST);
+			v.add(t);
+		} else if(tk == "vertex") {
+			Token t(CODE_VERTEX);
+			v.add(t);
+		} else if(tk == "face") {
+			Token t(CODE_FACE);
+			v.add(t);
+		} else if(tk == "element") {
+			Token t(CODE_ELEMENT);
+			v.add(t);
+		} else if(tk == "end_header") {
+			Token t(CODE_END_HEADER);
+			v.add(t);
+		} else if( isNumber(tk, val) ) {
+			Token t(CODE_NUMBER, val);
+			v.add(t);
+		} else if(tk == "vertex_indices") {
+			Token t(CODE_VERTEX_INDICES);
+			v.add(t);
+		} else if(tk == "x") {
+			Token t(CODE_COORD_X);
+			v.add(t);
+		} else if(tk == "y") {
+			Token t(CODE_COORD_Y);
+			v.add(t);
+		} else if(tk == "z") {
+			Token t(CODE_COORD_Z);
+			v.add(t);
+		}
+	}
+
+	return error;
+}
+
+int PlyFile::load2(const char *filename) {
+	ifstream f(filename);
+	string line;
+	vector<Token> tokens(0);
+
+	if(f.fail()) {
+		cout << "Failed to open this file " << filename << endl;
+		return 1;
+	}
+
+	while(!f.eof()) {
+		std::getline(f, line);
+		tokens.clear();
+		parse_line2(line, tokens);
+
+
+
+	}
+
+	f.close()
+
+	return 0;
+}
+
 /*
+	Deprecated
 	In case that user used default constructor, then she need to call
 	this method to load a model
 */
