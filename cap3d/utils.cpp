@@ -2,14 +2,13 @@
 #include <stdlib.h>
 
 
-int isNumber(string s, float &val) {
+int isNumber(string str, float &val) {
 	int i, start = 0;
 	char isFloatingPoint = 0;
 	long floating = 1;
 	char negative = 1;
-	int len = s.length();
-
-	error = -1;
+	int len = str.length();
+	val = 0;
 
 	if(str[start] == '-') {
 		negative = -1;
@@ -26,7 +25,7 @@ int isNumber(string s, float &val) {
 			else{
 				/*printf(" Floating point ERROR F\n");*/
 				val *= negative;
-				return 1;
+				return 0;
 			}
 		} else {
 			if(isFloatingPoint){
@@ -38,7 +37,7 @@ int isNumber(string s, float &val) {
 	}
 	val *= negative;
 
-	return 0;
+	return 1;
 }
 
 int isDigit(char c) {

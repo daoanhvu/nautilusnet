@@ -41,94 +41,39 @@ PlyFile::PlyFile(string filename) {
 	float_stride = 0;
 }
 
-void PlyFile::parse_line(string line, vector<Token> &v) {
-	int sl = line.length();
-	int i = 0;
-	int error;
-	while( i<sl ) {
-		if(line[i]=='f' && line[i+1]=='a' && line[i+2]=='c' && line[i+3] == 'e') {
-			Token tk(CODE_FACE);
-			v.push_back(tk);
-			i += 4;
-		} else if(line[i] == 'p') {
-			if(line[i+1] == 'l' && line[i+2] == 'y') {
-				Token tk(CODE_PLY);
-				v.push_back(tk);
-				i += 3;
-			} else if(line[i+1] == 'r' && line[i+2] == 'o' && line[i+3] == 'p' && line[i+4]=='e'
-		 			&& line[i+5]=='r' && line[i+6] == 't' && line[i+7]=='t' && line[i+8]=='y') {
-				Token tk(CODE_PROPERTY);
-				v.push_back(tk);
-				i += 9;
-			}
-		} else if(line[i]=='e') {
-			if(line[i+1] == 'l' && line[i+2]=='e' && line[i+3]=='m' && line[i+4]=='e' && line[i+5]=='n' && line[i+6]=='t') {
-				Token tk(CODE_ELEMENT);
-				v.push_back(tk);
-				i += 7;
-			} else if(line[i+1] == 'n' && line[i+2]=='n' && line[i+3]=='_' && line[i+4]=='h' && line[i+5]=='e'
-						&& line[i+6]=='a' && line[i+7]=='d' && line[i+8]=='e' && line[i+9]=='r') {
-				Token tk(CODE_END_HEADER);
-				v.push_back(tk);
-				i += 10;
-			}
-		} else if(line[i] == 'v' && line[i+1] == 'e' && line[i+2]=='r' && line[i+3]=='t' && line[i+4]=='e' && line[i+5] == 'x') {
-			if(line[i+6]==' ') {
-				Token tk(CODE_VERTEX);
-				v.push_back(tk);
-				i += 6;
-			} else if(line[i+6] == '_' && line[i+7] == 'i' && line[i+8] == 'n' && line[i+9] == 'd' && line[i+10]=='i'
-						&& line[i+11]=='c' && line[i+12]=='e' && line[i+13]=='s') {
-				Token tk(CODE_VERTEX_INDICES);
-				v.push_back(tk);
-				i += 14;
-			}
-		} else if(isDigit(line[i])) {
-			int floatingPoint = 0;
-			int k;
-			for(k = i+1; k < sl; k++) {
-				if(!isDigit(line[k])) {
-					if(line[k] == '.') {
-						//check if we got a floating point
-						if(floatingPoint) {
-							//ERROR: the second floating point found
-						}
-						floatingPoint = 1;
-					} else {
-						float val = parseFloat(line, i, k, error);
-						Token tk(CODE_NUMBER, val);
-						v.push_back(tk);
-						i = k;
-						break;
-					}
-				}
-			}
+void PlyFile::getBBox(BBox3d &bbox) {
+	bbox.minx = 999999.0f;
+	bbox.maxx = -9999.0f;
+	bbox.miny = 999999.0f;
+	bbox.maxy = -9999.0f;
+	bbox.minz = 999999.0f;
+	bbox.maxz = -9999.0f;
 
-			if(i < k) {
-				float val = parseFloat(line, i, k, error);
-				Token tk(CODE_NUMBER, val);
-				v.push_back(tk);
-				i = k;
-			}
-		} else if(line[i] == 'x') {
-			Token tk(CODE_COORD_X);
-			v.push_back(tk);
-			i++;
-		} else if(line[i] == 'y') {
-			Token tk(CODE_COORD_Y);
-			v.push_back(tk);
-			i++;
-		} else if(line[i] == 'z') {
-			Token tk(CODE_COORD_Z);
-			v.push_back(tk);
-			i++;
-		} else if(line[i] == 'u' && line[i+1]=='i' && line[i+2]=='n' && line[i+3]=='t' && line[i+4]=='3' && line[i+5] =='2' ) {
-			Token tk(CODE_UNIT32);
-			v.push_back(tk);
-			i += 6;
+	int k;
+	for(int i=0; i<vertex_count; i++) {
+		k = i * float_stride;
+		if(vertices[k] < bbox.minx) {
+			bbox.minx = vertices[k];
 		}
-		else {
-			i++;
+
+		if(vertices[k] > bbox.maxx) {
+			bbox.maxx = vertices[k];
+		}
+
+		if(vertices[k+1] < bbox.miny) {
+			bbox.miny = vertices[k+1];
+		}
+
+		if(vertices[k+1] > bbox.maxy) {
+			bbox.maxy = vertices[k+1];
+		}
+
+		if(vertices[k+2] < bbox.minz) {
+			bbox.minz = vertices[k+2];
+		}
+
+		if(vertices[k+2] > bbox.maxz) {
+			bbox.maxz = vertices[k+2];
 		}
 	}
 }
@@ -140,54 +85,59 @@ int PlyFile::parse_line2(string line, vector<Token> &v) {
 	string tk;
 	float val;
 
+	//cout << line << endl;
+
 	while(!str.eof()) {
 		str >> tk;
 
 		if(tk == "ply") {
 			Token t(CODE_PLY);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "property") {
 			Token t(CODE_PROPERTY);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "uint8") {
 			Token t(CODE_UNIT8);
-			v.add(t);
+			v.push_back(t);
 		}	else if(tk == "uint32") {
 			Token t(CODE_UNIT32);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "float32") {
 			Token t(CODE_FLOAT32);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "list") {
 			Token t(CODE_LIST);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "vertex") {
 			Token t(CODE_VERTEX);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "face") {
 			Token t(CODE_FACE);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "element") {
 			Token t(CODE_ELEMENT);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "end_header") {
 			Token t(CODE_END_HEADER);
-			v.add(t);
+			v.push_back(t);
 		} else if( isNumber(tk, val) ) {
+			//cout << line << " NUmber: " << val << endl;
 			Token t(CODE_NUMBER, val);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "vertex_indices") {
 			Token t(CODE_VERTEX_INDICES);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "x") {
 			Token t(CODE_COORD_X);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "y") {
 			Token t(CODE_COORD_Y);
-			v.add(t);
+			v.push_back(t);
 		} else if(tk == "z") {
 			Token t(CODE_COORD_Z);
-			v.add(t);
+			v.push_back(t);
+		} else if(tk == "comment" || tk == "converted" || tk == "from" || tk == "OBJ" ) {
+
 		}
 	}
 
@@ -198,22 +148,72 @@ int PlyFile::load2(const char *filename) {
 	ifstream f(filename);
 	string line;
 	vector<Token> tokens(0);
+	bool read_vertex;
+	int size, v_per_face;
+	float tmp;
+	int vertex_index;
 
 	if(f.fail()) {
 		cout << "Failed to open this file " << filename << endl;
 		return 1;
 	}
 
+	this->float_stride = 0;
+
 	while(!f.eof()) {
 		std::getline(f, line);
 		tokens.clear();
 		parse_line2(line, tokens);
+		size = tokens.size();
+		if(size == 1 && tokens[0].code == CODE_END_HEADER) {
+			//start read vertices
+			read_vertex = true;
 
+			this->vertices = new float[float_stride * vertex_count];
 
+			for(int i=0; i<vertex_count; i++) {
+				std::getline(f, line);
+				istringstream str(line);
+				for(int j=0; j<float_stride; j++) {
+					str >> tmp;
+					this->vertices[i * float_stride + j] = tmp;
+				}
+			}
 
+			coVertices.reserve(vertex_count);
+
+			this->faces = new Face[this->face_count];
+			//Now read face
+			for(int i=0; i<face_count; i++) {
+				std::getline(f, line);
+				istringstream str1(line);
+				str1 >> v_per_face;
+				this->faces[i].vertex_count = v_per_face;
+				//cout << "Face line: " << line << " v_per_face: "<< v_per_face << endl;
+				for(int j=0; j<v_per_face; j++) {
+					str1 >> vertex_index;
+					//cout << vertex_index << " ";
+					this->faces[i].vertex_indices[j] = vertex_index;
+					coVertices[vertex_index].face_indices[coVertices[vertex_index].count++] = i;
+				}
+			}
+		} else if(tokens[0].code == CODE_PROPERTY) {
+			if(tokens[1].code == CODE_FLOAT32) {
+				if(tokens[2].code == CODE_COORD_X || (tokens[2].code == CODE_COORD_Y) || tokens[2].code == CODE_COORD_Z ) {
+					this->float_stride++;
+				}
+			}
+		} else if(tokens[0].code == CODE_ELEMENT) {
+			if(tokens[1].code == CODE_VERTEX) {
+				//cout << line << endl;
+				this->vertex_count = (int)(tokens[2].value);
+			} else if(tokens[1].code == CODE_FACE) {
+				this->face_count = (int)(tokens[2].value);
+			}
+		}
 	}
 
-	f.close()
+	f.close();
 
 	return 0;
 }
@@ -352,6 +352,10 @@ int PlyFile::add_normal_vectors() {
 
 		normal = glm::cross(e1, e2);
 		normal = glm::normalize(normal);
+		faces[i].normal[0] = normal[0];
+		faces[i].normal[1] = normal[1];
+		faces[i].normal[2] = normal[2];
+		//cout << "Normal vector: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
 	}
 	return 0;
 }

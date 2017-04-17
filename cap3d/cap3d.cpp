@@ -21,16 +21,18 @@
 using namespace std;
 using namespace fp;
 
-// unsigned char* readObject(const char* filename, int &size);
-// int readPly(const char* filename, TModel *model, BBox3d *bbox);
-//
-// void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const TModel *model);
-//
-void viewTriangle() {
-
-}
 
 int main(int argc, char* args[]) {
+	PlyFile f;
+	f.load2(args[1]);
+
+	f.print(cout);
+	f.add_normal_vectors();
+
+	return 0;
+}
+
+int main1(int argc, char* args[]) {
 
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
@@ -52,9 +54,10 @@ int main(int argc, char* args[]) {
 
 	window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
 	if (!window) {
+		//Failed to create window
 		glfwTerminate();
 		exit(EXIT_FAILURE);
-	} //Failed to create window
+	}
 
 	//Make our window current
 	glfwMakeContextCurrent(window);
@@ -88,16 +91,16 @@ int main(int argc, char* args[]) {
 
 
 	//export 2d images
-	renderer.moveCameraTo(0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose1.jpg");
-	renderer.moveCameraTo(0.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose2.jpg");
-	renderer.moveCameraTo(0.0f, -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose3.jpg");
-	renderer.moveCameraTo(0.0f, -1.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose4.jpg");
-	renderer.moveCameraTo(1.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose5.jpg");
-	renderer.moveCameraTo(1.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose6.jpg");
+	//renderer.moveCameraTo(0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose1.jpg");
+	//renderer.moveCameraTo(0.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose2.jpg");
+	//renderer.moveCameraTo(0.0f, -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose3.jpg");
+	//renderer.moveCameraTo(0.0f, -1.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose4.jpg");
+	//renderer.moveCameraTo(1.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose5.jpg");
+	//renderer.moveCameraTo(1.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose6.jpg");
 
 	GLuint VertexArrayID;
-	//glGenVertexArrays(1, &VertexArrayID);
-	//glBindVertexArray(VertexArrayID);
+	glGenVertexArrays(1, &VertexArrayID);
+	glBindVertexArray(VertexArrayID);
 
 	static const GLfloat g_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -105,9 +108,9 @@ int main(int argc, char* args[]) {
 		 0.0f,  1.0f, 0.0f,
 	};
 
-	// GLuint vertex_buffer;
-	// glGenBuffers(1, &vertex_buffer);
-	// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	GLuint vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 	// glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	do {
@@ -143,8 +146,8 @@ int main(int argc, char* args[]) {
 		   glfwWindowShouldClose(window) == 0 );
 
 	// Cleanup VBO
-	//glDeleteBuffers(1, &vertex_buffer);
-	//glDeleteVertexArrays(1, &VertexArrayID);
+	glDeleteBuffers(1, &vertex_buffer);
+	glDeleteVertexArrays(1, &VertexArrayID);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
