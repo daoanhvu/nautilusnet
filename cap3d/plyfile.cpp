@@ -1,6 +1,6 @@
 
 #include <plyfile.h>
-#include <string>
+#include <cstring>
 #include <utils.h>
 #include <glm/glm.hpp>
 
@@ -45,7 +45,7 @@ int PlyFile::generateCoVertices() {
 		if(count > 1) {
 			Vertex v;
 			v.v = new float[this->float_stride];
-			memcpy(v.v, vertices[i].v, sizeof(float) * float_stride);
+			std::memcpy(v.v, vertices[i].v, sizeof(float) * float_stride);
 		}
 	}
 
@@ -69,7 +69,7 @@ float* PlyFile::getVertexBuffer(unsigned int &n) {
 	for(i=0; i<fsize; i++) {
 		vc = faces[i].vertices.size();
 		for(j=0; j<vc; j++) {
-			memcpy(buf + offs, faces[i].vertices[j].v, sizeof(float) * float_stride);
+			std::memcpy(buf + offs, faces[i].vertices[j].v, sizeof(float) * float_stride);
 			offs += float_stride;
 		}
 	}
@@ -81,7 +81,7 @@ float* PlyFile::getVertexBuffer(unsigned int &n) {
 	Params
 	Return
 */
-float* getNormalBuffer(unsigned int &nc) {
+float* PlyFile::getNormalBuffer(unsigned int &nc) {
 	int i, j;
 	unsigned int vc;
 	unsigned int fsize = faces.size();
@@ -92,7 +92,7 @@ float* getNormalBuffer(unsigned int &nc) {
 	for(i=0; i<fsize; i++) {
 		vc = faces[i].vertices.size();
 		for(j=0; j<vc; j++) {
-			memcpy(buf + offs, faces[i].normal, sizeof(float) * 3);
+			std::memcpy(buf + offs, faces[i].normal, sizeof(float) * 3);
 			offs += 3;
 		}
 	}
@@ -266,7 +266,7 @@ int PlyFile::load(const char *filename) {
 					//Copy vertices those belong to this face into the face's vertex storage
 					Vertex v;
 					v.v = new float[float_stride];
-					memcpy(v.v, vertices[vertex_index].v, sizeof(float) * float_stride);
+					std::memcpy(v.v, vertices[vertex_index].v, sizeof(float) * float_stride);
 					face.vertices.push_back(v);
 				}
 				faces.push_back(face);
