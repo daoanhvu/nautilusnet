@@ -171,6 +171,8 @@ int GLRenderer::initGL() {
 void GLRenderer::moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const PlyFile *model, const char *exportedFile){
 	Camera cam;
 
+	int vertex_count = model->getVertexCount();
+
 	cam.setViewport(0, 0, 200, 200);
 	cam.lookAt(ex, ey, ez, cx, cy, cz, 0.0f, 1.0f, 0.0f);
 	float fov = RAD(45.0f) ;
@@ -183,15 +185,15 @@ void GLRenderer::moveCameraTo(float ex, float ey, float ez, float cx, float cy, 
 
 	cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0, 0, 0));
 	// float *out = new float[model->properties.size() * model->vertex_count];
-	float *out = new float[3 * model->vertex_count];
-	cout << "vertex count: " << model->vertex_count << " " << sizeof(model->vertices) <<endl;
+	float *out = new float[model->getFloatStride() * model->getVertexCount()];
+	// cout << "vertex count: " << model->getVertexCount() << " " << sizeof(model->vertices) <<endl;
 	float p[3];
 	int i, offs;
 	int x, y;
-	for(i=0; i<model->vertex_count; i++) {
+	for(i=0; i<vertex_count; i++) {
 		//offs = i * model->properties.size();
 		offs = i * 3;
-		cam.project(out + offs, (model->vertices) + offs);
+		cam.project(out + offs, model->getVertex(i).v);
 		//cout << "x= " << (model->vertices)[offs] << "; y= " << (model->vertices)[offs + 1] << "; z=" << (model->vertices)[offs+2] << std::endl;
 		x = (int) out[offs];
 		y = (int) out[offs + 1];

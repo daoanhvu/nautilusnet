@@ -54,7 +54,7 @@ typedef struct tagTK {
 */
 typedef struct tagCoVertex{
 	int vertex_index;
-	int count; //number of faces this vertex belong to
+	unsigned int count; //number of faces this vertex belong to
 	int face_indices[32]; //whose indices they are
 
 	tagCoVertex() {
@@ -69,10 +69,15 @@ typedef struct tagProp {
 	int datatype;
 } PlyProperty;
 
+typedef struct tagVertex {
+	float *v;
+} Vertex;
+
 typedef struct tagFace {
 	unsigned char vertex_count;
 	int vertex_indices[5];
 	float normal[3];
+	vector<Vertex> vertices;
 } Face;
 
 struct OpenFileException : public exception {
@@ -91,50 +96,84 @@ typedef struct tagBBox3D {
 } BBox3d;
 
 class PlyFile {
+	private:
+		unsigned int num_of_real_vertex;
 	public:
 		vector<PlyProperty> properties;
 		vector<CoVertex> coVertices;
-		float *vertices;
+
+		vector <Vertex> vertices;
 		//Number of float per vertex
 		int float_stride;
-		unsigned int vertex_count;
-		Face* faces;
-		unsigned int face_count;
+
+		vector<Face> faces;
 
 	public:
 		PlyFile();
 		PlyFile(const char *filename);
 		PlyFile(string filename);
+
 		~PlyFile() {
-			if(vertices != 0) {
-				delete[] vertices;
+			unsigned int size = vertices.size();
+			unsigned int fsize = faces.size();
+			unsigned int i, j;
+
+			for(i=0; i<size; i++)
+				delete[] vertices[i].v;
+
+			for(i=0; i<fsize; i++) {
+				for(j=0; j<faces[i].vertices.size(); j++)
+					delete[] faces[i].vertices[j].v;
 			}
 
-			if(faces != 0) {
-				delete[] faces;
-			}
+		}
+
+		int getVertexCount() const {
+			return vertices.size();
+		}
+
+		int getFloatStride() const { return float_stride; }
+
+		/*
+			This will make the performance down
+
+			Need const ???
+		*/
+		Vertex getVertex(int idx) const {
+			return vertices[idx];
 		}
 
 		int load(const char *filename);
-		int load2(const char *filename);
 		int add_normal_vectors();
 
 		void getBBox(BBox3d &bbox);
 		int parse_line2(string line, vector<Token> &v);
 
+		int generateCoVertices();
+		/*
+			Params:
+				n [OUT] number of float returned
+		*/
+		float* getVertexBuffer(unsigned int &);
+
+		float* getNormalBuffer(unsigned int &);
 
 		/*
 		 	For testing
 		*/
 		void print(ostream &out) {
 			int i, j, k;
+			int vertex_count = vertices.size();
+			int face_count = faces.size();
+
 			out << "Number of vertex: " << vertex_count << endl;
 			out << "Number of faces: " << face_count << endl;
+			out << "Number of real vertex: " << num_of_real_vertex << endl;
+			out << "Number of float per vertex: " << float_stride << endl;
 			out << "Vertices: " << endl;
 			for(i=0; i<vertex_count; i++) {
-				k = i * float_stride;
 				for(j=0; j<float_stride; j++)
-					out << vertices[k+j] << " ";
+					out << vertices[i].v[j] << " ";
 				out << endl;
 
 				out << "Faces: ";

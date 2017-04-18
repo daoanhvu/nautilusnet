@@ -24,11 +24,137 @@ using namespace fp;
 
 int main(int argc, char* args[]) {
 	PlyFile f;
-	f.load2(args[1]);
+	unsigned int buflen;
+
+	if(argc < 2) {
+		cout << "Not enough parameters. \n";
+		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
+		return 1;
+	}
+
+	f.load(args[1]);
 
 	f.print(cout);
 	f.add_normal_vectors();
+	// cout << "Going to get vertex buffer. \n";
 
+	// Initialise GLFW
+	if( !glfwInit() )	{
+		fprintf( stderr, "Failed to initialize GLFW\n" );
+		getchar();
+		return -1;
+	}
+	GLFWwindow *window;
+
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Open a window and create its OpenGL context
+	window = glfwCreateWindow( 1024, 768, "Nautilus 3D Object Capturer - 1.0", NULL, NULL);
+	if( window == NULL ) {
+		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+
+	// Initialize GLEW
+	glewExperimental = true; // Needed for core profile
+	if (glewInit() != GLEW_OK) {
+		fprintf(stderr, "Failed to initialize GLEW\n");
+		getchar();
+		glfwTerminate();
+		return -1;
+	}
+
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+  // Hide the mouse and enable unlimited mouvement
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  // Set the mouse at the center of the screen
+  glfwPollEvents();
+  glfwSetCursorPos(window, 1024/2, 768/2);
+	// Dark blue background
+	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	// Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	// Accept fragment if it closer to the camera than the former one
+	glDepthFunc(GL_LESS);
+	// Cull triangles which normal is not towards the camera
+	glEnable(GL_CULL_FACE);
+
+	unsigned int normal_len;
+	float *vertices_buf_data = f.getVertexBuffer(buflen);
+	float *normal_buf_data = f.getNormalBuffer(normal_len);
+
+	//Setup data for rendering
+	GLuint vertexArrayId;
+	glGenVertexArrays(1, &vertexArrayId);
+	glBindVertexArray(vertexArrayId);
+
+	// Load it into a VBO
+
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, f.getVertexCount() * sizeof(glm::vec3), vertices_buf_data, GL_STATIC_DRAW);
+
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, normal_len * sizeof(glm::vec3), normal_buf_data, GL_STATIC_DRAW);
+
+	// Get a handle for our "LightPosition" uniform
+	glUseProgram(programID);
+	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+
+	do {
+		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
+		glClear( GL_COLOR_BUFFER_BIT );
+		// Clear the screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Use our shader
+		glUseProgram(programID);
+
+		// Draw nothing, see you in tutorial 2 !
+		// glUseProgram(renderer.getProgramId());
+		//
+		// // 1rst attribute buffer : vertices
+		// glEnableVertexAttribArray(0);
+		// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+		// glVertexAttribPointer(
+		// 	0,
+		// 	3,
+		// 	GL_FLOAT,
+		// 	GL_FLOAT,
+		// 	0,				/*stride*/
+		// 	(void*)0 /*Array buffer offset*/
+		// );
+		//
+		// // Draw the triangle !
+		// glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
+		//
+		// glDisableVertexAttribArray(0);
+
+		// Swap buffers
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+
+ // Check if the ESC key was pressed or the window was closed
+	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+			 glfwWindowShouldClose(window) == 0 );
+
+	glDeleteProgram(programID);
+
+	// Close OpenGL window and terminate GLFW
+	glfwTerminate();
+
+	delete[] vertices_buf_data;
+	delete[] normal_buf_data;
 	return 0;
 }
 
