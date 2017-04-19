@@ -57,8 +57,16 @@ typedef struct tagProp {
 typedef struct tagVertex {
 	float *v;
 	float normal[3];
-	int face_indices[32]; //whose indices they are
+	int *face_indices;
 	unsigned int count; //number of faces this vertex belong to
+	unsigned int log_face_size;
+
+	tagVertex() {
+			v = NULL;
+			count = 0;
+			face_indices = new int[8];
+			log_face_size = 8;
+	}
 } Vertex;
 
 typedef struct tagFace {
@@ -100,8 +108,11 @@ class PlyFile {
 			unsigned int fsize = faces.size();
 			unsigned int i, j;
 
-			for(i=0; i<size; i++)
+			for(i=0; i<size; i++) {
 				delete[] vertices[i].v;
+				delete[] vertices[i].face_indices;
+			}
+
 		}
 
 		int getVertexCount() const {

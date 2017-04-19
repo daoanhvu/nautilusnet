@@ -50,6 +50,23 @@ float mouseSpeed = 0.005f;
 
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
 
+int main4(int argc, char* args[]) {
+	PlyFile f;
+	unsigned int buflen;
+
+	if(argc < 2) {
+		cout << "Not enough parameters. \n";
+		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
+		return 1;
+	}
+
+	if(f.load(args[1], 20.0f) != OK) {
+		cout << "Could not load input file!" << endl;
+		return 1;
+	}
+	return 0;
+}
+
 int main(int argc, char* args[]) {
 	PlyFile f;
 	unsigned int buflen;
@@ -140,20 +157,20 @@ int main(int argc, char* args[]) {
 	unsigned short *indices = f.getElementIndices(index_size);
 
 	//testing
-	int k;
-	for(int i=0; i<num_of_vertex; i++) {
-		k = f.getFloatStride() * i;
-		cout << "vertex[" << i << "]: " << vertices_buf_data[k] << ", ";
-		cout << vertices_buf_data[k+1] << ", " << vertices_buf_data[k+2];
-
-		cout << " normal:(" << normal_buf_data[k] << ", ";
-		cout << normal_buf_data[k+1] << ", " << normal_buf_data[k+2] << ")\n";
-	}
-	cout << "Index size: " << index_size << endl;
-	for(int i=0; i<index_size; i++) {
-		cout << indices[i] << ", ";
-	}
-	cout << endl;
+	// int k;
+	// for(int i=0; i<num_of_vertex; i++) {
+	// 	k = f.getFloatStride() * i;
+	// 	cout << "vertex[" << i << "]: " << vertices_buf_data[k] << ", ";
+	// 	cout << vertices_buf_data[k+1] << ", " << vertices_buf_data[k+2];
+	//
+	// 	cout << " normal:(" << normal_buf_data[k] << ", ";
+	// 	cout << normal_buf_data[k+1] << ", " << normal_buf_data[k+2] << ")\n";
+	// }
+	// cout << "Index size: " << index_size << endl;
+	// for(int i=0; i<index_size; i++) {
+	// 	cout << indices[i] << ", ";
+	// }
+	// cout << endl;
 
 	glm::mat4 ModelMatrix, MVP;
 
