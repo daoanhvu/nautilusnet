@@ -50,7 +50,7 @@ class GLRenderer {
 		GLRenderer();
 		~GLRenderer();
 
-		int initGL();
+		int initGL(const char*, const char*);
 
 		GLuint getProgramId() const {
 			return programId;

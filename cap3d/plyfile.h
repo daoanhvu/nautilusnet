@@ -143,7 +143,7 @@ class PlyFile {
 			return vertices[idx];
 		}
 
-		int load(const char *filename);
+		int load(const char *filename, float scale);
 		int add_normal_vectors();
 
 		void getBBox(BBox3d &bbox);

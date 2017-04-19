@@ -13,6 +13,11 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include "shader.h"
+
+#define PI 3.14159f
 #define RAD(x) ( x * 3.14159f / 180.0f )
 #define BYTES_PER_PROP 4
 
@@ -20,7 +25,24 @@
 
 using namespace std;
 using namespace fp;
+using namespace glm;
 
+glm::mat4 ViewMatrix;
+glm::mat4 ProjectionMatrix;
+
+// Initial position : on +Z
+glm::vec3 position = glm::vec3( 0, 0, 9 );
+// Initial horizontal angle : toward -Z
+float horizontalAngle = 3.14f;
+// Initial vertical angle : none
+float verticalAngle = 0.0f;
+// Initial Field of View
+float initialFoV = 45.0f;
+
+float speed = 3.0f; // 3 units / second
+float mouseSpeed = 0.005f;
+
+void computeMatrices(GLFWwindow* window);
 
 int main(int argc, char* args[]) {
 	PlyFile f;
@@ -32,7 +54,10 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
-	f.load(args[1]);
+	if(f.load(args[1], 20.0f) != OK) {
+		cout << "Could not load input file!" << endl;
+		return 1;
+	}
 
 	f.print(cout);
 	f.add_normal_vectors();
@@ -71,6 +96,9 @@ int main(int argc, char* args[]) {
 		return -1;
 	}
 
+	//Control variables
+	double xpos, ypos;
+
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
   // Hide the mouse and enable unlimited mouvement
@@ -87,9 +115,22 @@ int main(int argc, char* args[]) {
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
-	unsigned int normal_len;
+	unsigned int num_of_vertex;
 	float *vertices_buf_data = f.getVertexBuffer(buflen);
-	float *normal_buf_data = f.getNormalBuffer(normal_len);
+	float *normal_buf_data = f.getNormalBuffer(num_of_vertex);
+
+	//testing
+	int k;
+	for(int i=0; i<num_of_vertex; i++) {
+		k = f.getFloatStride() * i;
+		cout << "vertex[" << i << "]: " << vertices_buf_data[k] << ", ";
+		cout << vertices_buf_data[k+1] << ", " << vertices_buf_data[k+2];
+
+		cout << " normal:(" << normal_buf_data[k] << ", ";
+		cout << normal_buf_data[k+1] << ", " << normal_buf_data[k+2] << ")\n";
+	}
+
+	glm::mat4 ModelMatrix, MVP;
 
 	//Setup data for rendering
 	GLuint vertexArrayId;
@@ -98,47 +139,68 @@ int main(int argc, char* args[]) {
 
 	// Load it into a VBO
 
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, f.getVertexCount() * sizeof(glm::vec3), vertices_buf_data, GL_STATIC_DRAW);
+	GLuint vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	glBufferData(GL_ARRAY_BUFFER, num_of_vertex * sizeof(glm::vec3), vertices_buf_data, GL_STATIC_DRAW);
 
-	GLuint normalbuffer;
-	glGenBuffers(1, &normalbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-	glBufferData(GL_ARRAY_BUFFER, normal_len * sizeof(glm::vec3), normal_buf_data, GL_STATIC_DRAW);
+	GLuint normal_buffer;
+	glGenBuffers(1, &normal_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+	glBufferData(GL_ARRAY_BUFFER, num_of_vertex * sizeof(glm::vec3), normal_buf_data, GL_STATIC_DRAW);
+
+	GLuint programID = loadShaders( "vertex1.shader", "fragment1.shader");
+	GLuint mvpMatrixId = glGetUniformLocation(programID, "MVP");
+	GLuint viewMatrixId = glGetUniformLocation(programID, "V");
+	GLuint modelMatrixId = glGetUniformLocation(programID, "M");
 
 	// Get a handle for our "LightPosition" uniform
 	glUseProgram(programID);
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+	glm::vec3 lightPos = glm::vec3(5,5,5);
 
 	do {
-		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
-		glClear( GL_COLOR_BUFFER_BIT );
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// Use our shader
 		glUseProgram(programID);
 
-		// Draw nothing, see you in tutorial 2 !
-		// glUseProgram(renderer.getProgramId());
-		//
-		// // 1rst attribute buffer : vertices
-		// glEnableVertexAttribArray(0);
-		// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-		// glVertexAttribPointer(
-		// 	0,
-		// 	3,
-		// 	GL_FLOAT,
-		// 	GL_FLOAT,
-		// 	0,				/*stride*/
-		// 	(void*)0 /*Array buffer offset*/
-		// );
-		//
-		// // Draw the triangle !
-		// glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
-		//
-		// glDisableVertexAttribArray(0);
+		computeMatrices(window);
+		ModelMatrix = glm::mat4(1.0);
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		// Send our transformation to the currently bound shader,
+		// in the "MVP" uniform
+		glUniformMatrix4fv(mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(viewMatrixId, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+		glVertexAttribPointer(0, //Attribute index
+			3,  //Number of component per vertex
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0);
+
+		//Normal data
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+		glVertexAttribPointer(1, //Attribute index
+			3,  //Number of component per vertex
+			GL_FLOAT,
+			GL_FALSE,
+			0,
+			(void*)0);
+
+		//Now, we draw the model
+		glDrawArrays(GL_TRIANGLES, 0, num_of_vertex);
+
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -148,7 +210,10 @@ int main(int argc, char* args[]) {
 	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 			 glfwWindowShouldClose(window) == 0 );
 
+	glDeleteBuffers(1, &vertex_buffer);
+	glDeleteBuffers(1, &normal_buffer);
 	glDeleteProgram(programID);
+	glDeleteVertexArrays(1, &vertexArrayId);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
@@ -207,13 +272,13 @@ int main1(int argc, char* args[]) {
 	PlyFile f;
 
 	//load model
-	 if(f.load(args[1]) != OK) {
+	if(f.load(args[1], 10) != OK) {
 		cout << args << endl;
 		glfwTerminate();
 		return 1;
 	}
 	cout << "Before initialization!!!\n";
-	renderer.initGL();
+	renderer.initGL("../vertex.shader", "../fragment.shader");
 
 
 	//export 2d images
@@ -278,4 +343,76 @@ int main1(int argc, char* args[]) {
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 	return 0;
+}
+
+/*
+	(mx, my) mouse position
+*/
+void computeMatrices(GLFWwindow* window) {
+	// glfwGetTime is called only once, the first time this function is called
+	static double lastTime = glfwGetTime();
+
+	// Compute time difference between current and last frame
+	double currentTime = glfwGetTime();
+	float deltaTime = float(currentTime - lastTime);
+
+	// Get mouse position
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	// Reset mouse position for next frame
+	glfwSetCursorPos(window, 1024/2, 768/2);
+
+	// Compute new orientation
+	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
+	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
+
+	// Direction : Spherical coordinates to Cartesian coordinates conversion
+	glm::vec3 direction(
+		cos(verticalAngle) * sin(horizontalAngle),
+		sin(verticalAngle),
+		cos(verticalAngle) * cos(horizontalAngle)
+	);
+
+	// Right vector
+	float PIDIV2 = PI / 2.0f;
+	glm::vec3 right = glm::vec3(
+		sin(horizontalAngle - PIDIV2),
+		0,
+		cos(horizontalAngle - PIDIV2)
+	);
+
+	// Up vector
+	glm::vec3 up = glm::cross( right, direction );
+
+	// Move forward
+	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
+		position += direction * deltaTime * speed;
+	}
+	// Move backward
+	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+		position -= direction * deltaTime * speed;
+	}
+	// Strafe right
+	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
+		position += right * deltaTime * speed;
+	}
+	// Strafe left
+	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
+		position -= right * deltaTime * speed;
+	}
+
+	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
+
+	// Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	ProjectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f);
+	// Camera matrix
+	ViewMatrix       = glm::lookAt(
+								position,           // Camera is here
+								position+direction, // and looks here : at the same position, plus "direction"
+								up                  // Head is up (set to 0,-1,0 to look upside-down)
+							 );
+
+	// For the next frame, the "last time" will be "now"
+	lastTime = currentTime;
 }
