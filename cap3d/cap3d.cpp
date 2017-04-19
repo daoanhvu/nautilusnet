@@ -60,7 +60,7 @@ int main4(int argc, char* args[]) {
 		return 1;
 	}
 
-	if(f.load(args[1], 20.0f) != OK) {
+	if(f.load(args[1], 30.0f) != OK) {
 		cout << "Could not load input file!" << endl;
 		return 1;
 	}
@@ -217,6 +217,7 @@ int main(int argc, char* args[]) {
 	glm::mat4 inverRotMatrix;
 	glm::mat4 modelMatrix;
 	glm::mat4 translationMatrix;
+	glm::mat4 invertTranslationMatrix;
 	glm::mat4 scalingMatrix;
 	glm::vec3 position1(-1.5f, 0.0f, 0.0f);
 	int button_state;
@@ -304,11 +305,12 @@ int main(int argc, char* args[]) {
 			// position -= right * deltaTime * speed;
 		}
 
-		// rotationMatrix = glm::eulerAngleXYZ(orientation1.y, orientation1.x, orientation1.z);
 		// translationMatrix = glm::translate(glm::mat4(), position1);
 		translationMatrix = glm::translate(glm::mat4(), object_center);
-		scalingMatrix = glm::scale(glm::mat4(), glm::vec3(.5f, .5f, .5f));
-		modelMatrix = translationMatrix * rotationMatrix * scalingMatrix;
+		invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
+		// scalingMatrix = glm::scale(glm::mat4(), glm::vec3(.5f, .5f, .5f));
+		// modelMatrix = translationMatrix * rotationMatrix * scalingMatrix;
+		modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
 		MVP = projectionMatrix * viewMatrix * modelMatrix;
 
 		// Send our transformation to the currently bound shader,
@@ -325,6 +327,8 @@ int main(int argc, char* args[]) {
 				GL_UNSIGNED_SHORT,   // type
 				(void*)0           // element array buffer offset
 			);
+
+		//TODO: Call glReadPixels to capture framebuffer data here
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
