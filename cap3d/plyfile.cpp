@@ -33,47 +33,17 @@ PlyFile::PlyFile(string filename) {
 	float_stride = 0;
 }
 
-/*
-	Deprecated
-*/
-int PlyFile::generateCoVertices() {
-	int i, count;
-	int size_co = this->coVertices.size();
-
-	for(i=0; i < size_co; i++) {
-		count = coVertices[i].count;
-		if(count > 1) {
-			Vertex v;
-			v.v = new float[this->float_stride];
-			std::memcpy(v.v, vertices[i].v, sizeof(float) * float_stride);
-		}
-	}
-
-	return 0;
-}
-
-
-/*
-	It will take time
-*/
-float* PlyFile::getVertexBuffer(unsigned int &n) {
+float* PlyFile::getVertexBuffer(unsigned int &nc) {
 	int i, j;
-	unsigned int vc;
-	unsigned int fsize = faces.size();
-	n = num_of_real_vertex * float_stride;
+	nc = vertices.size();
+	unsigned int n = nc * float_stride;
 	float *buf = new float[n];
-
-	cout << "Number of real vertex: " << n/float_stride << endl;
-
 	int offs = 0;
-	for(i=0; i<fsize; i++) {
-		vc = faces[i].vertices.size();
-		for(j=0; j<vc; j++) {
-			std::memcpy(buf + offs, faces[i].vertices[j].v, sizeof(float) * float_stride);
-			offs += float_stride;
-		}
+	unsigned int normal_size_in_byte = sizeof(float) * float_stride;
+	for(i=0; i<nc; i++) {
+		std::memcpy(buf + offs, vertices[i].v, normal_size_in_byte);
+		offs += float_stride;
 	}
-
 	return buf;
 }
 
@@ -83,20 +53,15 @@ float* PlyFile::getVertexBuffer(unsigned int &n) {
 */
 float* PlyFile::getNormalBuffer(unsigned int &nc) {
 	int i, j;
-	unsigned int vc;
-	unsigned int fsize = faces.size();
-	nc = num_of_real_vertex;
-	int n = num_of_real_vertex * 3;
+	nc = vertices.size();
+	unsigned int n = nc * 3;
 	float *buf = new float[n];
 	int offs = 0;
-	for(i=0; i<fsize; i++) {
-		vc = faces[i].vertices.size();
-		for(j=0; j<vc; j++) {
-			std::memcpy(buf + offs, faces[i].normal, sizeof(float) * 3);
-			offs += 3;
-		}
+	unsigned int normal_size_in_byte = sizeof(float) * 3;
+	for(i=0; i<nc; i++) {
+		std::memcpy(buf + offs, vertices[i].normal, normal_size_in_byte);
+		offs += 3;
 	}
-
 	return buf;
 }
 
@@ -136,7 +101,6 @@ void PlyFile::getBBox(BBox3d &bbox) {
 		}
 	}
 }
-
 
 int PlyFile::parse_line2(string line, vector<Token> &v) {
 	int error = 0;
@@ -217,7 +181,6 @@ int PlyFile::load(const char *filename, float scale) {
 		return 1;
 	}
 
-	this->num_of_real_vertex = 0;
 	this->float_stride = 0;
 
 	while(!f.eof()) {
@@ -236,16 +199,13 @@ int PlyFile::load(const char *filename, float scale) {
 				istringstream str(line);
 				Vertex vt;
 				vt.v = new float[float_stride];
+				vt.count = 0;
 				for(int j=0; j<float_stride; j++) {
 					str >> tmp;
 					vt.v[j] = tmp / scale;
 				}
 				vertices.push_back(vt);
-				CoVertex cvt;
-				coVertices.push_back(cvt);
 			}
-
-			coVertices.reserve(vertex_count);
 
 			this->faces.reserve(face_count);
 			//Now read face
@@ -258,26 +218,11 @@ int PlyFile::load(const char *filename, float scale) {
 				//cout << "Face line: " << line << " v_per_face: "<< v_per_face << endl;
 				for(int j=0; j<v_per_face; j++) {
 					str1 >> vertex_index;
-					//cout << vertex_index << " ";
 					face.vertex_indices[j] = vertex_index;
-					coVertices[vertex_index].face_indices[coVertices[vertex_index].count++] = i;
-					coVertices[vertex_index].vertex_index = vertex_index;
-
-					//Copy vertices those belong to this face into the face's vertex storage
-					Vertex v;
-					v.v = new float[float_stride];
-					std::memcpy(v.v, vertices[vertex_index].v, sizeof(float) * float_stride);
-					face.vertices.push_back(v);
+					vertices[vertex_index].face_indices[vertices[vertex_index].count++] = i;
 				}
 				faces.push_back(face);
 			}
-
-			//Calculate the number of real vertex
-			cout << "CO_Vertex_size: " << coVertices.size() << endl;
-			for(int i=0; i<coVertices.size(); i++) {
-				num_of_real_vertex += coVertices[i].count;
-			}
-
 		} else if(tokens[0].code == CODE_PROPERTY) {
 			if(tokens[1].code == CODE_FLOAT32) {
 				if(tokens[2].code == CODE_COORD_X || (tokens[2].code == CODE_COORD_Y) || tokens[2].code == CODE_COORD_Z ) {
@@ -338,6 +283,20 @@ int PlyFile::add_normal_vectors() {
 		faces[i].normal[1] = normal[1];
 		faces[i].normal[2] = normal[2];
 		//cout << "Normal vector: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
+	}
+
+	vxcount = vertices.size();
+	for(i=0; i<vxcount; i++) {
+		normal = glm::vec3(0, 0, 0);
+		for(int j=0; j<vertices[i].count; j++) {
+			normal[0] += faces[vertices[i].face_indices[j]].normal[0];
+			normal[1] += faces[vertices[i].face_indices[j]].normal[1];
+			normal[2] += faces[vertices[i].face_indices[j]].normal[2];
+		}
+		normal = glm::normalize(normal);
+		vertices[i].normal[0] = normal[0];
+		vertices[i].normal[1] = normal[1];
+		vertices[i].normal[2] = normal[2];
 	}
 	return 0;
 }
