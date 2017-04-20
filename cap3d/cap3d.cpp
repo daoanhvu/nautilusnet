@@ -22,6 +22,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/norm.hpp>
 
+#include "lexer_parser.h"
 #include "shader.h"
 
 #define PI 3.14159f
@@ -72,9 +73,7 @@ int main4(int argc, char* args[]) {
 int main(int argc, char* args[]) {
 	PlyFile f;
 	unsigned int buflen;
-
-	const int window_width = 600;
-	const int window_height = 480;
+	Configuration config;
 
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
@@ -82,28 +81,24 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
-	//Camera's positions
-	std::vector<glm::vec3> cam_positions;
 	//Load config file - hardcode filename here!
-	ifstream config_file("nautilus.cfg");
-	if(config_file.fail()) {
+	if( read_configuration("nautilus.cfg", config) != OK ) {
 		cout << "Could not read configuration file!" << endl;
-	} else {
-		string line;
-		float x, y, z;
-		while(!config_file.eof()) {
-			std::getline(config_file, line);
-			istringstream str(line);
-			str >> x;
-			str >> y;
-			str >> z;
-			glm::vec3 pos(x, y, z);
-			cam_positions.push_back(pos);
-		}
-		config_file.close();
+		return 1;
 	}
 
-	if(f.load(args[1], 20.0f) != OK) {
+	cout << "window_width: " << config.window_width << endl;
+	cout << "window_height: " << config.window_height << endl;
+	cout << "background: " << config.background[0] << ", " << config.background[1] << ", " << config.background[2] << endl;
+	cout << "scale: " << config.scale_factor << endl;
+	cout << "number of camera: " << config.camera_positions.size() << endl;
+	for(int i=0; i<config.camera_positions.size(); i++) {
+		cout << config.camera_positions[i][0] << ", " << config.camera_positions[i][1] << ", " << config.camera_positions[i][2] << endl;
+	}
+	cout << "lightpos1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
+	// return 0;
+
+	if(f.load(args[1], config.scale_factor) != OK) {
 		cout << "Could not load input file!" << endl;
 		return 1;
 	}
@@ -136,7 +131,7 @@ int main(int argc, char* args[]) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( window_width, window_height, "Nautilus 3D Object Capturer - 1.0", NULL, NULL);
+	window = glfwCreateWindow( config.window_width, config.window_height, "Nautilus 3D Object Capturer - 1.0", NULL, NULL);
 	if( window == NULL ) {
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -164,7 +159,7 @@ int main(int argc, char* args[]) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // Set the mouse at the center of the screen
   glfwPollEvents();
-  glfwSetCursorPos(window, window_width/2, window_height/2);
+  glfwSetCursorPos(window, config.window_width/2, config.window_height/2);
 	// Dark blue background
 	glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
 	// Enable depth test
@@ -227,7 +222,8 @@ int main(int argc, char* args[]) {
 	// Get a handle for our "LightPosition" uniform
 	glUseProgram(programID);
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
-	glm::vec3 lightPos = glm::vec3(6,6,1.5f);
+	//glm::vec3 lightPos = glm::vec3(7,7,7);
+	glm::vec3 lightPos = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
 
 	double lastTime = glfwGetTime();
 	double currentTime;
@@ -247,7 +243,7 @@ int main(int argc, char* args[]) {
 	bool should_store_frame_buffer = false;
 
 	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
-	int cam_pos_count = cam_positions.size();
+	int cam_pos_count = config.camera_positions.size();
 	int cam_pos_i = 0;
 
 	glfwGetCursorPos(window, &xpos, &ypos);
@@ -277,7 +273,7 @@ int main(int argc, char* args[]) {
 
 		std::ostringstream outfile_name_sstream;
 		if(should_store_frame_buffer) {
-			cam_pos = cam_positions[cam_pos_i];
+			cam_pos = config.camera_positions[cam_pos_i];
 			outfile_name_sstream << "pose_" << cam_pos_i << ".jpg";
 		}
 
@@ -372,7 +368,7 @@ int main(int argc, char* args[]) {
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
 			std::string out_filename = outfile_name_sstream.str();
-			storeFramebuffer(out_filename, window_width, window_height);
+			storeFramebuffer(out_filename, config.window_width, config.window_height);
 			cam_pos_i++;
 			if(cam_pos_i >= cam_pos_count)
 				should_store_frame_buffer = false;

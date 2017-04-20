@@ -1,7 +1,7 @@
 
-#include <plyfile.h>
+#include "plyfile.h"
+#include "utils.h"
 #include <cstring>
-#include <utils.h>
 #include <glm/glm.hpp>
 
 PlyFile::PlyFile() {

@@ -1,6 +1,25 @@
-#include <utils.h>
+#include "utils.h"
 #include <stdlib.h>
 
+int itostr(int n, char *s) {
+		int d, len = 0;
+		int l2, t = n;
+		int tmp;
+		while( t > 0 ) {
+			d = t % 10;
+			t = t / 10;
+			s[len++] = d + 48;
+		}
+		s[len] = '\0';
+		l2 = len >> 1;
+		for(t=0; t<=l2; t++) {
+			tmp = s[t];
+			s[t] = s[len-t-1];
+			s[len-t-1] = tmp;
+		}
+
+		return len;
+}
 
 int isNumber(string str, float &val) {
 	int i, start = 0;
