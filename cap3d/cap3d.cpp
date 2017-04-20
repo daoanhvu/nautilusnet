@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <sstream>
+#include <vector>
 #include <camera.h>
 
 #include <plyfile.h>
@@ -49,7 +50,7 @@ float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
-void storeFramebuffer(int ww, int wh);
+void storeFramebuffer(std::string filename, int ww, int wh);
 
 int main4(int argc, char* args[]) {
 	PlyFile f;
@@ -79,6 +80,27 @@ int main(int argc, char* args[]) {
 		cout << "Not enough parameters. \n";
 		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
 		return 1;
+	}
+
+	//Camera's positions
+	std::vector<glm::vec3> cam_positions;
+	//Load config file - hardcode filename here!
+	ifstream config_file("nautilus.cfg");
+	if(config_file.fail()) {
+		cout << "Could not read configuration file!" << endl;
+	} else {
+		string line;
+		float x, y, z;
+		while(!config_file.eof()) {
+			std::getline(config_file, line);
+			istringstream str(line);
+			str >> x;
+			str >> y;
+			str >> z;
+			glm::vec3 pos(x, y, z);
+			cam_positions.push_back(pos);
+		}
+		config_file.close();
 	}
 
 	if(f.load(args[1], 20.0f) != OK) {
@@ -220,9 +242,13 @@ int main(int argc, char* args[]) {
 	glm::mat4 translationMatrix;
 	glm::mat4 invertTranslationMatrix;
 	glm::mat4 scalingMatrix;
-	glm::vec3 position1(-1.5f, 0.0f, 0.0f);
+	// glm::vec3 position1(-1.5f, 0.0f, 0.0f);
 	int button_state;
 	bool should_store_frame_buffer = false;
+
+	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
+	int cam_pos_count = cam_positions.size();
+	int cam_pos_i = 0;
 
 	glfwGetCursorPos(window, &xpos, &ypos);
 	last_xpos = xpos;
@@ -242,10 +268,23 @@ int main(int argc, char* args[]) {
 		// Use our shader
 		glUseProgram(programID);
 
+		// P key for printing to file
+		if (glfwGetKey( window, GLFW_KEY_P ) == GLFW_PRESS) {
+			// position -= right * deltaTime * speed;
+			should_store_frame_buffer = true;
+			cam_pos_i = 0;
+		}
+
+		std::ostringstream outfile_name_sstream;
+		if(should_store_frame_buffer) {
+			cam_pos = cam_positions[cam_pos_i];
+			outfile_name_sstream << "pose_" << cam_pos_i << ".jpg";
+		}
+
 		//computeMatrices(window, object_center);
 		projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 		viewMatrix = glm::lookAt(
-			glm::vec3(0, 0, 7),
+			cam_pos,
 			object_center,
 			glm::vec3(0, 1, 0)
 		);
@@ -307,12 +346,6 @@ int main(int argc, char* args[]) {
 			// position -= right * deltaTime * speed;
 		}
 
-		// P key for printing to file
-		if (glfwGetKey( window, GLFW_KEY_P ) == GLFW_PRESS) {
-			// position -= right * deltaTime * speed;
-			should_store_frame_buffer = true;
-		}
-
 		// translationMatrix = glm::translate(glm::mat4(), position1);
 		translationMatrix = glm::translate(glm::mat4(), object_center);
 		invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
@@ -338,8 +371,11 @@ int main(int argc, char* args[]) {
 
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
-			storeFramebuffer(window_width, window_height);
-			should_store_frame_buffer = false;
+			std::string out_filename = outfile_name_sstream.str();
+			storeFramebuffer(out_filename, window_width, window_height);
+			cam_pos_i++;
+			if(cam_pos_i >= cam_pos_count)
+				should_store_frame_buffer = false;
 		}
 
 		glDisableVertexAttribArray(0);
@@ -562,7 +598,7 @@ void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
 	lastTime = currentTime;
 }
 
-void storeFramebuffer(int ww, int wh) {
+void storeFramebuffer(std::string filename, int ww, int wh) {
 	int i, j;
 	int k;
 	cv::Mat img(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -575,6 +611,6 @@ void storeFramebuffer(int ww, int wh) {
 
 	//flip the image around x-axis
 	cv::flip(img, flipped, 0);
-	imwrite("pose_new_1.jpg", flipped);
+	imwrite(filename, flipped);
 	// imwrite("pose_new_1.jpg", img);
 }
