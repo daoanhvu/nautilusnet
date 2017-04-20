@@ -49,6 +49,7 @@ float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
+void storeFramebuffer(int ww, int wh);
 
 int main4(int argc, char* args[]) {
 	PlyFile f;
@@ -91,7 +92,7 @@ int main(int argc, char* args[]) {
 	BBox3d bbox;
 	f.getBBox(bbox);
 	cout << "Bounding Box (left, top, right, bottom) = (" << bbox.minx << ", ";
-	cout << bbox.miny << ", " << bbox.maxx << ", " << bbox.maxy << endl;
+	cout << bbox.miny << ", " << bbox.maxx << ", " << bbox.maxy << ")" << endl;
 
 	glm::vec3 object_center = glm::vec3((bbox.minx + bbox.maxx)/2.0f,
 											(bbox.miny + bbox.maxy)/2.0f,
@@ -221,6 +222,7 @@ int main(int argc, char* args[]) {
 	glm::mat4 scalingMatrix;
 	glm::vec3 position1(-1.5f, 0.0f, 0.0f);
 	int button_state;
+	bool should_store_frame_buffer = false;
 
 	glfwGetCursorPos(window, &xpos, &ypos);
 	last_xpos = xpos;
@@ -305,6 +307,12 @@ int main(int argc, char* args[]) {
 			// position -= right * deltaTime * speed;
 		}
 
+		// P key for printing to file
+		if (glfwGetKey( window, GLFW_KEY_P ) == GLFW_PRESS) {
+			// position -= right * deltaTime * speed;
+			should_store_frame_buffer = true;
+		}
+
 		// translationMatrix = glm::translate(glm::mat4(), position1);
 		translationMatrix = glm::translate(glm::mat4(), object_center);
 		invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
@@ -329,6 +337,10 @@ int main(int argc, char* args[]) {
 			);
 
 		//TODO: Call glReadPixels to capture framebuffer data here
+		if(should_store_frame_buffer) {
+			storeFramebuffer(window_width, window_height);
+			should_store_frame_buffer = false;
+		}
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
@@ -548,4 +560,21 @@ void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
 
 	// For the next frame, the "last time" will be "now"
 	lastTime = currentTime;
+}
+
+void storeFramebuffer(int ww, int wh) {
+	int i, j;
+	int k;
+	cv::Mat img(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Mat flipped(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
+
+	// glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3)?1:4);
+	glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());
+	glReadPixels(0, 0, ww, wh, GL_BGR, GL_UNSIGNED_BYTE, img.data);
+
+	//flip the image around x-axis
+	cv::flip(img, flipped, 0);
+	imwrite("pose_new_1.jpg", flipped);
+	// imwrite("pose_new_1.jpg", img);
 }
