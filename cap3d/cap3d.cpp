@@ -24,6 +24,7 @@
 
 #include "lexer_parser.h"
 #include "shader.h"
+#include "image_processor.h"
 
 #define PI 3.14159f
 #define RAD(x) ( x * 3.14159f / 180.0f )
@@ -95,7 +96,8 @@ int main(int argc, char* args[]) {
 	for(int i=0; i<config.camera_positions.size(); i++) {
 		cout << config.camera_positions[i][0] << ", " << config.camera_positions[i][1] << ", " << config.camera_positions[i][2] << endl;
 	}
-	cout << "lightpos1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
+	cout << "lightpos_1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
+	cout << "lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
 	// return 0;
 
 	if(f.load(args[1], config.scale_factor) != OK) {
@@ -161,7 +163,7 @@ int main(int argc, char* args[]) {
   glfwPollEvents();
   glfwSetCursorPos(window, config.window_width/2, config.window_height/2);
 	// Dark blue background
-	glClearColor(0.4f, 0.4f, 0.4f, 0.0f);
+	glClearColor(config.background[0], config.background[1], config.background[2], 1.0f);
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
@@ -219,11 +221,18 @@ int main(int argc, char* args[]) {
 	GLuint viewMatrixId = glGetUniformLocation(programID, "V");
 	GLuint modelMatrixId = glGetUniformLocation(programID, "M");
 
-	// Get a handle for our "LightPosition" uniform
+	// Get handles for our "lightPos" uniforms, we're going to use two lights
 	glUseProgram(programID);
-	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
+	GLuint lightPos1ID = glGetUniformLocation(programID, "lightPos1_worldspace");
+	GLuint lightPos2ID = glGetUniformLocation(programID, "lightPos2_worldspace");
+	GLuint lightColor1ID = glGetUniformLocation(programID, "lightColor1");
+	GLuint lightColor2ID = glGetUniformLocation(programID, "lightColor2");
+
 	//glm::vec3 lightPos = glm::vec3(7,7,7);
-	glm::vec3 lightPos = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
+	glm::vec3 lightPos1 = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
+	glm::vec3 lightColor1 = glm::vec3(0.5f, 0.5f, 0.1f);
+	glm::vec3 lightPos2 = glm::vec3(config.lightpos2[0], config.lightpos2[1], config.lightpos2[2]);
+	glm::vec3 lightColor2 = glm::vec3(0.0f, 0.6f, 0.9f);
 
 	double lastTime = glfwGetTime();
 	double currentTime;
@@ -245,6 +254,9 @@ int main(int argc, char* args[]) {
 	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
 	int cam_pos_count = config.camera_positions.size();
 	int cam_pos_i = 0;
+	char filename[128];
+
+	memcpy(filename, "pose_", 5);
 
 	glfwGetCursorPos(window, &xpos, &ypos);
 	last_xpos = xpos;
@@ -286,7 +298,10 @@ int main(int argc, char* args[]) {
 		);
 		///////////////////////////////////////////////////
 
-		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+		glUniform3f(lightPos1ID, lightPos1.x, lightPos1.y, lightPos1.z);
+		glUniform3f(lightPos2ID, lightPos2.x, lightPos2.y, lightPos2.z);
+		glUniform3f(lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
+		glUniform3f(lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -327,19 +342,29 @@ int main(int argc, char* args[]) {
 
 		// Move forward
 		if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS) {
-			// position += direction * deltaTime * speed;
+			horizontalAngle = -1 * speed * 0.005;
+			glm::vec4 xrotv = glm::inverse(rotationMatrix) * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			rotationMatrix = glm::rotate(rotationMatrix, horizontalAngle, glm::vec3(xrotv.x, xrotv.y, xrotv.z));
 		}
 		// Move backward
 		if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS) {
-			// position -= direction * deltaTime * speed;
+			horizontalAngle = -1 * speed * -0.005;
+			glm::vec4 xrotv = glm::inverse(rotationMatrix) * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+			rotationMatrix = glm::rotate(rotationMatrix, horizontalAngle, glm::vec3(xrotv.x, xrotv.y, xrotv.z));
 		}
 		// Strafe right
 		if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS) {
 			// position += right * deltaTime * speed;
+			verticalAngle = -1 * speed * 0.005f;
+			glm::vec4 yrotv = glm::inverse(rotationMatrix) * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+			rotationMatrix = glm::rotate(rotationMatrix, verticalAngle, glm::vec3(yrotv.x, yrotv.y, yrotv.z));
 		}
 		// Strafe left
 		if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS) {
 			// position -= right * deltaTime * speed;
+			verticalAngle = -1 * speed * -0.005f;
+			glm::vec4 yrotv = glm::inverse(rotationMatrix) * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+			rotationMatrix = glm::rotate(rotationMatrix, verticalAngle, glm::vec3(yrotv.x, yrotv.y, yrotv.z));
 		}
 
 		// translationMatrix = glm::translate(glm::mat4(), position1);
@@ -397,128 +422,6 @@ int main(int argc, char* args[]) {
 	delete[] vertices_buf_data;
 	delete[] normal_buf_data;
 	delete[] indices;
-	return 0;
-}
-
-int main1(int argc, char* args[]) {
-
-	if(argc < 2) {
-		cout << "Not enough parameters. \n";
-		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
-		return 1;
-	}
-
-	GLFWwindow *window;
-	if(!glfwInit()) {
-		cout << "Failed to initialize GLFW!!" << endl;
-		return -1;
-	}
-
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-	if (!window) {
-		//Failed to create window
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-
-	//Make our window current
-	glfwMakeContextCurrent(window);
-
-	//MUST initialize glew
-	GLenum err = glewInit();
-	if (err != GLEW_OK) {
-		cout << "Initialize glew failed!!!!! \n";
-		glfwTerminate();
-		return 1;
-	}
-
-	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-
-	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-
-	//Do our rendering here
-	GLRenderer renderer;
-	PlyFile f;
-
-	//load model
-	if(f.load(args[1], 10) != OK) {
-		cout << args << endl;
-		glfwTerminate();
-		return 1;
-	}
-	cout << "Before initialization!!!\n";
-	renderer.initGL("../vertex.shader", "../fragment.shader");
-
-
-	//export 2d images
-	//renderer.moveCameraTo(0.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose1.jpg");
-	//renderer.moveCameraTo(0.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose2.jpg");
-	//renderer.moveCameraTo(0.0f, -1.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose3.jpg");
-	//renderer.moveCameraTo(0.0f, -1.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose4.jpg");
-	//renderer.moveCameraTo(1.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, &f, "pose5.jpg");
-	//renderer.moveCameraTo(1.0f, 0.0f, -1.0f, 0.5f, 0.5f, 0.5f, &f, "pose6.jpg");
-
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-
-	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f, -1.0f, 0.0f,
-		 1.0f, -1.0f, 0.0f,
-		 0.0f,  1.0f, 0.0f,
-	};
-
-	GLuint vertex_buffer;
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	// glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-	do {
-		// Clear the screen. It's not mentioned before Tutorial 02, but it can cause flickering, so it's there nonetheless.
-		glClear( GL_COLOR_BUFFER_BIT );
-
-		// Draw nothing, see you in tutorial 2 !
-		// glUseProgram(renderer.getProgramId());
-		//
-		// // 1rst attribute buffer : vertices
-		// glEnableVertexAttribArray(0);
-		// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-		// glVertexAttribPointer(
-		// 	0,
-		// 	3,
-		// 	GL_FLOAT,
-		// 	GL_FLOAT,
-		// 	0,				/*stride*/
-		// 	(void*)0 /*Array buffer offset*/
-		// );
-		//
-		// // Draw the triangle !
-		// glDrawArrays(GL_TRIANGLES, 0, 3); // 3 indices starting at 0 -> 1 triangle
-		//
-		// glDisableVertexAttribArray(0);
-
-		// Swap buffers
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-
- // Check if the ESC key was pressed or the window was closed
-	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-		   glfwWindowShouldClose(window) == 0 );
-
-	// Cleanup VBO
-	glDeleteBuffers(1, &vertex_buffer);
-	glDeleteVertexArrays(1, &VertexArrayID);
-
-	// Close OpenGL window and terminate GLFW
-	glfwTerminate();
 	return 0;
 }
 
@@ -604,9 +507,11 @@ void storeFramebuffer(std::string filename, int ww, int wh) {
 	glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3)?1:4);
 	glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());
 	glReadPixels(0, 0, ww, wh, GL_BGR, GL_UNSIGNED_BYTE, img.data);
-
+	BBox2d bbox;
 	//flip the image around x-axis
 	cv::flip(img, flipped, 0);
+	detectBoundingBox(flipped, img.at<cv::Vec3b>(0,0), bbox);
+	cout << "Bouding Box: " << bbox.left << ", " << bbox.top << ", " << bbox.right << ", " << bbox.bottom << endl;
 	imwrite(filename, flipped);
 	// imwrite("pose_new_1.jpg", img);
 }

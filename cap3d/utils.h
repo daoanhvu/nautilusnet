@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int itostr(int, char *);
+int itostr(int, char *, int);
 int isNumber(string str, float &val);
 int isDigit(char c);
 float parseFloat(string str, int start, int end, int &error);
