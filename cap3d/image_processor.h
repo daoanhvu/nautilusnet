@@ -4,13 +4,6 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
-typedef struct tagBBox3d {
-  int left;
-  int right;
-  int top;
-  int bottom;
-} BBox2d;
-
-int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, BBox2d &bbox);
+int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, cv::Rect &bbox);
 
 #endif

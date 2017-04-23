@@ -7,6 +7,18 @@
 
 using namespace std;
 
+int startWith(char ch, string str) {
+	int i = 0;
+	int len = str.length();
+	while( (i<len) && (str[i]==' ' || str[i]=='\t')) {
+		i++;
+	}
+	if( (i<len) && (str[i] == ch) )
+		return 1;
+
+	return 0;
+}
+
 int parse_config_line(string line, vector<Token> &v) {
 	int error = 0;
 	istringstream str(line);
@@ -64,7 +76,7 @@ int read_configuration(const char *filename, Configuration &config) {
     std::getline(f, line);
     tokens.clear();
 
-    if(line.length()<=3)
+    if( (line.length()<=3) || startWith('#', line) )
       continue;
 
     parse_config_line(line, tokens);
