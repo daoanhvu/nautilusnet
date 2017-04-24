@@ -253,6 +253,102 @@ int PlyFile::load(const char *filename, float scale) {
 	return 0;
 }
 
+int PlyFile::load(const char *filename) {
+	ifstream f(filename);
+	string line;
+	vector<Token> tokens(0);
+	bool read_vertex;
+	int size, v_per_face;
+	float tmp;
+	int vertex_index, vertex_count, face_count;
+
+	if(f.fail()) {
+		cout << "Failed to open this file " << filename << endl;
+		return 1;
+	}
+
+	int *face_indices;
+	this->float_stride = 0;
+
+	while(!f.eof()) {
+		std::getline(f, line);
+		tokens.clear();
+		parse_line2(line, tokens);
+		size = tokens.size();
+		if(size == 1 && tokens[0].code == CODE_END_HEADER) {
+			//start read vertices
+			read_vertex = true;
+
+			this->vertices.reserve(vertex_count);
+
+			for(int i=0; i<vertex_count; i++) {
+				std::getline(f, line);
+				istringstream str(line);
+				Vertex vt;
+				vt.v = new float[float_stride];
+				vt.count = 0;
+				for(int j=0; j<float_stride; j++) {
+					str >> tmp;
+					vt.v[j] = tmp;
+				}
+				vertices.push_back(vt);
+			}
+			// cout << "Number of face: " << face_count << endl;
+			this->faces.reserve(face_count);
+			//Now read face
+			for(int i=0; i<face_count; i++) {
+				std::getline(f, line);
+				istringstream str1(line);
+				Face face;
+				str1 >> v_per_face;
+				face.vertex_count = v_per_face;
+				// cout << "Face line("<< i <<"): " << line << " v_per_face: "<< v_per_face << endl;
+				for(int j=0; j<v_per_face; j++) {
+					str1 >> vertex_index;
+					face.vertex_indices[j] = vertex_index;
+
+					if(vertices[vertex_index].count >= vertices[vertex_index].log_face_size) {
+						vertices[vertex_index].log_face_size += 8;
+						face_indices = new int[vertices[vertex_index].log_face_size];
+						std::memcpy(face_indices, vertices[vertex_index].face_indices, sizeof(int) * vertices[vertex_index].count);
+						delete[] vertices[vertex_index].face_indices;
+						vertices[vertex_index].face_indices = face_indices;
+					}
+					vertices[vertex_index].face_indices[vertices[vertex_index].count++] = i;
+				}
+				faces.push_back(face);
+			}
+		} else if(tokens[0].code == CODE_PROPERTY) {
+			if(tokens[1].code == CODE_FLOAT32) {
+				if(tokens[2].code == CODE_COORD_X || (tokens[2].code == CODE_COORD_Y) || tokens[2].code == CODE_COORD_Z ) {
+					this->float_stride++;
+				}
+			}
+		} else if(tokens[0].code == CODE_ELEMENT) {
+			if(tokens[1].code == CODE_VERTEX) {
+				//cout << line << endl;
+				vertex_count = (int)(tokens[2].value);
+			} else if(tokens[1].code == CODE_FACE) {
+				face_count = (int)(tokens[2].value);
+			}
+		}
+	}
+
+	f.close();
+
+	return 0;
+}
+
+void PlyFile::scale(float scale) {
+	unsigned int nc = vertices.size();
+	unsigned int i;
+
+	for(i=0; i<nc; i++) {
+		vertices[i].v[0] *= scale;
+		vertices[i].v[1] *= scale;
+		vertices[i].v[2] *= scale;
+	}
+}
 /*
 	Calculate normal vector for faces
 */

@@ -1,6 +1,6 @@
 #include "image_processor.h"
 
-int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, BBox2d &bbox) {
+int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, cv::Rect &bbox) {
   cv::Size size = img.size();
   int ih = size.height;
   int iw = size.width;
@@ -11,7 +11,7 @@ int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, BBox2d &bbox) {
     c = 0;
     while( c < iw) {
       if(img.at<cv::Vec3b>(r, c) != bgcolor) {
-        bbox.top = (r > 0)? r-1 : r;
+        bbox.y = (r > 0)? r-1 : r;
         should_stop = true;
         break;
       }
@@ -26,7 +26,7 @@ int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, BBox2d &bbox) {
     c = 0;
     while( c < iw ) {
       if(img.at<cv::Vec3b>(r, c) != bgcolor) {
-        bbox.bottom = (r < (ih-1))?r+1:r;
+        bbox.height = ( (r < (ih-1))?r+1:r ) - bbox.y;
         should_stop = true;
         break;
       }
@@ -42,7 +42,7 @@ int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, BBox2d &bbox) {
     r = 0;
     while( r < ih) {
       if(img.at<cv::Vec3b>(r, c) != bgcolor) {
-        bbox.left = (c > 0)? c-1 : c;
+        bbox.x = (c > 0)? c-1 : c;
         should_stop = true;
         break;
       }
@@ -57,7 +57,7 @@ int detectBoundingBox(cv::Mat img, cv::Vec3b bgcolor, BBox2d &bbox) {
     r = 0;
     while( r < ih ) {
       if(img.at<cv::Vec3b>(r, c) != bgcolor) {
-        bbox.right = c;
+        bbox.width = c - bbox.x + 1;
         should_stop = true;
         break;
       }
