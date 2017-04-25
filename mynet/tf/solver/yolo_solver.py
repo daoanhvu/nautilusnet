@@ -65,9 +65,13 @@ class YoloSolver(Solver):
     self.train_op = self._train()
 
   def solve(self):
-    saver1 = tf.train.Saver(self.net.pretrained_collection, write_version=1)
+
+    print("=================================")
+    print(self.net.pretrained_collection)
+    print("=================================")
+    saver1 = tf.train.Saver(self.net.pretrained_collection, write_version=tf.train.SaverDef.V2)
     #saver1 = tf.train.Saver(self.net.trainable_collection)
-    saver2 = tf.train.Saver(self.net.trainable_collection, write_version=1)
+    saver2 = tf.train.Saver(self.net.trainable_collection, write_version=tf.train.SaverDef.V2)
 
     init =  tf.global_variables_initializer()
 
@@ -76,24 +80,23 @@ class YoloSolver(Solver):
     sess = tf.Session()
 
     sess.run(init)
-    saver1.restore(sess, self.pretrain_path)
+    #saver1.restore(sess, self.pretrain_path)
 
 
     summary_writer = tf.summary.FileWriter(self.train_dir, sess.graph)
 
-    for step in xrange(self.max_iterators):
+    for step in range(self.max_iterators):
       start_time = time.time()
       np_images, np_labels, np_objects_num = self.dataset.batch()
 
       _, loss_value, nilboy = sess.run([self.train_op, self.total_loss, self.nilboy], feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
       #loss_value, nilboy = sess.run([self.total_loss, self.nilboy], feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
 
-
       duration = time.time() - start_time
 
       assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
 
-      if step % 10 == 0:
+      if step % 2 == 0:
         num_examples_per_step = self.dataset.batch_size
         examples_per_sec = num_examples_per_step / duration
         sec_per_batch = float(duration)

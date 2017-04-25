@@ -57,23 +57,6 @@ const std::string gTextDatasetFile = gOutFolder + "textdata.txt";
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
 void storeFramebuffer(std::string filename, int ww, int wh);
 
-int main4(int argc, char* args[]) {
-	PlyFile f;
-	unsigned int buflen;
-
-	if(argc < 2) {
-		cout << "Not enough parameters. \n";
-		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
-		return 1;
-	}
-
-	if(f.load(args[1], 30.0f) != OK) {
-		cout << "Could not load input file!" << endl;
-		return 1;
-	}
-	return 0;
-}
-
 int main(int argc, char* args[]) {
 	PlyFile f;
 	unsigned int buflen;
@@ -103,10 +86,12 @@ int main(int argc, char* args[]) {
 	cout << "lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
 	// return 0;
 
-	if(f.load(args[1], config.scale_factor) != OK) {
+	if(f.load(args[1]) != OK) {
 		cout << "Could not load input file!" << endl;
 		return 1;
 	}
+
+	f.scaleToFit(2.0f);
 
 	// f.print(cout);
 	f.add_normal_vectors();
