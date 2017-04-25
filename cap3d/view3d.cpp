@@ -100,30 +100,37 @@ int main(int argc, char* args[]) {
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
-	unsigned int num_of_vertex = 8, index_size = 24;
-	float vertices_buf_data[24] = { 0.0f, 0.0f, 3.0f,
-																3.0f, 3.0f, 0.0f,
-																3.0f, 3.0f, 3.0f,
-																0.0f, 3.0f, 3.0f,
-																3.0f, 0.0f, 0.0f,
+	unsigned int num_of_vertex = 8, index_size = 36;
+	float vertices_buf_data[24] = { 0.0f, 0.0f, 1.0f,
+																1.0f, 0.0f, 1.0f,
+																1.0f, 1.0f, 1.0f,
+																0.0f, 1.0f, 1.0f,
+																1.0f, 0.0f, 0.0f,
 																0.0f, 0.0f, 0.0f,
-																3.0f, 3.0f, 0.0f,
-																0.0f, 3.0f, 0.0f
+																1.0f, 1.0f, 0.0f,
+																0.0f, 1.0f, 0.0f
 															};
-	float normal_buf_data[24];
-	unsigned short indices[24] = {0, 1, 2, 3,
-															1, 4, 6, 2,
-															4, 5, 7, 6,
-															5, 0, 3, 7,
-													 		2, 6, 7, 3,
-															0, 5, 4, 1};
-	float face_normal[18] = {	0, 0, 1,
-														1, 0, 0,
-														0, 0, -1,
-														-1, 0, 0,
-														0, 1, 0,
-														0, -1, 0};
-	glm::vec3 object_center = glm::vec3(1.5f, 1.5f, 1.5f);
+	float normal_buf_data[24] = {-0.57735f, -0.57735f, 0.57735f,
+															0.57735f, -0.57735f, 0.57735f,
+															0.57735f, 0.57735f, 0.57735f,
+															-0.57735f, 0.57735f, 0.57735f,
+															0.57735f, -0.57735f, -0.57735f,
+															-0.57735f, -0.57735f, -0.57735f,
+															0.57735f, 0.57735f, -0.57735f,
+															-0.57735f, 0.57735f, -0.57735f};
+	unsigned short indices[36] = {0, 1, 2,
+																2, 3, 0,
+																1, 4, 6,
+																6, 2, 1,
+																4, 5, 7,
+																7, 6, 4,
+																5, 0, 3,
+																3, 7, 5,
+													 			2, 6, 7,
+																7, 3, 2,
+																0, 5, 4,
+																4, 1, 0};
+	glm::vec3 object_center = glm::vec3(0.5f, 0.5f, 0.5f);
 
 	glm::vec3 e1, e2;
 	glm::vec3 normal;
@@ -131,88 +138,6 @@ int main(int argc, char* args[]) {
 	float v1a, v1b, v1c;
 	float v2a, v2b, v2c;
 	int i, k;
-
-	cout << "Vertex' normals: " << endl;
-
-	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
-						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
-						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[0] = normal[0];
-	normal_buf_data[1] = normal[1];
-	normal_buf_data[2] = normal[2];
-
-	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
-						glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
-						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[1*3+0] = normal[0];
-	normal_buf_data[1*3+1] = normal[1];
-	normal_buf_data[1*3+2] = normal[2];
-
-	//2
-	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
-						glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
-						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
-	// cout << "Vertex 2: " << face_normal[0] << ", " << face_normal[1] << ", " << face_normal[2] << endl;
-	// cout << "Vertex 2: " << face_normal[3] << ", " << face_normal[4] << ", " << face_normal[5] << endl;
-	// cout << "Vertex 2: " << face_normal[12] << ", " << face_normal[13] << ", " << face_normal[14] << endl;
-	// cout << "Vertex 2: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
-	normal = glm::normalize(normal);
-	normal_buf_data[2*3+0] = normal[0];
-	normal_buf_data[2*3+1] = normal[1];
-	normal_buf_data[2*3+2] = normal[2];
-
-	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
-						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
-						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[3*3+0] = normal[0];
-	normal_buf_data[3*3+1] = normal[1];
-	normal_buf_data[3*3+2] = normal[2];
-
-	///
-	normal = 	glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
-						glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
-						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[4*3+0] = normal[0];
-	normal_buf_data[4*3+1] = normal[1];
-	normal_buf_data[4*3+2] = normal[2];
-
-	/// vertex 5
-	normal = 	glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
-						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
-						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[5*3+0] = normal[0];
-	normal_buf_data[5*3+1] = normal[1];
-	normal_buf_data[5*3+2] = normal[2];
-
-	/// vertex 6
-	normal = 	glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
-						glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
-						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[6*3+0] = normal[0];
-	normal_buf_data[6*3+1] = normal[1];
-	normal_buf_data[6*3+2] = normal[2];
-
-	/// vertex 7
-	normal = 	glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
-						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
-						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
-	normal = glm::normalize(normal);
-	normal_buf_data[7*3+0] = normal[0];
-	normal_buf_data[7*3+1] = normal[1];
-	normal_buf_data[7*3+2] = normal[2];
-
-	for(i=0; i<8; i++) {
-		k = i * 3;
-		cout << "vertex " << i << ": " << normal_buf_data[k] << ", ";
-		cout << normal_buf_data[k+1] << ", ";
-		cout << normal_buf_data[k+2] << endl;
-	}
 
 	glm::mat4 ModelMatrix, MVP;
 
@@ -311,6 +236,7 @@ int main(int argc, char* args[]) {
 		projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 		viewMatrix = glm::lookAt(
 			cam_pos,
+			//glm::vec3(0, 0, 0),
 			object_center,
 			glm::vec3(0, 1, 0)
 		);
@@ -385,7 +311,7 @@ int main(int argc, char* args[]) {
 			rotationMatrix = glm::rotate(rotationMatrix, verticalAngle, glm::vec3(yrotv.x, yrotv.y, yrotv.z));
 		}
 
-		// translationMatrix = glm::translate(glm::mat4(), position1);
+		// translationMatrix = glm::mat4();
 		translationMatrix = glm::translate(glm::mat4(), object_center);
 		invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
 		// scalingMatrix = glm::scale(glm::mat4(), glm::vec3(.5f, .5f, .5f));
