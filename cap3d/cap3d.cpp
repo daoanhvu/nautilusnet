@@ -51,25 +51,12 @@ float initialFoV = 45.0f;
 float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
+//const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
+const std::string gOutFolder = "/home/davu/projects/nautilusnet/data/";
+const std::string gTextDatasetFile = gOutFolder + "textdata.txt";
+
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
 void storeFramebuffer(std::string filename, int ww, int wh);
-
-int main4(int argc, char* args[]) {
-	PlyFile f;
-	unsigned int buflen;
-
-	if(argc < 2) {
-		cout << "Not enough parameters. \n";
-		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
-		return 1;
-	}
-
-	if(f.load(args[1], 30.0f) != OK) {
-		cout << "Could not load input file!" << endl;
-		return 1;
-	}
-	return 0;
-}
 
 int main(int argc, char* args[]) {
 	PlyFile f;
@@ -100,10 +87,12 @@ int main(int argc, char* args[]) {
 	cout << "lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
 	// return 0;
 
-	if(f.load(args[1], config.scale_factor) != OK) {
+	if(f.load(args[1]) != OK) {
 		cout << "Could not load input file!" << endl;
 		return 1;
 	}
+
+	f.scaleToFit(2.0f);
 
 	// f.print(cout);
 	f.add_normal_vectors();
@@ -250,7 +239,9 @@ int main(int argc, char* args[]) {
 	// glm::vec3 position1(-1.5f, 0.0f, 0.0f);
 	int button_state;
 	bool should_store_frame_buffer = false;
-	bool key_pressed = false;
+
+	double key_press_time;
+	double last_key_press_time = lastTime;
 
 	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
 	int cam_pos_count = config.camera_positions.size();
@@ -279,11 +270,15 @@ int main(int argc, char* args[]) {
 		glUseProgram(programID);
 
 		// P key for printing to file
-		if (glfwGetKey( window, GLFW_KEY_P ) == GLFW_PRESS && !key_pressed) {
-			// position -= right * deltaTime * speed;
-			should_store_frame_buffer = true;
-			cam_pos_i = 0;
-			// cout << "Key P pressed!" << endl;
+		if (glfwGetKey( window, GLFW_KEY_P ) == GLFW_PRESS) {
+			key_press_time = glfwGetTime();
+			if(key_press_time - last_key_press_time >= 0.5) {
+				// position -= right * deltaTime * speed;
+				should_store_frame_buffer = true;
+				cam_pos_i = 0;
+				cout << "Key P pressed!" << endl;
+				last_key_press_time = key_press_time;
+			}
 		}
 
 		std::ostringstream outfile_name_sstream;
@@ -512,11 +507,21 @@ void storeFramebuffer(std::string filename, int ww, int wh) {
 	glReadPixels(0, 0, ww, wh, GL_BGR, GL_UNSIGNED_BYTE, img.data);
 	cv::Rect bbox;
 	cv::Scalar bbcolor(0, 0, 255);
+	// ofstream txtf("textdata.txt", std::ios_base::app);
+	ofstream txtf(gTextDatasetFile.c_str(), std::ios_base::app);
+
+	if(txtf.fail()) {
+		cout << "Could not open text output file!\n";
+		return;
+	}
 	//flip the image around x-axis
 	cv::flip(img, flipped, 0);
 	detectBoundingBox(flipped, img.at<cv::Vec3b>(0,0), bbox);
 	cout << "Bouding Box: " << bbox.x << ", " << bbox.y << ", " << bbox.width << ", " << bbox.height << endl;
+	txtf << gOutFolder << filename << " " << bbox.x << " " << bbox.y << " " << (bbox.x + bbox.width) << " " << (bbox.y + bbox.height) << " " << 0 << endl;
+	txtf.close();
 	cv::rectangle(flipped, bbox, bbcolor, 1, cv::LINE_8, 0 );
-	imwrite(filename, flipped);
-	// imwrite("pose_new_1.jpg", img);
+	std::string outImageName = gOutFolder + filename;
+	imwrite(outImageName, flipped);
+	// imwrite(filename, flipped);
 }

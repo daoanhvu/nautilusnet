@@ -349,6 +349,33 @@ void PlyFile::scale(float scale) {
 		vertices[i].v[2] *= scale;
 	}
 }
+
+void PlyFile::scaleToFit(float value) {
+	float maxx = -9999.0f;
+	int i;
+	int vertex_count = vertices.size();
+
+	for(i=0; i<vertex_count; i++) {
+		if(vertices[i].v[0] > maxx) {
+			maxx = vertices[i].v[0];
+		}
+
+		if(vertices[i].v[1] > maxx) {
+			maxx = vertices[i].v[1];
+		}
+
+		if(vertices[i].v[2] > maxx) {
+			maxx = vertices[i].v[2];
+		}
+	}
+	float factor = value / maxx;
+	for(i=0; i<vertex_count; i++) {
+		vertices[i].v[0] *= factor;
+		vertices[i].v[1] *= factor;
+		vertices[i].v[2] *= factor;
+	}
+}
+
 /*
 	Calculate normal vector for faces
 */

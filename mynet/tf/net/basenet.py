@@ -16,7 +16,7 @@ class BaseNet(object):
                 self.trainable_collection.append(var)
         return var
 
-    def variable_with_weight_decay(self, name, shape, stdev, wd, pretrain=True, train=True):
+    def variable_with_weight_decay(self, name, shape, stddev, wd, pretrain=True, train=True):
         """
             Params:
                 name of Variable

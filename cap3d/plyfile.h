@@ -97,6 +97,7 @@ class PlyFile {
 		*/
 		int load(const char *filename);
 		void scale(float scale);
+		void scaleToFit(float value);
 		int add_normal_vectors();
 
 		void getBBox(BBox3d &bbox);

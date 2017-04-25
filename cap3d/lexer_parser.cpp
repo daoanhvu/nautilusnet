@@ -48,7 +48,10 @@ int parse_config_line(string line, vector<Token> &v) {
 		} else if(tk == "background") {
 			Token t(CODE_BACKGROUND);
 			v.push_back(t);
-		} else if(tk == "=") {
+		} else if(tk == "output_folder") {
+			Token t(CODE_OUTPUT_FOLDER);
+			v.push_back(t);
+		}	else if(tk == "=") {
 			//Token t(CODE_EQUAL_SIGN);
 			//v.push_back(t);
 		} else if( isNumber(tk, val) ) {
