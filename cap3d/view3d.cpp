@@ -5,14 +5,9 @@
 #include <cstring>
 #include <sstream>
 #include <vector>
-#include <camera.h>
 
-#include <plyfile.h>
-#include <glrenderer.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/core.hpp>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,9 +17,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/norm.hpp>
 
-#include "lexer_parser.h"
 #include "shader.h"
-#include "image_processor.h"
 
 #define PI 3.14159f
 #define RAD(x) ( x * 3.14159f / 180.0f )
@@ -33,7 +26,6 @@
 #define OK 0
 
 using namespace std;
-using namespace fp;
 using namespace glm;
 
 glm::mat4 viewMatrix;
@@ -51,76 +43,8 @@ float initialFoV = 45.0f;
 float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
-const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
-const std::string gTextDatasetFile = gOutFolder + "textdata.txt";
-
-void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
-void storeFramebuffer(std::string filename, int ww, int wh);
-
-int main4(int argc, char* args[]) {
-	PlyFile f;
-	unsigned int buflen;
-
-	if(argc < 2) {
-		cout << "Not enough parameters. \n";
-		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
-		return 1;
-	}
-
-	if(f.load(args[1], 30.0f) != OK) {
-		cout << "Could not load input file!" << endl;
-		return 1;
-	}
-	return 0;
-}
 
 int main(int argc, char* args[]) {
-	PlyFile f;
-	unsigned int buflen;
-	Configuration config;
-
-	if(argc < 2) {
-		cout << "Not enough parameters. \n";
-		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
-		return 1;
-	}
-
-	//Load config file - hardcode filename here!
-	if( read_configuration("nautilus.cfg", config) != OK ) {
-		cout << "Could not read configuration file!" << endl;
-		return 1;
-	}
-
-	cout << "window_width: " << config.window_width << endl;
-	cout << "window_height: " << config.window_height << endl;
-	cout << "background: " << config.background[0] << ", " << config.background[1] << ", " << config.background[2] << endl;
-	cout << "scale: " << config.scale_factor << endl;
-	cout << "number of camera: " << config.camera_positions.size() << endl;
-	for(int i=0; i<config.camera_positions.size(); i++) {
-		cout << config.camera_positions[i][0] << ", " << config.camera_positions[i][1] << ", " << config.camera_positions[i][2] << endl;
-	}
-	cout << "lightpos_1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
-	cout << "lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
-	// return 0;
-
-	if(f.load(args[1], config.scale_factor) != OK) {
-		cout << "Could not load input file!" << endl;
-		return 1;
-	}
-
-	// f.print(cout);
-	f.add_normal_vectors();
-
-	BBox3d bbox;
-	f.getBBox(bbox);
-	cout << "Bounding Box (left, top, right, bottom) = (" << bbox.minx << ", ";
-	cout << bbox.miny << ", " << bbox.maxx << ", " << bbox.maxy << ")" << endl;
-
-	glm::vec3 object_center = glm::vec3((bbox.minx + bbox.maxx)/2.0f,
-											(bbox.miny + bbox.maxy)/2.0f,
-										(bbox.minz + bbox.maxz)/2.0f);
-	// cout << "Center of object: " << object_center << endl;
-
 	// Initialise GLFW
 	if( !glfwInit() )	{
 		fprintf( stderr, "Failed to initialize GLFW\n" );
@@ -128,6 +52,8 @@ int main(int argc, char* args[]) {
 		return -1;
 	}
 	GLFWwindow *window;
+	int window_width = 448;
+	int window_height = 448;
 
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -136,7 +62,7 @@ int main(int argc, char* args[]) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( config.window_width, config.window_height, "Nautilus 3D Object Capturer - 1.0", NULL, NULL);
+	window = glfwCreateWindow( window_width, window_height, "Nautilus 3D Object Viewer - 1.0", NULL, NULL);
 	if( window == NULL ) {
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
@@ -164,9 +90,9 @@ int main(int argc, char* args[]) {
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   // Set the mouse at the center of the screen
   glfwPollEvents();
-  glfwSetCursorPos(window, config.window_width/2, config.window_height/2);
+  glfwSetCursorPos(window, window_width/2, window_height/2);
 	// Dark blue background
-	glClearColor(config.background[0], config.background[1], config.background[2], 1.0f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 	// Accept fragment if it closer to the camera than the former one
@@ -174,26 +100,119 @@ int main(int argc, char* args[]) {
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
 
-	unsigned int num_of_vertex, index_size;
-	float *vertices_buf_data = f.getVertexBuffer(buflen);
-	float *normal_buf_data = f.getNormalBuffer(num_of_vertex);
-	unsigned short *indices = f.getElementIndices(index_size);
+	unsigned int num_of_vertex = 8, index_size = 24;
+	float vertices_buf_data[24] = { 0.0f, 0.0f, 3.0f,
+																3.0f, 3.0f, 0.0f,
+																3.0f, 3.0f, 3.0f,
+																0.0f, 3.0f, 3.0f,
+																3.0f, 0.0f, 0.0f,
+																0.0f, 0.0f, 0.0f,
+																3.0f, 3.0f, 0.0f,
+																0.0f, 3.0f, 0.0f
+															};
+	float normal_buf_data[24];
+	unsigned short indices[24] = {0, 1, 2, 3,
+															1, 4, 6, 2,
+															4, 5, 7, 6,
+															5, 0, 3, 7,
+													 		2, 6, 7, 3,
+															0, 5, 4, 1};
+	float face_normal[18] = {	0, 0, 1,
+														1, 0, 0,
+														0, 0, -1,
+														-1, 0, 0,
+														0, 1, 0,
+														0, -1, 0};
+	glm::vec3 object_center = glm::vec3(1.5f, 1.5f, 1.5f);
 
-	//testing
-	// int k;
-	// for(int i=0; i<num_of_vertex; i++) {
-	// 	k = f.getFloatStride() * i;
-	// 	cout << "vertex[" << i << "]: " << vertices_buf_data[k] << ", ";
-	// 	cout << vertices_buf_data[k+1] << ", " << vertices_buf_data[k+2];
-	//
-	// 	cout << " normal:(" << normal_buf_data[k] << ", ";
-	// 	cout << normal_buf_data[k+1] << ", " << normal_buf_data[k+2] << ")\n";
-	// }
-	// cout << "Index size: " << index_size << endl;
-	// for(int i=0; i<index_size; i++) {
-	// 	cout << indices[i] << ", ";
-	// }
-	// cout << endl;
+	glm::vec3 e1, e2;
+	glm::vec3 normal;
+	float v0a, v0b, v0c;
+	float v1a, v1b, v1c;
+	float v2a, v2b, v2c;
+	int i, k;
+
+	cout << "Vertex' normals: " << endl;
+
+	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
+						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
+						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[0] = normal[0];
+	normal_buf_data[1] = normal[1];
+	normal_buf_data[2] = normal[2];
+
+	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
+						glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
+						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[1*3+0] = normal[0];
+	normal_buf_data[1*3+1] = normal[1];
+	normal_buf_data[1*3+2] = normal[2];
+
+	//2
+	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
+						glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
+						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
+	// cout << "Vertex 2: " << face_normal[0] << ", " << face_normal[1] << ", " << face_normal[2] << endl;
+	// cout << "Vertex 2: " << face_normal[3] << ", " << face_normal[4] << ", " << face_normal[5] << endl;
+	// cout << "Vertex 2: " << face_normal[12] << ", " << face_normal[13] << ", " << face_normal[14] << endl;
+	// cout << "Vertex 2: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
+	normal = glm::normalize(normal);
+	normal_buf_data[2*3+0] = normal[0];
+	normal_buf_data[2*3+1] = normal[1];
+	normal_buf_data[2*3+2] = normal[2];
+
+	normal = 	glm::vec3(face_normal[0], face_normal[1], face_normal[2]) +
+						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
+						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[3*3+0] = normal[0];
+	normal_buf_data[3*3+1] = normal[1];
+	normal_buf_data[3*3+2] = normal[2];
+
+	///
+	normal = 	glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
+						glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
+						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[4*3+0] = normal[0];
+	normal_buf_data[4*3+1] = normal[1];
+	normal_buf_data[4*3+2] = normal[2];
+
+	/// vertex 5
+	normal = 	glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
+						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
+						glm::vec3(face_normal[5*3], face_normal[5*3+1], face_normal[5*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[5*3+0] = normal[0];
+	normal_buf_data[5*3+1] = normal[1];
+	normal_buf_data[5*3+2] = normal[2];
+
+	/// vertex 6
+	normal = 	glm::vec3(face_normal[1*3], face_normal[1*3+1], face_normal[1*3+2]) +
+						glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
+						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[6*3+0] = normal[0];
+	normal_buf_data[6*3+1] = normal[1];
+	normal_buf_data[6*3+2] = normal[2];
+
+	/// vertex 7
+	normal = 	glm::vec3(face_normal[2*3], face_normal[2*3+1], face_normal[2*3+2]) +
+						glm::vec3(face_normal[3*3], face_normal[3*3+1], face_normal[3*3+2]) +
+						glm::vec3(face_normal[4*3], face_normal[4*3+1], face_normal[4*3+2]);
+	normal = glm::normalize(normal);
+	normal_buf_data[7*3+0] = normal[0];
+	normal_buf_data[7*3+1] = normal[1];
+	normal_buf_data[7*3+2] = normal[2];
+
+	for(i=0; i<8; i++) {
+		k = i * 3;
+		cout << "vertex " << i << ": " << normal_buf_data[k] << ", ";
+		cout << normal_buf_data[k+1] << ", ";
+		cout << normal_buf_data[k+2] << endl;
+	}
 
 	glm::mat4 ModelMatrix, MVP;
 
@@ -232,9 +251,9 @@ int main(int argc, char* args[]) {
 	GLuint lightColor2ID = glGetUniformLocation(programID, "lightColor2");
 
 	//glm::vec3 lightPos = glm::vec3(7,7,7);
-	glm::vec3 lightPos1 = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
+	glm::vec3 lightPos1 = glm::vec3(7.0f, 7.0f, 7.0f);
 	glm::vec3 lightColor1 = glm::vec3(0.5f, 0.5f, 0.1f);
-	glm::vec3 lightPos2 = glm::vec3(config.lightpos2[0], config.lightpos2[1], config.lightpos2[2]);
+	glm::vec3 lightPos2 = glm::vec3(7.0f, -7.0f, 7.0f);
 	glm::vec3 lightColor2 = glm::vec3(0.0f, 0.6f, 0.9f);
 
 	double lastTime = glfwGetTime();
@@ -257,13 +276,7 @@ int main(int argc, char* args[]) {
 	double key_press_time;
 	double last_key_press_time = lastTime;
 
-	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
-	int cam_pos_count = config.camera_positions.size();
-	int cam_pos_i = 0;
-	char filename[128];
-
-
-	memcpy(filename, "pose_", 5);
+	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 4.0f);
 
 	glfwGetCursorPos(window, &xpos, &ypos);
 	last_xpos = xpos;
@@ -289,16 +302,9 @@ int main(int argc, char* args[]) {
 			if(key_press_time - last_key_press_time >= 0.5) {
 				// position -= right * deltaTime * speed;
 				should_store_frame_buffer = true;
-				cam_pos_i = 0;
 				cout << "Key P pressed!" << endl;
 				last_key_press_time = key_press_time;
 			}
-		}
-
-		std::ostringstream outfile_name_sstream;
-		if(should_store_frame_buffer) {
-			cam_pos = config.camera_positions[cam_pos_i];
-			outfile_name_sstream << "pose_" << cam_pos_i << ".jpg";
 		}
 
 		//computeMatrices(window, object_center);
@@ -402,15 +408,6 @@ int main(int argc, char* args[]) {
 				(void*)0           // element array buffer offset
 			);
 
-		//TODO: Call glReadPixels to capture framebuffer data here
-		if(should_store_frame_buffer) {
-			std::string out_filename = outfile_name_sstream.str();
-			storeFramebuffer(out_filename, config.window_width, config.window_height);
-			cam_pos_i++;
-			if(cam_pos_i >= cam_pos_count)
-				should_store_frame_buffer = false;
-		}
-
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 
@@ -430,112 +427,5 @@ int main(int argc, char* args[]) {
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
-
-	delete[] vertices_buf_data;
-	delete[] normal_buf_data;
-	delete[] indices;
 	return 0;
-}
-
-/*
-	(mx, my) mouse position
-*/
-void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
-	// glfwGetTime is called only once, the first time this function is called
-	static double lastTime = glfwGetTime();
-
-	// Compute time difference between current and last frame
-	double currentTime = glfwGetTime();
-	float deltaTime = float(currentTime - lastTime);
-
-	// Get mouse position
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-
-	// Reset mouse position for next frame
-	glfwSetCursorPos(window, 1024/2, 768/2);
-
-	// Compute new orientation
-	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
-	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
-
-	// Direction : Spherical coordinates to Cartesian coordinates conversion
-	glm::vec3 direction(
-		cos(verticalAngle) * sin(horizontalAngle),
-		sin(verticalAngle),
-		cos(verticalAngle) * cos(horizontalAngle)
-	);
-
-	// Right vector
-	float PIDIV2 = PI / 2.0f;
-	glm::vec3 right = glm::vec3(
-		sin(horizontalAngle - PIDIV2),
-		0,
-		cos(horizontalAngle - PIDIV2)
-	);
-
-	// Up vector
-	glm::vec3 up = glm::cross( right, direction );
-
-	// Move forward
-	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-		position += direction * deltaTime * speed;
-	}
-	// Move backward
-	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-		position -= direction * deltaTime * speed;
-	}
-	// Strafe right
-	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
-		position += right * deltaTime * speed;
-	}
-	// Strafe left
-	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
-		position -= right * deltaTime * speed;
-	}
-
-	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
-
-	// Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	projectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f);
-	// Camera matrix
-	viewMatrix       = glm::lookAt(
-								position,           // Camera is here
-								lookat, // and looks here : at the same position, plus "direction"
-								up                  // Head is up (set to 0,-1,0 to look upside-down)
-							 );
-
-	// For the next frame, the "last time" will be "now"
-	lastTime = currentTime;
-}
-
-void storeFramebuffer(std::string filename, int ww, int wh) {
-	int i, j;
-	int k;
-	cv::Mat img(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
-	cv::Mat flipped(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
-
-	// glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3)?1:4);
-	glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize());
-	glReadPixels(0, 0, ww, wh, GL_BGR, GL_UNSIGNED_BYTE, img.data);
-	cv::Rect bbox;
-	cv::Scalar bbcolor(0, 0, 255);
-	// ofstream txtf("textdata.txt", std::ios_base::app);
-	ofstream txtf(gTextDatasetFile, std::ios_base::app);
-
-	if(txtf.fail()) {
-		cout << "Could not open text output file!\n";
-		return;
-	}
-	//flip the image around x-axis
-	cv::flip(img, flipped, 0);
-	detectBoundingBox(flipped, img.at<cv::Vec3b>(0,0), bbox);
-	cout << "Bouding Box: " << bbox.x << ", " << bbox.y << ", " << bbox.width << ", " << bbox.height << endl;
-	txtf << gOutFolder << filename << " " << bbox.x << " " << bbox.y << " " << (bbox.x + bbox.width) << " " << (bbox.y + bbox.height) << " " << 0 << endl;
-	txtf.close();
-	cv::rectangle(flipped, bbox, bbcolor, 1, cv::LINE_8, 0 );
-	std::string outImageName = gOutFolder + filename;
-	imwrite(outImageName, flipped);
-	// imwrite(filename, flipped);
 }

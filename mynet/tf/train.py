@@ -1,18 +1,19 @@
 import sys
+sys.path.append('./')
 import os
-import tensorflow.contrib.slim as slim
-import tensorflow as tf
-import cv2
-
 from tools.process_config import process_configure
 from optparse import OptionParser
 from net.yolo import YOLO
+from dataset.text_dataset import TextDataSet
+from solver.yolo_solver import YoloSolver
 
+classes_name = ['teddy', 'ant', 'airplane']
 
 def main():
     parser = OptionParser()
     parser.add_option("-c", "--conf", dest="configure", help="configure filename")
     (options, args) = parser.parse_args()
+    print(options)
     if options.configure:
         config_file = str(options.configure)
         print(config_file)
@@ -22,10 +23,11 @@ def main():
 
     common_params, dataset_params, net_params, solver_params = process_configure(config_file)
     print(common_params)
-    #sess = tf.InteractiveSession()
-    #input_data = tf.placeholder(tf.float32, shape=[None, 200704, 3])
-    #yolo = YOLO()
-    #print(yolo)
+    print(dataset_params)
+    ds = TextDataSet(common_params, dataset_params)
+    net = YOLO(common_params, net_params)
+    solver = YoloSolver(ds, net, common_params, solver_params)
+    solver.solve()
 
 if __name__=="__main__":
     main()

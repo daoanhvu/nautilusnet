@@ -40,6 +40,10 @@ linux: $(BUILD)
 mac: $(BUILD)
 	$(CXX) -v -o ./build/cap3d $(BUILD) $(OPENCV_LIB_DIR) $(LIBS) -framework OpenGL -framework GLUT -lGLEW -lglfw.3
 
+viewer: $(BUILD)
+	$(CXX) -v -o ./build/viewer view3d.cpp \
+					./build/utils.o ./build/shader.o $(CPFLAGS) $(OPENCV_LIB_DIR) $(LIBS) -framework OpenGL -framework GLUT -lGLEW -lglfw.3
+
 clean:
 	rm ./build/*
 	cp *.shader ./build/

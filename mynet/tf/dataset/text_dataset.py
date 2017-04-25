@@ -7,14 +7,14 @@ import math
 import random
 import cv2
 import numpy as np
-from Queue import Queue 
+from queue import Queue
 from threading import Thread
 
-from yolo.dataset.dataset import DataSet 
+from dataset.dataset import DataSet
 
 class TextDataSet(DataSet):
   """TextDataSet
-  process text input file dataset 
+  process text input file dataset
   text file format:
     image_path xmin1 ymin1 xmax1 ymax1 class1 xmin2 ymin2 xmax2 ymax2 class2
   """
@@ -37,7 +37,7 @@ class TextDataSet(DataSet):
     self.record_queue = Queue(maxsize=10000)
     self.image_label_queue = Queue(maxsize=512)
 
-    self.record_list = []  
+    self.record_list = []
 
     # filling the record_list
     input_file = open(self.data_path, 'r')
@@ -54,13 +54,13 @@ class TextDataSet(DataSet):
     self.num_batch_per_epoch = int(self.record_number / self.batch_size)
 
     t_record_producer = Thread(target=self.record_producer)
-    t_record_producer.daemon = True 
+    t_record_producer.daemon = True
     t_record_producer.start()
 
     for i in range(self.thread_num):
       t = Thread(target=self.record_customer)
       t.daemon = True
-      t.start() 
+      t.start()
 
   def record_producer(self):
     """record_queue's processor
@@ -73,20 +73,20 @@ class TextDataSet(DataSet):
       self.record_point += 1
 
   def record_process(self, record):
-    """record process 
-    Args: record 
+    """record process
+    Args: record
     Returns:
       image: 3-D ndarray
       labels: 2-D list [self.max_objects, 5] (xcenter, ycenter, w, h, class_num)
-      object_num:  total object number  int 
+      object_num:  total object number  int
     """
     image = cv2.imread(record[0])
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     h = image.shape[0]
     w = image.shape[1]
 
-    width_rate = self.width * 1.0 / w 
-    height_rate = self.height * 1.0 / h 
+    width_rate = self.width * 1.0 / w
+    height_rate = self.height * 1.0 / h
 
     image = cv2.resize(image, (self.height, self.width))
 
@@ -114,7 +114,7 @@ class TextDataSet(DataSet):
     return [image, labels, object_num]
 
   def record_customer(self):
-    """record queue's customer 
+    """record queue's customer
     """
     while True:
       item = self.record_queue.get()
