@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 
 classes_name = ['teddy', 'ant', 'airplane']
+batch_size = 2
 
 def variable_on_cpu(self, name, shape, initializer, pretrain=True, train=True):
     with tf.device('/cpu:0'):
@@ -47,6 +48,13 @@ def solve():
 
 
 def loss():
+    class_loss = tf.constant(0, tf.float32)
+    object_loss = tf.constant(0, tf.float32)
+    noobject_loss = tf.constant(0, tf.float32)
+    coord_loss = tf.constant(0, tf.float32)
+    loss = [0, 0, 0, 0]
+    for i in range(batch_size):
+        predict = predicts[i, :, :, :]
     return 0
 
 def process_image(record):

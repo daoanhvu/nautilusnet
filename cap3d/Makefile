@@ -1,12 +1,15 @@
 PLATFORM = LINUX
 CXX = g++
 SOURCE = cap3d.cpp
-CPFLAGS =-I. -I./include -I/usr/include \
-								-I/home/davu/projects/glm-0.9.8.4
+#For Linux
+#CPFLAGS =-I. -I./include -I/usr/include \
+#								-I/home/davu/projects/glm-0.9.8.4
 
-								#-I/usr/local/Cellar/glew/2.0.0/include \
-								#-I/usr/local/Cellar/glfw/3.2.1/include \
-								#-I/Users/davu/Documents/src/glm
+#For MacOS
+CPFLAGS = -I. -I/usr/include \
+								-I/usr/local/Cellar/glew/2.0.0/include \
+								-I/usr/local/Cellar/glfw/3.2.1/include \
+								-I/Users/davu/Documents/src/glm
 
 CXXFLAGS = -std=c++11 -Wall -g
 BUILD = ./build/camera.o \
@@ -18,8 +21,11 @@ BUILD = ./build/camera.o \
 				./build/lexer_parser.o \
 				./build/image_processor.o
 
-OPENCV_LIB_DIR = -L./linuxlib -L/usr/lib -L/usr/local/lib
-#OPENCV_LIB_DIR = -L/usr/lib -L/usr/local/lib
+#For Linux
+#OPENCV_LIB_DIR = -L./linuxlib -L/usr/lib -L/usr/local/lib
+
+#For MacOS
+OPENCV_LIB_DIR = -L/usr/lib -L/usr/local/lib
 LIBS = -lopencv_core -lopencv_calib3d -lopencv_highgui -lopencv_features2d \
 								-lopencv_ml -lopencv_imgcodecs -lopencv_imgproc
 #   stackoverflow.com/questions/33747874/glfw3-error-sdo-missing-from-command-line

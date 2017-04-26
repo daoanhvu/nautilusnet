@@ -63,10 +63,17 @@ int main(int argc, char* args[]) {
 	unsigned int buflen;
 	Configuration config;
 
+	char class_name[16];
+	int class_index = 0;
+
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
 		cout << "USAGE: cap3d <input>.ply OR cap3d <input>.im \n";
 		return 1;
+	}
+
+	if(argc >= 3 ) {
+		strcpy(class_name, args[2]);
 	}
 
 	//Load config file - hardcode filename here!
@@ -246,10 +253,6 @@ int main(int argc, char* args[]) {
 	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
 	int cam_pos_count = config.camera_positions.size();
 	int cam_pos_i = 0;
-	char filename[128];
-
-
-	memcpy(filename, "pose_", 5);
 
 	glfwGetCursorPos(window, &xpos, &ypos);
 	last_xpos = xpos;

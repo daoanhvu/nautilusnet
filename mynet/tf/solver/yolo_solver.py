@@ -67,7 +67,7 @@ class YoloSolver(Solver):
   def solve(self):
 
     print("=================================")
-    print(self.net.pretrained_collection)
+    #print(self.net.pretrained_collection)
     print("=================================")
     saver1 = tf.train.Saver(self.net.pretrained_collection, write_version=tf.train.SaverDef.V2)
     #saver1 = tf.train.Saver(self.net.trainable_collection)
@@ -96,16 +96,14 @@ class YoloSolver(Solver):
 
       assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
 
-      if step % 2 == 0:
+      if step % 10 == 0:
         num_examples_per_step = self.dataset.batch_size
         examples_per_sec = num_examples_per_step / duration
         sec_per_batch = float(duration)
 
         format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                       'sec/batch)')
-        print (format_str % (datetime.now(), step, loss_value,
-                             examples_per_sec, sec_per_batch))
-
+        print (format_str % (datetime.now(), step, loss_value, examples_per_sec, sec_per_batch))
         sys.stdout.flush()
       if step % 100 == 0:
         summary_str = sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
