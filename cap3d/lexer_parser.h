@@ -33,6 +33,7 @@
 #define CODE_SCALE	         23
 #define CODE_WINDOW_WIDTH	   24
 #define CODE_WINDOW_HEIGHT	 25
+#define CODE_OUTPUT_FOLDER	 26
 
 using namespace std;
 

@@ -51,7 +51,8 @@ float initialFoV = 45.0f;
 float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
-const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
+//const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
+const std::string gOutFolder = "/home/davu/projects/nautilusnet/data/";
 const std::string gTextDatasetFile = gOutFolder + "textdata.txt";
 
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
@@ -507,7 +508,7 @@ void storeFramebuffer(std::string filename, int ww, int wh) {
 	cv::Rect bbox;
 	cv::Scalar bbcolor(0, 0, 255);
 	// ofstream txtf("textdata.txt", std::ios_base::app);
-	ofstream txtf(gTextDatasetFile, std::ios_base::app);
+	ofstream txtf(gTextDatasetFile.c_str(), std::ios_base::app);
 
 	if(txtf.fail()) {
 		cout << "Could not open text output file!\n";
