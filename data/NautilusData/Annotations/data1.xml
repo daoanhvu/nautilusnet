@@ -1,0 +1,27 @@
+<annotation>
+	<folder>xml</folder>
+	<filename>teddy_pose_0.jpg</filename>
+	<source>
+		<database>The Nautilus Database</database>
+		<annotation>NAUTILUS 3D OBJECT</annotation>
+		<image>nautilus3D</image>
+	</source>
+	<size>
+		<width>448</width>
+		<height>448</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>teddy</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>135</xmin>
+			<ymin>77</ymin>
+			<xmax>319</xmax>
+			<ymax>425</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -3,7 +3,8 @@
 # For Training YOLO
 
 import math
-import cPickle as pickle
+# import cPickle as pickle
+import _pickle as pickle
 import numpy as np
 from scipy.misc import imread, imresize
 
@@ -11,13 +12,14 @@ from YOLO_PlottingUtils import *
 from YOLO_CoverageMap import *
 from preprocess_data import *
 ###### HYPERPARAMETERS #######
-voc_data_path = 'home/johnwl/YoloTensorFlow229/VOCdevkit/'
+voc_data_path = '/Volumes/Data/projects/nautilusnet/data/'
 PERCENT_TRAIN_SET = 0.8
 PERCENT_VAL_SET = 0.1
 PERCENT_TEST_SET = 0.1
 S = 7
 B = 2.
-CLASSES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+# CLASSES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+CLASSES = ["teddy", "ant","airplane"]
 NUM_CLASSES = len(CLASSES) # 20 for VOC, later will change for MSCOCO, ImageNet, etc.
 classnameToIdxDict = {}
 for i,classname in enumerate(CLASSES):
@@ -54,7 +56,7 @@ def getData(getPickledData,vocImagesPklFilename):
 		with open( vocImagesPklFilename, 'rb') as f:
 			annotatedImages = pickle.load(f)
 	else:
-		annotatedImages = preprocess_data(voc_data_path)
+		annotatedImages = preprocess_data(voc_data_path, "NautilusData")
 		with open( vocImagesPklFilename, 'wb') as f:
 			pickle.dump(annotatedImages,f)
 	return annotatedImages
@@ -62,7 +64,7 @@ def getData(getPickledData,vocImagesPklFilename):
 
 def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoints):
 	"""
-	If center of a bounding box falls into a grid cell, that grid cell is 
+	If center of a bounding box falls into a grid cell, that grid cell is
 	responsible for detecting that bounding box. So I store that bbox info
 	for that particular grid cell.
 	INPUTS:
@@ -75,7 +77,7 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 
 	batch_size = 1
 	mask = np.random.choice( len(annotatedImages) , batch_size ) # RANDOM SAMPLE OF THE INDICES
-	imNum = mask[0] 
+	imNum = mask[0]
 	annotatedImage = annotatedImages[imNum]
 	image_path = annotatedImage.image_path
 	img = imread(image_path)
@@ -84,7 +86,7 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 	# darknet scales color values from 0 to 1
 	# https://github.com/pjreddie/darknet/blob/c6afc7ff1499fbbe64069e1843d7929bd7ae2eaa/src/image.c#L469
 	img = (img / 255.0)
-	   
+
 	# if imNum > ARBITRARY_STOP_LOADING_IMS_NUMBER_FOR_DEBUGGING:
 	# 	break
 
@@ -92,7 +94,7 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 	gt_conf = np.zeros((49,4))
 	ind_obj_i = np.zeros((49))
 	gt_boxes_j0 = np.zeros((49,4))
-	
+
 	im = imread(image_path)
 	if plot_yolo_grid_cells or plot_bbox_centerpoints:
 		fig, ax = plt.subplots(figsize=(8, 8))
@@ -100,7 +102,7 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 		plotGridCellsOnIm(im,ax)
 	gt = []
 	occupiedSlot = np.zeros((S,S,B))
-	# We limit to two bounding boxes per grid cell. 
+	# We limit to two bounding boxes per grid cell.
 	# For each image, tell which grid cells are responsible for which bboxes
 	for i, bbox in enumerate(annotatedImage.bounding_boxes):
 		x_cent = bbox.x_min + bbox.w / 2.
@@ -155,9 +157,9 @@ def normXYToGrid(x_cent,y_cent,im):
 	"""
 	I normalize the x,y coordinates to be the offset from top-left grid corner,
 	normalized to size of grid.
-	The (x, y) coordinates represent the center of the box relative to the 
-	bounds of the grid cell. 
-	The width and height are predicted relative to the whole image. 
+	The (x, y) coordinates represent the center of the box relative to the
+	bounds of the grid cell.
+	The width and height are predicted relative to the whole image.
 	In contrast, w and h from the GTs are normalized to the image.
 	INPUTS:
 	-	x_cent: float, x-coordinate of center of a bounding box
@@ -191,8 +193,8 @@ def separateDataSets(annotatedImages):
 	trainNum = int( math.floor( PERCENT_TRAIN_SET * len(annotatedImages) ) )
 	valNum = int( math.floor( PERCENT_VAL_SET * len(annotatedImages) ) )
 	testNum = int( len(annotatedImages) - trainNum - valNum )
-	print '===> Placing %f %% into training set, %f %% into val set, %f %% into test set' % (PERCENT_TRAIN_SET,PERCENT_VAL_SET,PERCENT_TEST_SET)
-	print '===> %d ims in training set, %d ims in val set, %d ims in test set' % (trainNum,valNum,testNum)
+	print('===> Placing %f %% into training set, %f %% into val set, %f %% into test set' % (PERCENT_TRAIN_SET,PERCENT_VAL_SET,PERCENT_TEST_SET))
+	print('===> %d ims in training set, %d ims in val set, %d ims in test set' % (trainNum,valNum,testNum))
 	trainEndIdx = trainNum
 	valEndIdx = trainNum + valNum
 	testIndIdx = trainNum + valNum + testNum

@@ -30,7 +30,7 @@ TRAIN_DROP_PROB = 0.8
 TEST_DROP_PROB = 1.0
 #ARBITRARY_STOP_LOADING_IMS_NUMBER_FOR_DEBUGGING = 5011
 NUM_VOC_IMAGES = 5011
-TRAIN_SET_SIZE = int( math.floor( NUM_VOC_IMAGES * 0.8 )) 
+TRAIN_SET_SIZE = int( math.floor( NUM_VOC_IMAGES * 0.8 ))
 BATCH_SIZE = 1
 NUM_EPOCHS = 100
 plot_yolo_grid_cells = False
@@ -77,7 +77,7 @@ def runTrainStep(yoloNet, annotatedImages,sess, step):
 
 	trainLossVal = sess.run( yoloNet.loss ,feed_dict=feed ) # yoloNet.train_op
 	#print 'Length of train loss: ', len(trainLossVal)
-	print 'Training loss at step %d: %f' % (step,trainLossVal)
+	print('Training loss at step {0}: {1}' . format(step,trainLossVal))
 
 def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_val_mAP ):
 	"""
@@ -90,7 +90,7 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 	-	N/A
 	"""
 	detections = []
-	print '====> Evaluating: %s at epoch %d =====>' % (splitType, epoch)
+	print('====> Evaluating: {0} at epoch {1} =====>' .format(splitType, epoch))
 	if splitType == 'val':
 		data_set_size = VAL_SET_SIZE
 	elif splitType == 'test':
@@ -111,7 +111,7 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 		yoloNet.dropout_prob: TEST_DROP_PROB, yoloNet.gt_boxes_j0 : gt_boxes_j0 }
 
 		class_probs_giv_obj,confidences,boxes, lossVal = sess.run( [yoloNet.class_probs,yoloNet.confidences,yoloNet.bboxes, yoloNet.loss],feed_dict=feed )
-		print 'Loss in %s split at epoch%d , iter %d : %f' % (splitType, epoch, i, lossVal)
+		print('Loss in {0} split at epoch {1} , iter {2} : {3}' .format(splitType, epoch, i, lossVal))
 		# NOW PROCESS THE PREDICTIONS HERE
 		boxes = np.reshape(boxes, [NUM_GRID*NUM_GRID,NUM_BOX,4] )
 		boxes = unnormalizeBoxes(boxes, minibatchIms)
@@ -156,13 +156,13 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 	# BB, BBGT = convertPredsAndGTs(bboxes, class_probs, confidences )
 	mAP = computeMeanAveragePrecision(detections, splitType)
 	# save some of the plots just as a sanity check along the way
-	print '==> Current mAP: ', mAP, ' ===>'
+	print( '==> Current mAP: ', mAP, ' ===>')
 	if (splitType == 'val') and (mAP > best_val_mAP):
 		#saver.save(sess, './YOLO_Trained.weights' )
 		best_val_mAP = mAP
 	# plot_detections_on_im( imread(self.image_path),probs,confidences,bboxes,classes)
 
-	# Each grid cells also predicts conditional class probabilities, Pr(Classi |Object). 
+	# Each grid cells also predicts conditional class probabilities, Pr(Classi |Object).
 	# These probabilities are conditioned on the grid cell containing an object.
 	# Why not just at test time do cross product?
 
@@ -172,7 +172,7 @@ def unnormalizeBoxes(boxes, im):
 	INPUTS:
 	-	boxes: NUM_GRID*NUM_GRID,NUM_BOX,4
 	OUTPUTS:
-	-	boxes: but scaled to image, and 
+	-	boxes: but scaled to image, and
 
 		x_cent,y_cent,w,h
 	"""
@@ -248,7 +248,8 @@ if __name__ == '__main__':
 	checkpoint_path = '/Users/johnlambert/Documents/Stanford_2016-2017/CS_229/229CourseProject/YoloTensorFlow229/yolo.ckpt'
 
 	best_val_mAP = -1 * float('inf')
-	annotatedImages = getData(getPickledData,vocImagesPklFilename)
+	# annotatedImages = getData(getPickledData,vocImagesPklFilename)
+	annotatedImages = getData(False,vocImagesPklFilename)
 	trainData, valData, testData = separateDataSets(annotatedImages)
 	if plot_im_bboxes == True:
 		plotGroundTruth(annotatedImages)
@@ -266,12 +267,10 @@ if __name__ == '__main__':
 		sess.run(tf.initialize_all_variables())
 		saver.restore(sess, checkpoint_path)
 		for epoch in range(20):#NUM_EPOCHS):
-			print '====> Starting Epoch %d =====>' % (epoch)
+			print('====> Starting Epoch {0} =====>' .format(epoch))
 			for step in range( 1): # numItersPerEpoch):
 				runTrainStep(yoloNet, annotatedImages ,sess, step)
 			runEvalStep( 'val', yoloNet, annotatedImages ,sess, epoch, saver, best_val_mAP)
 		# After all training complete
 		saver.restore(sess, './YOLO_Trained.weights' )
 		runEvalStep( 'test', yoloNet, annotatedImages ,sess, epoch, None, None)
-
-

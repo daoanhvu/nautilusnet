@@ -53,7 +53,7 @@ def naiveAPCalculation(rec,prec):
 
 
 def voc_ap(rec, prec):
-    """ 
+    """
     ap = voc_ap(rec, prec)
     Compute VOC AP given precision and recall.
     https://github.com/rbgirshick/py-faster-rcnn/blob/master/lib/datasets/voc_eval.py#L31
@@ -97,9 +97,9 @@ def union(BBGT,bb,inters):
 	Why do they inflate numbers by adding +1.? I don't
 	https://github.com/rbgirshick/py-faster-rcnn/blob/master/lib/datasets/voc_eval.py#L173
 	INPUTS:
-	-	
+	-
 	OUTPUTS:
-	-	
+	-
 	"""
 	union = ((bb[2] - bb[0] ) * (bb[3] - bb[1] ) + \
 		(BBGT[ 2] - BBGT[ 0] ) * \
@@ -107,7 +107,7 @@ def union(BBGT,bb,inters):
 	return union
 
 #Returns the intersection over union of two rectangles, a and b, where each is an array [x,y,w,h]
-def computeIOU(BBGT,bb): 
+def computeIOU(BBGT,bb):
 	maxIOU = 0
 	for i,gtBbox in enumerate(BBGT):
 		gtBbox = np.squeeze(gtBbox)
@@ -150,26 +150,22 @@ def plotRectangle(bbox,ax,class_name, edgecolor):
 
 
 def plotDets(detections):
-
 	for imIdx,im in enumerate(detections):
-
 		image = im['im']
 		image = np.squeeze(image)
 		imWidth = image.shape[1]
 		imHeight = image.shape[0]
 		fig, ax = plt.subplots(figsize=(8, 8))
 		ax.imshow(image, aspect='equal')
-
 		# look at each of the predictions
 		for j in range( len(im['bboxes'])):
 			pred_class = im['pred_classes'][j]
-			bbox = im['bboxes'][j] 
+			bbox = im['bboxes'][j]
 			plotRectangle(bbox,ax,CLASSES[pred_class], 'red')
 		for j in range( len(im['gt_boxes_j0'])):
 			gt_class = im['gt_classes'][j]
-    		gt_bbox = im['gt_boxes_j0'][j]
-    		plotRectangle(bbox,ax,CLASSES[gt_class], 'green')
-
+			gt_bbox = im['gt_boxes_j0'][j]
+			plotRectangle(bbox,ax,CLASSES[gt_class], 'green')
 		plt.draw()
 		plt.tight_layout()
 		#plt.show()
@@ -187,8 +183,8 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 	-	prec: precision
 	-	ap: average precision
 	A bounding box reported by an algorithm is considered
-	correct if its area intersection over union with a ground 
-	truth bounding box is beyond 50%. If a lot of closely overlapping 
+	correct if its area intersection over union with a ground
+	truth bounding box is beyond 50%. If a lot of closely overlapping
 	bounding boxes hitting on a same ground truth, only one of
 	them is counted as correct, and all the others are treated as false alarms
 	"""
@@ -208,17 +204,17 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 				BB_im_ids.append( imIdx )
 		for j in range( len(im['gt_boxes_j0'])):
 			num_of_this_class_in_this_im = 0
-    		if im['gt_classes'][j] == cls:
-    			BBGT.append( im['gt_boxes_j0'][j] )
-    			num_of_this_class_in_this_im += 1
-    		imIdToNumGtInsideImDict[imIdx] = num_of_this_class_in_this_im
+			if im['gt_classes'][j] == cls:
+				BBGT.append( im['gt_boxes_j0'][j] )
+				num_of_this_class_in_this_im += 1
+			imIdToNumGtInsideImDict[imIdx] = num_of_this_class_in_this_im
 	BBGT = np.asarray(BBGT)
 	if BBGT.shape[0] == 0:
 		return None,None,None
 	confidence = np.asarray(confidence)
 	BB = np.asarray(BB)
 	if BB.shape[0] > 0:
-		print 'At least one detection made.'
+		print('At least one detection made.')
 	#print 'BBGT has shape: ', BBGT.shape
 	BB_im_ids = np.asarray(BB_im_ids)
 
@@ -229,7 +225,7 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 	prec = []
 	rec = []
 	if BB.shape[0] > 0:
-		print 'One Valid Detection.'
+		print('One Valid Detection.')
 		#pdb.set_trace()
 		BB = BB[sorted_ind]
 		BB_im_ids = BB_im_ids[sorted_ind]
@@ -254,11 +250,11 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 				bb = BB[j, :].astype(float)
 				bb = np.squeeze(bb)
 				iou = computeIOU(BBGT,bb)
-				print 'IOU: ', iou
-		        if iou > iouthresh:
-		        	tp += 1.
-		        else:
-		        	fp += 1.
+				print('IOU: ', iou)
+				if iou > iouthresh:
+					tp += 1.
+				else:
+					fp += 1.
 			# compute precision recall
 			prec.append( tp / max(total_cls_reports, np.finfo(np.float64).eps)) # how accurate are reports
 			rec.append( tp / max(total_cls_groundtruth, np.finfo(np.float64).eps)) # how many ground truth can be found by the algorithm
@@ -267,8 +263,8 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 		rec = [0]
 		prec = [0]
 
-	print 'Recall: ', rec
-	print 'Precision: ', prec
+	print('Recall: ', rec)
+	print('Precision: ', prec)
 	# avoid divide by zero
 	ap = voc_ap(rec, prec )
 	# My implementation vs. Ross Girshick's implementation -- should be same area under curve

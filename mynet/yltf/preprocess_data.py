@@ -20,15 +20,15 @@ class annotated_image:
 
 # pass ../VOCdevkit/ path here
 # function will return a list of annotated_image objects
-def preprocess_data(voc_data_path):
+def preprocess_data(voc_data_path, datasetname):
     # list of all annotated_images in dataset
     annotated_images = []
-    annotations_dir = os.path.join(voc_data_path, 'VOC2007', 'Annotations')
-    images_dir = os.path.join(voc_data_path, 'VOC2007', 'JPEGImages')
+    annotations_dir = os.path.join(voc_data_path, datasetname, 'Annotations')
+    images_dir = os.path.join(voc_data_path, datasetname, 'JPEGImages')
 
     for filename in os.listdir(annotations_dir):
         image_number = os.path.splitext(os.path.basename(filename))[0]
-        image_path = os.path.join(voc_data_path, 'VOC2007', 'JPEGImages', image_number + '.jpg')
+        image_path = os.path.join(voc_data_path, datasetname, 'JPEGImages', image_number + '.jpg')
         image = annotated_image(image_path)
 
         xml = minidom.parse(os.path.join(annotations_dir, filename))

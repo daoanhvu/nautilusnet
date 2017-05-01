@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw, ImageFont
 import os, sys
 from os import listdir
 from os.path import isfile, join
-import cPickle
+#import cPickle
+import _pickle as cPickle
 
 IMAGE_SIZE = 448
 NUM_GRID = 7
@@ -26,14 +27,14 @@ def sqrt_wh(box):
   """
   Take the square root of wh regardless of pred or true boxes given
   INPUTS:
-  - box: 
+  - box:
   OUTPUTS:
-  - box_new: 
+  - box_new:
   """
   if len(box.get_shape().as_list()) == 4:
     box_new = tf.concat(3, [box[:, :, :, : 2], tf.sqrt(box[:, :, :, 2 :])])
   else:
-    print "LABELS HAVE WRONG SHAPE !!!"
+    print("LABELS HAVE WRONG SHAPE !!!")
   return box_new
 
 
@@ -43,9 +44,9 @@ def square_wh(boxes):
   INPUTS:
   - boxes: n-d array of shape ?????
   OUTPUTS:
-  - 
+  -
   """
-  print boxes.get_shape().as_list()
+  print(boxes.get_shape().as_list())
   #if len(box.get_shape().as_list()) == 4:
   boxes_wh_squared = tf.concat(1, [boxes[:, :2], tf.square(boxes[:, 2:]) ])
   #else:
@@ -74,9 +75,9 @@ def compute_iou(box_pred,box_true):
                   box_true[ :, 1 ] - 0.5 * box_true[ :,3 ])
   lr = tf.maximum(lr, lr * 0)
   tb = tf.maximum(tb, tb * 0)
-  intersection = tf.mul(tb, lr)
-  union = tf.sub(tf.mul(box_pred[ :, 2], box_pred[ :, 3 ]) +  \
-                 tf.mul(box_true[ :, 2], box_true[ :, 3 ]), intersection)
+  intersection = tf.multiply(tb, lr)
+  union = tf.sub(tf.multiply(box_pred[ :, 2], box_pred[ :, 3 ]) +  \
+                 tf.multiply(box_true[ :, 2], box_true[ :, 3 ]), intersection)
   iou = tf.div(intersection, union)
 
   return iou
@@ -112,14 +113,14 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   when compute coord loss, need to have true boxes norm to grid, wh square root
 
   Confidence computed as Pr(Object) * IOUtruth_pred
-  If no object exists in that cell, the confidence scores should be zero. 
-  Otherwise we want the confidence score to equal the 
+  If no object exists in that cell, the confidence scores should be zero.
+  Otherwise we want the confidence score to equal the
   intersection over union (IOU) between the predicted box and the ground truth.
-  Finally the confidence prediction represents the IOU between the 
+  Finally the confidence prediction represents the IOU between the
   predicted box and any ground truth box.
 
-  We assign one predictor to be "responsible" for predicting an object 
-  based on which prediction has the highest current IOU with the ground truth. 
+  We assign one predictor to be "responsible" for predicting an object
+  based on which prediction has the highest current IOU with the ground truth.
 
   NEW INPUTS:
   - pred_classes: 49 x 20
@@ -138,7 +139,7 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   pred_boxes_j0 = pred_boxes[:,0,:] # 49 x 4 array
   pred_boxes_j1 = pred_boxes[:,1,:] # 49 x 4 array
   pred_boxes_j0 = tf.mul( pred_boxes_j0 , gt_conf ) # multiply by 1s or 0s
-  pred_boxes_j1 = tf.mul( pred_boxes_j1 , gt_conf ) # multiply by 1s or 0s 
+  pred_boxes_j1 = tf.mul( pred_boxes_j1 , gt_conf ) # multiply by 1s or 0s
   # NOW the predictions in wrong cells are zeroed out
   j0_coord_loss = tf.reduce_sum(tf.square(pred_boxes_j0 - gt_boxes_j0), reduction_indices=[1] )
   squared_gt_boxes_j0 = square_wh(gt_boxes_j0)
@@ -163,7 +164,7 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   # Now only one of those predictors is doing the work. Mask out the other
   j0_mask = tf.logical_and( mask_temp, tf.greater( pred_conf_j0, tf.zeros_like(pred_conf_j0)) )
   j1_mask = tf.logical_and( tf.greater( pred_conf_j1, tf.zeros_like(pred_conf_j1)), tf.logical_not(mask_temp))
-  
+
   pred_conf_j0 = tf.select(j0_mask, pred_conf_j0, tf.zeros_like(pred_conf_j0) )
   pred_conf_j1 = tf.select(j1_mask, pred_conf_j1, tf.zeros_like(pred_conf_j1) )
 
@@ -181,7 +182,7 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   gt_conf_noobj_mask = tf.greater( gt_conf, tf.zeros_like(gt_conf) )
   gt_conf_noobj = tf.select( gt_conf_noobj_mask, tf.zeros_like(gt_conf), tf.ones_like(gt_conf)) # opposite of gt_conf
 
-  j0_mask_noobj = tf.logical_not( j0_mask ) 
+  j0_mask_noobj = tf.logical_not( j0_mask )
   j1_mask_noobj = tf.logical_not( j1_mask )
 
   pred_conf_j0_noobj = tf.select(j0_mask_noobj, pred_conf[:,0], tf.zeros_like(pred_conf_j0) )
@@ -205,4 +206,4 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   class_loss = tf.reduce_sum(class_loss, reduction_indices=[0]) # along all boxes
   #############################################################################
 
-  return box_loss +class_loss #+ noobj_loss#obj_loss # + 
+  return box_loss +class_loss #+ noobj_loss#obj_loss # +

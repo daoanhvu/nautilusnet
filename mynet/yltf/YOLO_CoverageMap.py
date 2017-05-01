@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 ######## HYPERPARAMETERS ########
 NUM_GRID = 7.
-SHOW_COVERAGE_MAP = False # True # 
+SHOW_COVERAGE_MAP = False # True #
 #################################
 
 def computeCoverageMapSimplified(im,gtBbox):
@@ -53,12 +53,12 @@ def computeCoverageMap(im, bbox):
 	I use xmin,ymin,xmax,ymax to find an object coverage map for each ground truth box.
 	INPUTS:
 	-	im: n-d array, NOT-yet-resized-to-448-448-3 image
-	-	bbox: 
+	-	bbox:
 	OUTPUTS:
 	-	coverageMap: n-d array, 49x1
 	"""
 	im = im.astype(np.float32)
-	gtBbox = np.array([bbox.x_min,bbox.y_min,bbox.x_min+bbox.w,bbox.y_min+bbox.h]) 
+	gtBbox = np.array([bbox.x_min,bbox.y_min,bbox.x_min+bbox.w,bbox.y_min+bbox.h])
 	xScale = 448.0 / im.shape[1]
 	yScale = 448.0 / im.shape[0]
 	gtBbox[0] *= xScale
@@ -72,7 +72,7 @@ def computeCoverageMap(im, bbox):
 		plotGridCellsOnIm(im,ax)
 		im = Image.fromarray(im,'RGB')
 		ax.imshow(im, aspect='equal')
-		print coverageMap
+		print(coverageMap)
 		plt.scatter(gtBbox[0],gtBbox[1])
 		plt.scatter(gtBbox[2],gtBbox[3])
 		plt.tight_layout()
