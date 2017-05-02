@@ -6,7 +6,7 @@ import numpy as np
 import pdb
 import matplotlib.pyplot as plt
 
-CLASSES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+CLASSES = ["teddy", "ant", "airplane"]
 
 EPSILON = 1e-5
 
@@ -24,8 +24,8 @@ def computeMeanAveragePrecision(detections, splitType):
 	#plotDets(detections)
 	aps = []
 	for classIdx, cls in enumerate(CLASSES):
-		pdb.set_trace()
-		#print 'Evaluate class: ', cls, ' with class index: ', classIdx
+		# pdb.set_trace()s
+		print('Evaluate class: ', cls, ' with class index: ', classIdx)
 		rec, prec, ap = matchGTsAndComputePrecRecallAP(classIdx,detections,iouthresh=0.5)
 		if ap is not None:
 			aps += [ap]
@@ -173,7 +173,7 @@ def plotDets(detections):
 		plt.gcf().set_size_inches(15, 12)
 
 
-def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
+def matchGTsAndComputePrecRecallAP(cls, detections, iouthresh=0.5):
 	"""
 	INPUTS:
 	-	BB: predicted bounding boxes
@@ -193,10 +193,13 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 	BB = []
 	BB_im_ids = []
 
+	# print(detections)
+
 	imIdToNumGtInsideImDict = {}
 	# FIND THE PREDICTIONS FOR JUST --ONE CLASS--, E.G. AIRPLANE
 	for imIdx,im in enumerate(detections):
 		# look at each of the predictions
+		print("Index: ", imIdx, ", image: ", im['pred_classes'], ", class: ", cls)
 		for j in range( len(im['bboxes'])):
 			if im['pred_classes'][j] == cls:
 				BB.append( im['bboxes'][j] )
@@ -260,11 +263,11 @@ def matchGTsAndComputePrecRecallAP(cls,detections,iouthresh=0.5):
 			rec.append( tp / max(total_cls_groundtruth, np.finfo(np.float64).eps)) # how many ground truth can be found by the algorithm
 	else:
 		# no detections
+		print("No detections!!!")
 		rec = [0]
 		prec = [0]
 
-	print('Recall: ', rec)
-	print('Precision: ', prec)
+	print('Recall: ', rec, " Precision: ", prec)
 	# avoid divide by zero
 	ap = voc_ap(rec, prec )
 	# My implementation vs. Ross Girshick's implementation -- should be same area under curve

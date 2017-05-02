@@ -6,7 +6,7 @@ import numpy as np
 from functools import reduce
 
 ########################################################
-NUM_CLASSES = 20
+NUM_CLASSES = 3
 NUM_GRID = 7
 LEARNING_RATE = 1e-4
 ########################################################
@@ -24,7 +24,7 @@ from MatrixCompute_YoloLossTF import *
 class YOLO_TrainingNetwork:
     def __init__(self,  use_pretrained_weights):
         #self.weight_path = weight_path
-        self.num_classes = 20
+        self.num_classes = NUM_CLASSES
         self.S = 7
         self.B = 2
         self.use_open_cv = False
@@ -42,7 +42,7 @@ class YOLO_TrainingNetwork:
         # GTs have shape 73=NUM_CLASSES+4+49
         #self.gts = tf.placeholder(tf.float32, shape = [None, NUM_CLASSES + 4 + (7*7) ], name='GTs')
         self.gt_conf = tf.placeholder(tf.float32, shape=[49,4],name='GT_CONF')
-        self.gt_classes = tf.placeholder(tf.float32,shape=[49,20],name='GT_CLASSES')
+        self.gt_classes = tf.placeholder(tf.float32,shape=[49,NUM_CLASSES],name='GT_CLASSES')
         self.ind_obj_i = tf.placeholder(tf.float32, shape=[7*7],name='ind_obj_i')
         # dropout prob is only set <1 during training
         self.dropout_prob = tf.placeholder(tf.float32)

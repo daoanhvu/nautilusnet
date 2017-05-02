@@ -17,7 +17,7 @@ PERCENT_TRAIN_SET = 0.8
 PERCENT_VAL_SET = 0.1
 PERCENT_TEST_SET = 0.1
 S = 7
-B = 2.
+B = 2
 # CLASSES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
 CLASSES = ["teddy", "ant","airplane"]
 NUM_CLASSES = len(CLASSES) # 20 for VOC, later will change for MSCOCO, ImageNet, etc.
@@ -90,7 +90,7 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 	# if imNum > ARBITRARY_STOP_LOADING_IMS_NUMBER_FOR_DEBUGGING:
 	# 	break
 
-	gt_classes = np.zeros((49,20))
+	gt_classes = np.zeros((49,NUM_CLASSES))
 	gt_conf = np.zeros((49,4))
 	ind_obj_i = np.zeros((49))
 	gt_boxes_j0 = np.zeros((49,4))

@@ -4,15 +4,18 @@ import csv
 import cv2
 import numpy as np
 import tensorflow as tf
+from functools import reduce
 
 from plot_utils import *
+
+NUM_CLASSES = 3
 
 class YOLO:
     def __init__(self, weight_path, checkpoint_path):
         self.debug = False
         self.weight_path = weight_path
         self.checkpoint_path = checkpoint_path
-        self.num_classes = 20
+        self.num_classes = NUM_CLASSES
         self.S = 7
         self.B = 2
 
@@ -62,12 +65,13 @@ class YOLO:
         self.output_layer = connected_layer31
 
         self.session = tf.Session()
-        self.session.run(tf.initialize_all_variables())
+        self.session.run(tf.global_variables_initializer())
         # save checkpoint file if it doesn't exist
         if not os.path.exists(self.checkpoint_path):
-            tf.train.Saver().save(self.session, self.checkpoint_path)
+            tf.train.Saver().save(self.session, self.checkpoint_path + "yolo.ckpt")
         else:
-            tf.train.Saver().restore(self.session, self.checkpoint_path)
+            tf.train.Saver().restore(self.session, tf.train.latest_checkpoint(self.checkpoint_path))
+            #tf.train.Saver().restore(self.session, self.checkpoint_path)
 
     def create_conv_layer(self, input_layer, d0, d1, filters, stride, weight_index):
         channels = int(input_layer.get_shape()[3])
@@ -79,7 +83,7 @@ class YOLO:
         if self.weight_path:
             weight = np.empty(weight_shape, dtype = np.float32)
             weight_trained_path = os.path.join(self.weight_path, 'conv_weight_layer' + str(weight_index + 1) + '.csv')
-            print 'Loading weights from file: ' + weight_trained_path
+            print('Loading weights from file: ' + weight_trained_path)
             weight_trained = np.genfromtxt(weight_trained_path, delimiter = ',', dtype = np.float32)
             for i in range(weight_shape[0]):
                 for j in range(weight_shape[1]):
@@ -89,7 +93,7 @@ class YOLO:
 
             bias = np.empty(bias_shape, dtype = 'float32')
             bias_trained_path = os.path.join(self.weight_path, 'conv_bias_layer' + str(weight_index + 1) + '.csv')
-            print 'Loading biases from file: ' + bias_trained_path
+            print('Loading biases from file: ' + bias_trained_path)
             bias_trained = np.genfromtxt(bias_trained_path, delimiter = ',', dtype = np.float32)
             for i in range(bias_shape[0]):
                 bias[i] = bias_trained[i]
@@ -119,7 +123,7 @@ class YOLO:
         if self.weight_path:
             weight = np.empty(weight_shape, dtype = np.float32)
             weight_trained_path = os.path.join(self.weight_path, 'connect_weight_layer' + str(weight_index + 1) + '.csv')
-            print 'Loading weights from file: ' + weight_trained_path
+            print('Loading weights from file: ' + weight_trained_path)
             weight_trained = np.genfromtxt(weight_trained_path, delimiter = ',', dtype = np.float32)
             for i in range(weight_shape[0]):
                 for j in range(weight_shape[1]):
@@ -127,7 +131,7 @@ class YOLO:
 
             bias = np.empty(bias_shape, dtype = 'float32')
             bias_trained_path = os.path.join(self.weight_path, 'connect_bias_layer' + str(weight_index + 1) + '.csv')
-            print 'Loading biases from file: ' + bias_trained_path
+            print('Loading biases from file: ' + bias_trained_path)
             bias_trained = np.genfromtxt(bias_trained_path, delimiter = ',', dtype = np.float32)
             for i in range(bias_shape[0]):
                 bias[i] = bias_trained[i]
@@ -170,7 +174,7 @@ class YOLO:
         predictions = self.session.run(self.output_layer, feed_dict = {self.input_layer: input, self.dropout_prob: 1})
 
         predictions = np.squeeze(predictions) # remove 1 from first dim, so not (1,1470)
-        classes = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+        classes = ["teddy", "ant", "airplane"]
         # A bit unclear what the 'l.n' is that they use here
         # https://github.com/pjreddie/darknet/blob/master/src/detection_layer.c#L236
         end_probs = self.num_classes*(self.S**2)
@@ -195,7 +199,7 @@ class YOLO:
             ret, frame = cap.read()
 
             if i >= start_frame:
-                print "processing frame " + str(i)
+                print("processing frame " + str(i))
                 frame_out, bounding_boxes = self.process_image(frame)
                 frame_window.append(bounding_boxes)
                 # number of con
@@ -245,7 +249,7 @@ class YOLO:
                 break
             else:
                 c_old = c
-        print c_old
+        print(c_old)
 
 def main():
     parser = argparse.ArgumentParser()

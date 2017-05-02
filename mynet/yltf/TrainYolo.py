@@ -29,7 +29,7 @@ from YOLO_mAP_Evaluation import * # mean average precision utils
 TRAIN_DROP_PROB = 0.8
 TEST_DROP_PROB = 1.0
 #ARBITRARY_STOP_LOADING_IMS_NUMBER_FOR_DEBUGGING = 5011
-NUM_VOC_IMAGES = 5011
+NUM_VOC_IMAGES = 10
 TRAIN_SET_SIZE = int( math.floor( NUM_VOC_IMAGES * 0.8 ))
 BATCH_SIZE = 1
 NUM_EPOCHS = 100
@@ -38,15 +38,15 @@ plot_bbox_centerpoints = False
 plot_im_bboxes = False # True
 getPickledData = True
 vocImagesPklFilename = 'VOC_AnnotatedImages.pkl'
-CLASSES = ["aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair", "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"]
+CLASSES = ["teddy", "ant", "airplane"]
 NUM_CLASSES = len(CLASSES)
 NUM_GRID = 7
 NUM_BOX = 2
 voc_data_path = '/Users/johnlambert/Documents/Stanford_2016-2017/CS_229/229CourseProject/YoloTensorFlow229/VOCdevkit_2012/'
 numVar = 5
 
-VAL_SET_SIZE = 501
-TEST_SET_SIZE = 502
+VAL_SET_SIZE = 1
+TEST_SET_SIZE = 1
 THRESH = 0.2
 #######################################################################
 
@@ -90,12 +90,13 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 	-	N/A
 	"""
 	detections = []
+
 	print('====> Evaluating: {0} at epoch {1} =====>' .format(splitType, epoch))
 	if splitType == 'val':
 		data_set_size = VAL_SET_SIZE
 	elif splitType == 'test':
 		data_set_size = TEST_SET_SIZE
-	for i in range( 500): #data_set_size ):
+	for i in range(data_set_size):
 		minibatchIms, minibatchGT = sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoints)
 		minibatchIms = np.expand_dims( minibatchIms, 0)
 
@@ -111,20 +112,22 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 		yoloNet.dropout_prob: TEST_DROP_PROB, yoloNet.gt_boxes_j0 : gt_boxes_j0 }
 
 		class_probs_giv_obj,confidences,boxes, lossVal = sess.run( [yoloNet.class_probs,yoloNet.confidences,yoloNet.bboxes, yoloNet.loss],feed_dict=feed )
-		print('Loss in {0} split at epoch {1} , iter {2} : {3}' .format(splitType, epoch, i, lossVal))
+		print('Loss in {0} split at epoch {1} , iter {2} : {3} boxes: {4}' .format(splitType, epoch, i, lossVal, boxes))
 		# NOW PROCESS THE PREDICTIONS HERE
 		boxes = np.reshape(boxes, [NUM_GRID*NUM_GRID,NUM_BOX,4] )
 		boxes = unnormalizeBoxes(boxes, minibatchIms)
 		gt_boxes_j0 = unnormalizeGTBoxes(gt_boxes_j0,minibatchIms)
 		#boxes = convertWH_to_xMax_yMax( boxes )
-		class_probs = np.zeros((NUM_GRID*NUM_GRID,NUM_BOX,NUM_CLASSES))
+		class_probs = np.zeros((NUM_GRID*NUM_GRID, NUM_BOX, NUM_CLASSES))
 		# We use a law of probability: prob(class) = prob(class|object) * prob(object)
 														# 49 x 20 			49 x 2
 		for i in range(NUM_BOX):
 			for j in range(NUM_CLASSES):
 				class_probs[:,i,j] = np.multiply(class_probs_giv_obj[:,j],confidences[:,i])
+				print("class probs: ", class_probs[:, i, j])
 
-		class_probs = np.reshape( class_probs, [-1,20] )
+		#class_probs = np.reshape( class_probs, [-1,20] )
+		class_probs = np.reshape( class_probs, [-1, NUM_CLASSES] )
 		confidences = np.reshape( confidences, [-1,1] )
 		boxes = np.reshape( boxes, [-1,4] )
 
@@ -244,13 +247,15 @@ def unnormalizeGTBoxes(boxes,im):
 
 
 if __name__ == '__main__':
-
-	checkpoint_path = '/Users/johnlambert/Documents/Stanford_2016-2017/CS_229/229CourseProject/YoloTensorFlow229/yolo.ckpt'
+	num_of_epoch = 5
+	pretrained = True
+	checkpoint_path = '/Volumes/Data/projects/nautilusnet/mynet/yltf/ckpt/'
 
 	best_val_mAP = -1 * float('inf')
 	# annotatedImages = getData(getPickledData,vocImagesPklFilename)
-	annotatedImages = getData(False,vocImagesPklFilename)
+	annotatedImages = getData(False, vocImagesPklFilename)
 	trainData, valData, testData = separateDataSets(annotatedImages)
+	#print("Training data size: ", trainData, ", Validation size: ", valData, ", Testing size: ", testData)
 	if plot_im_bboxes == True:
 		plotGroundTruth(annotatedImages)
 	yoloNet = YOLO_TrainingNetwork( use_pretrained_weights = False)
@@ -264,13 +269,18 @@ if __name__ == '__main__':
 
 	saver = tf.train.Saver() # {'beta2_power':beta2_power} )
 	with tf.Session() as sess:
-		sess.run(tf.initialize_all_variables())
-		saver.restore(sess, checkpoint_path)
-		for epoch in range(20):#NUM_EPOCHS):
+		# sess.run(tf.initialize_all_variables())
+		sess.run(tf.global_variables_initializer())
+		if pretrained:
+			saver.restore(sess, tf.train.latest_checkpoint(checkpoint_path))
+			#saver.restore(sess, checkpoint_path)
+		for epoch in range(num_of_epoch):#NUM_EPOCHS):
 			print('====> Starting Epoch {0} =====>' .format(epoch))
-			for step in range( 1): # numItersPerEpoch):
-				runTrainStep(yoloNet, annotatedImages ,sess, step)
-			runEvalStep( 'val', yoloNet, annotatedImages ,sess, epoch, saver, best_val_mAP)
+			for step in range(5): # numItersPerEpoch):
+				# runTrainStep(yoloNet, annotatedImages ,sess, step)
+				runTrainStep(yoloNet, trainData ,sess, step)
+			runEvalStep( 'val', yoloNet, valData ,sess, epoch, saver, best_val_mAP)
 		# After all training complete
-		saver.restore(sess, './YOLO_Trained.weights' )
-		runEvalStep( 'test', yoloNet, annotatedImages ,sess, epoch, None, None)
+		#saver.restore(sess, './YOLO_Trained.weights' )
+		saver.save(sess, checkpoint_path + "yolo.ckpt")
+		runEvalStep( 'test', yoloNet, testData, sess, epoch, None, None)
