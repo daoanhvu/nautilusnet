@@ -143,7 +143,7 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   pred_boxes_j1 = tf.multiply( pred_boxes_j1 , gt_conf ) # multiply by 1s or 0s
   # NOW the predictions in wrong cells are zeroed out
   j0_coord_loss = tf.reduce_sum(tf.square(pred_boxes_j0 - gt_boxes_j0), reduction_indices=[1] )
-  print("GROUND TRUTH BOXES: " , gt_boxes_j0)
+  # print("GROUND TRUTH BOXES: " , gt_boxes_j0)
   squared_gt_boxes_j0 = square_wh(gt_boxes_j0)
   squared_pred_boxes_j0 = square_wh(pred_boxes_j0)
   squared_pred_boxes_j1 = square_wh(pred_boxes_j1)

@@ -32,7 +32,7 @@ TEST_DROP_PROB = 1.0
 NUM_VOC_IMAGES = 10
 TRAIN_SET_SIZE = int( math.floor( NUM_VOC_IMAGES * 0.8 ))
 BATCH_SIZE = 1
-NUM_EPOCHS = 100
+NUM_EPOCHS = 2
 plot_yolo_grid_cells = False
 plot_bbox_centerpoints = False
 plot_im_bboxes = False # True
@@ -247,7 +247,6 @@ def unnormalizeGTBoxes(boxes,im):
 
 
 if __name__ == '__main__':
-	num_of_epoch = 5
 	pretrained = True
 	checkpoint_path = '/Volumes/Data/projects/nautilusnet/mynet/yltf/ckpt/'
 
@@ -274,7 +273,7 @@ if __name__ == '__main__':
 		if pretrained:
 			saver.restore(sess, tf.train.latest_checkpoint(checkpoint_path))
 			#saver.restore(sess, checkpoint_path)
-		for epoch in range(num_of_epoch):#NUM_EPOCHS):
+		for epoch in range(NUM_EPOCHS):
 			print('====> Starting Epoch {0} =====>' .format(epoch))
 			for step in range(5): # numItersPerEpoch):
 				# runTrainStep(yoloNet, annotatedImages ,sess, step)

@@ -177,11 +177,13 @@ class YOLO:
         classes = ["teddy", "ant", "airplane"]
         # A bit unclear what the 'l.n' is that they use here
         # https://github.com/pjreddie/darknet/blob/master/src/detection_layer.c#L236
+        # Dao Anh Vu: l.n is B in the paper
         end_probs = self.num_classes*(self.S**2)
         end_confidences = end_probs + self.B*(self.S**2)
         probs = np.reshape( predictions[0:end_probs], [self.S,self.S,self.num_classes] )
         confidences = np.reshape( predictions[end_probs:end_confidences], [self.S,self.S,self.B])
-        bboxes = np.reshape( predictions[end_confidences:], [self.S, self.S, self.B, 4] )
+        # bboxes = np.reshape( predictions[end_confidences:], [self.S, self.S, self.B, 4] )
+        bboxes = np.reshape( predictions[end_confidences:], [self.S, self.S, self.num_classes + self.B, 4] )
 
         img_out = img.copy()
         return plot_detections_on_im(img_out, probs, confidences, bboxes, classes)

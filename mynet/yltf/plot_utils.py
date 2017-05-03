@@ -6,6 +6,7 @@
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import tensorflow as tf
 from matplotlib.legend_handler import HandlerLine2D
 import matplotlib.patches as patches
 import cv2
@@ -18,21 +19,24 @@ class bounding_box:
         self.h = h
         self.category = category
 
-def plot_detections_on_im( im , probs_given_obj , prob_obj , bboxes, classes, thresh = 0.2 ):
+def plot_detections_on_im( sess, im , probs_given_obj , prob_obj , bboxes, classes, thresh = 0.2 ):
     S = 7
     B = 2
-    num_classes = 20
-    probs = np.zeros((S,S,B,num_classes))
+    num_classes = len(classes)
+    probs = np.zeros((S, S, B, num_classes), dtype=np.float32)
     bounding_boxes = []
     # We use a law of probability: prob(class) = prob(class|object) * prob(object)
     for i in range(B):
         for j in range(num_classes):
-            probs[:,:,i,j] = np.multiply(probs_given_obj[:,:,j],prob_obj[:,:,i])
+            val = np.multiply(probs_given_obj[:,:,j], prob_obj[:,:,i])
+            probs[:, :, i, j] = sess.run(val)
+            # probs[:,:,i,j] = np.multiply(probs_given_obj[:,:,j], prob_obj[:,:,i])
     for row in range(S):
         for col in range(S):
             for boxIdx in range(B):
                 score = np.amax( probs[row,col,boxIdx,:] )
                 class_name = classes[np.argmax(probs[row,col,boxIdx,:])]
+                print("Class: ", class_name, ", score: ", score)
                 if score > thresh:
                     imHeight = im.shape[0]
                     imWidth = im.shape[1]
@@ -46,7 +50,7 @@ def plot_detections_on_im( im , probs_given_obj , prob_obj , bboxes, classes, th
                     bot = min( y + h/2., imHeight-1 )
                     cv2.rectangle(im, (int(left), int(top)), (int(right), int(bot)), (0, 255, 255), 2)
                     cv2.putText(im, class_name, (int(left), int(top)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0), 2);
-
+                    print("Class: ", class_name, ": BBox: ", left, ", ", top, ", ", right, ", ", bot)
                     if class_name == 'person':
                         bounding_boxes.append(bounding_box(x, y, w, h, class_name))
     return im, bounding_boxes

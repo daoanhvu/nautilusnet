@@ -215,3 +215,17 @@ class YOLO_TrainingNetwork:
             return tf.maximum(input_layer, tf.scalar_mul(0.1, input_layer))
         else:
             return input_layer
+
+    def inference(self, sess, img):
+        predictions = sess.run(self.output_layer, feed_dict = {self.input_layer: img, self.dropout_prob: 1})
+
+
+        class_probs = predictions[:, START_IDX_PROBS: END_IDX_PROBS ]
+        confidences = predictions[:, START_IDX_CONFIDENCES: END_IDX_CONFIDENCES ]
+        bboxes = predictions[:, START_IDX_BBOXES : END_IDX_BBOXES]
+
+        class_probs = tf.reshape(class_probs,shape=[NUM_GRID, NUM_GRID, NUM_CLASSES])
+        confidences = tf.reshape(confidences,shape=[NUM_GRID, NUM_GRID, self.B])
+        # bboxes = tf.reshape(bboxes, shape=[NUM_GRID*NUM_GRID,2*4])
+        bboxes = tf.reshape(bboxes, shape=[NUM_GRID*NUM_GRID, 2, 4])
+        return class_probs, confidences, bboxes
