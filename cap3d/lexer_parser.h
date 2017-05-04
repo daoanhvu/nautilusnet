@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 //define token codes
-#define CODE_PLY 			        1
+#define CODE_PLY 			  1
 #define CODE_PROPERTY 	      2
 #define CODE_NUMBER 		      3
 #define CODE_COORD_X 	        4
@@ -25,15 +25,19 @@
 #define CODE_UNIT32	          17
 #define CODE_UNIT8	          18
 
+#define CODE_RED	          19
+#define CODE_GREEN	          20
+#define CODE_BLUE	          21
+
 //Codes for config file
-#define CODE_EQUAL_SIGN	19
-#define CODE_LIGHT_POS1	20
-#define CODE_LIGHT_POS2	21
-#define CODE_BACKGROUND	22
-#define CODE_SCALE	         23
-#define CODE_WINDOW_WIDTH	   24
-#define CODE_WINDOW_HEIGHT	 25
-#define CODE_OUTPUT_FOLDER	 26
+#define CODE_EQUAL_SIGN		22
+#define CODE_LIGHT_POS1		23
+#define CODE_LIGHT_POS2		24
+#define CODE_BACKGROUND		25
+#define CODE_SCALE	        26
+#define CODE_WINDOW_WIDTH	27
+#define CODE_WINDOW_HEIGHT	28
+#define CODE_OUTPUT_FOLDER	29
 
 using namespace std;
 
