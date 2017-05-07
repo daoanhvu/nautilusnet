@@ -112,7 +112,7 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 		yoloNet.dropout_prob: TEST_DROP_PROB, yoloNet.gt_boxes_j0 : gt_boxes_j0 }
 
 		class_probs_giv_obj,confidences,boxes, lossVal = sess.run( [yoloNet.class_probs,yoloNet.confidences,yoloNet.bboxes, yoloNet.loss],feed_dict=feed )
-		print('Loss in {0} split at epoch {1} , iter {2} : {3} boxes: {4}' .format(splitType, epoch, i, lossVal, boxes))
+		print('Loss in {0} split at epoch {1} , iter {2} : {3}' .format(splitType, epoch, i, lossVal))
 		# NOW PROCESS THE PREDICTIONS HERE
 		boxes = np.reshape(boxes, [NUM_GRID*NUM_GRID,NUM_BOX,4] )
 		boxes = unnormalizeBoxes(boxes, minibatchIms)
@@ -247,7 +247,7 @@ def unnormalizeGTBoxes(boxes,im):
 
 
 if __name__ == '__main__':
-	pretrained = True
+	pretrained = False
 	checkpoint_path = '/Volumes/Data/projects/nautilusnet/mynet/yltf/ckpt/'
 
 	best_val_mAP = -1 * float('inf')
@@ -258,7 +258,7 @@ if __name__ == '__main__':
 	if plot_im_bboxes == True:
 		plotGroundTruth(annotatedImages)
 	yoloNet = YOLO_TrainingNetwork( use_pretrained_weights = False)
-	numItersPerEpoch = TRAIN_SET_SIZE / BATCH_SIZE
+	numItersPerEpoch = TRAIN_SET_SIZE // BATCH_SIZE
 
 	# t = 1
 	# beta1 = tf.convert_to_tensor(0.9)
@@ -275,11 +275,12 @@ if __name__ == '__main__':
 			#saver.restore(sess, checkpoint_path)
 		for epoch in range(NUM_EPOCHS):
 			print('====> Starting Epoch {0} =====>' .format(epoch))
-			for step in range(5): # numItersPerEpoch):
+			for step in range(numItersPerEpoch):
 				# runTrainStep(yoloNet, annotatedImages ,sess, step)
 				runTrainStep(yoloNet, trainData ,sess, step)
 			runEvalStep( 'val', yoloNet, valData ,sess, epoch, saver, best_val_mAP)
 		# After all training complete
+		print( "Output tensor: ", yoloNet.output_layer )
 		#saver.restore(sess, './YOLO_Trained.weights' )
 		saver.save(sess, checkpoint_path + "yolo.ckpt")
 		runEvalStep( 'test', yoloNet, testData, sess, epoch, None, None)

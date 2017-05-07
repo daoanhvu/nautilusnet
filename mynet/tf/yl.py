@@ -44,9 +44,6 @@ def solve():
 
     #saver1.restore(sess, self.pretrain_path)
 
-
-
-
 def loss():
     class_loss = tf.constant(0, tf.float32)
     object_loss = tf.constant(0, tf.float32)

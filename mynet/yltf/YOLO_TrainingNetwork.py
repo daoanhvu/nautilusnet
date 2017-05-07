@@ -86,7 +86,9 @@ class YOLO_TrainingNetwork:
         connected_layer29 = self.create_connected_layer(connected_layer28, 4096, True, 29, 'ConnectedLayer29')
 
         dropout_layer30 = self.create_dropout_layer(connected_layer29, self.dropout_prob)
-        connected_layer31 = self.create_connected_layer(dropout_layer30, 1470, False, 31, 'ConnectedLayer31')
+        # connected_layer31 = self.create_connected_layer(dropout_layer30, 1470, False, 31, 'ConnectedLayer31')
+        d0_layer31 = 7 * 7 * (self.B * 5 + NUM_CLASSES) # = 637
+        connected_layer31 = self.create_connected_layer(dropout_layer30, d0_layer31, False, 31, 'ConnectedLayer31')
         self.output_layer = connected_layer31
 
         self.class_probs = self.output_layer[:, START_IDX_PROBS: END_IDX_PROBS ]

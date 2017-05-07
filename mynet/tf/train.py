@@ -27,7 +27,7 @@ def main():
     ds = TextDataSet(common_params, dataset_params)
     net = YOLO(common_params, net_params)
     solver = YoloSolver(ds, net, common_params, solver_params)
-    solver.solve()
+    solver.solve(restore=True)
 
 if __name__=="__main__":
     main()
