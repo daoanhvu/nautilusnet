@@ -64,14 +64,15 @@ class YoloSolver(Solver):
     tf.summary.scalar('loss', self.total_loss)
     self.train_op = self._train()
 
-  def solve(self):
+  def solve(self, restore = True):
 
     print("=================================")
     #print(self.net.pretrained_collection)
     print("=================================")
-    saver1 = tf.train.Saver(self.net.pretrained_collection, write_version=tf.train.SaverDef.V2)
+    # saver1 = tf.train.Saver(self.net.pretrained_collection, write_version=tf.train.SaverDef.V2)
     #saver1 = tf.train.Saver(self.net.trainable_collection)
-    saver2 = tf.train.Saver(self.net.trainable_collection, write_version=tf.train.SaverDef.V2)
+    # saver2 = tf.train.Saver(self.net.trainable_collection, write_version=tf.train.SaverDef.V2)
+    saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
 
     init =  tf.global_variables_initializer()
 
@@ -80,34 +81,39 @@ class YoloSolver(Solver):
     sess = tf.Session()
 
     sess.run(init)
-    #saver1.restore(sess, self.pretrain_path)
 
+    #Comment out this line if you want to train from begining
+    if restore:
+        # saver1.restore(sess, self.pretrain_path)
+        saver.restore(sess, tf.train.latest_checkpoint(self.pretrain_path))
 
     summary_writer = tf.summary.FileWriter(self.train_dir, sess.graph)
 
     for step in range(self.max_iterators):
-      start_time = time.time()
-      np_images, np_labels, np_objects_num = self.dataset.batch()
+        start_time = time.time()
+        np_images, np_labels, np_objects_num = self.dataset.batch()
 
-      _, loss_value, nilboy = sess.run([self.train_op, self.total_loss, self.nilboy], feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
-      #loss_value, nilboy = sess.run([self.total_loss, self.nilboy], feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
+        _, loss_value, nilboy = sess.run([self.train_op, self.total_loss, self.nilboy], feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
+        #loss_value, nilboy = sess.run([self.total_loss, self.nilboy], feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
 
-      duration = time.time() - start_time
+        duration = time.time() - start_time
 
-      assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
+        assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
 
-      if step % 10 == 0:
-        num_examples_per_step = self.dataset.batch_size
-        examples_per_sec = num_examples_per_step / duration
-        sec_per_batch = float(duration)
-
-        format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
-                      'sec/batch)')
-        print (format_str % (datetime.now(), step, loss_value, examples_per_sec, sec_per_batch))
-        sys.stdout.flush()
-      if step % 100 == 0:
-        summary_str = sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
-        summary_writer.add_summary(summary_str, step)
-      if step % 5000 == 0:
-        saver2.save(sess, self.train_dir + '/model.ckpt', global_step=step)
+        if step % 10 == 0:
+            num_examples_per_step = self.dataset.batch_size
+            examples_per_sec = num_examples_per_step / duration
+            sec_per_batch = float(duration)
+            format_str = ('%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
+                          'sec/batch)')
+            print (format_str % (datetime.now(), step, loss_value, examples_per_sec, sec_per_batch))
+            sys.stdout.flush()
+        if step % 100 == 0:
+            summary_str = sess.run(summary_op, feed_dict={self.images: np_images, self.labels: np_labels, self.objects_num: np_objects_num})
+            summary_writer.add_summary(summary_str, step)
+        if step == 20:
+            saver.save(sess, self.train_dir + '/model.ckpt', global_step=step)
+        if step % 5000 == 0:
+            # saver2.save(sess, self.train_dir + '/model.ckpt', global_step=step)
+            saver.save(sess, self.train_dir + '/model.ckpt', global_step=step)
     sess.close()

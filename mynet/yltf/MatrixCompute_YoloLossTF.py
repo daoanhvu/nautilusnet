@@ -213,4 +213,4 @@ def computeYoloLossTF( pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes,
   class_loss = tf.reduce_sum(class_loss, reduction_indices=[0]) # along all boxes
   #############################################################################
 
-  return box_loss +class_loss #+ noobj_loss#obj_loss # +
+  return box_loss + class_loss #+ noobj_loss#obj_loss # +

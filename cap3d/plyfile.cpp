@@ -339,6 +339,11 @@ int PlyFile::load(const char *filename) {
 	return 0;
 }
 
+//TODO: Not implemented yet
+int PlyFile::save(const char *filename) {
+	return 0;
+}
+
 void PlyFile::scale(float scale) {
 	unsigned int nc = vertices.size();
 	unsigned int i;

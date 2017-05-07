@@ -96,6 +96,9 @@ class PlyFile {
 			Load without scaling
 		*/
 		int load(const char *filename);
+
+		int save(const char *filename);
+
 		void scale(float scale);
 		void scaleToFit(float value);
 		int add_normal_vectors();
