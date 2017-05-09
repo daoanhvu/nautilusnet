@@ -52,11 +52,10 @@ float speed = 3.0f; // 3 units / second
 float mouseSpeed = 0.005f;
 
 //const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
-const std::string gOutFolder = "/home/davu/projects/nautilusnet/data/";
-const std::string gTextDatasetFile = gOutFolder + "textdata.txt";
+std::string gTextDatasetFile; //= gOutFolder + "textdata.txt";
 
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
-void storeFramebuffer(std::string filename, int ww, int wh);
+void storeFramebuffer(const Configuration &config, std::string filename, int clsIdx, int ww, int wh);
 
 int main(int argc, char* args[]) {
 	PlyFile f;
@@ -72,8 +71,9 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
-	if(argc >= 3 ) {
+	if(argc >= 4) {
 		strcpy(class_name, args[2]);
+		class_index = std::stoi(args[3]);
 	}
 
 	//Load config file - hardcode filename here!
@@ -81,6 +81,8 @@ int main(int argc, char* args[]) {
 		cout << "Could not read configuration file!" << endl;
 		return 1;
 	}
+
+	gTextDatasetFile = config.output_folder + "textdata.txt";
 
 	cout << "window_width: " << config.window_width << endl;
 	cout << "window_height: " << config.window_height << endl;
@@ -92,6 +94,7 @@ int main(int argc, char* args[]) {
 	}
 	cout << "lightpos_1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
 	cout << "lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
+	cout << "Output folder: " << config.output_folder << endl;
 	// return 0;
 
 	if(f.load(args[1]) != OK) {
@@ -113,6 +116,15 @@ int main(int argc, char* args[]) {
 											(bbox.miny + bbox.maxy)/2.0f,
 										(bbox.minz + bbox.maxz)/2.0f);
 	// cout << "Center of object: " << object_center << endl;
+
+	//TODO: Do we need to do this???
+	f.translate(-object_center.x, -object_center.y, -object_center.z);
+	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	if(config.camera_positions.size() < 1) {
+		cout << "At least one camera position defined." << endl;
+		return -1;
+	}
 
 	// Initialise GLFW
 	if( !glfwInit() )	{
@@ -250,7 +262,8 @@ int main(int argc, char* args[]) {
 	double key_press_time;
 	double last_key_press_time = lastTime;
 
-	glm::vec3 cam_pos = glm::vec3(0.0f, 0.0f, 7.0f);
+	//glm::vec3 cam_pos = glm::vec3(0.0f, 7.0f, 0.0f);
+	glm::vec3 cam_pos = config.camera_positions[0];
 	int cam_pos_count = config.camera_positions.size();
 	int cam_pos_i = 0;
 
@@ -287,7 +300,7 @@ int main(int argc, char* args[]) {
 		std::ostringstream outfile_name_sstream;
 		if(should_store_frame_buffer) {
 			cam_pos = config.camera_positions[cam_pos_i];
-			outfile_name_sstream << "pose_" << cam_pos_i << ".jpg";
+			outfile_name_sstream << class_name <<"_pose_" << cam_pos_i << ".jpg";
 		}
 
 		//computeMatrices(window, object_center);
@@ -394,7 +407,7 @@ int main(int argc, char* args[]) {
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
 			std::string out_filename = outfile_name_sstream.str();
-			storeFramebuffer(out_filename, config.window_width, config.window_height);
+			storeFramebuffer(config, out_filename, class_index, config.window_width, config.window_height);
 			cam_pos_i++;
 			if(cam_pos_i >= cam_pos_count)
 				should_store_frame_buffer = false;
@@ -498,7 +511,12 @@ void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
 	lastTime = currentTime;
 }
 
-void storeFramebuffer(std::string filename, int ww, int wh) {
+/**
+	Params:
+		int ww [IN] windows width
+		int wh [IN] windows height
+*/
+void storeFramebuffer(const Configuration &config, std::string filename, int clsIdx, int ww, int wh) {
 	int i, j;
 	int k;
 	cv::Mat img(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -521,10 +539,11 @@ void storeFramebuffer(std::string filename, int ww, int wh) {
 	cv::flip(img, flipped, 0);
 	detectBoundingBox(flipped, img.at<cv::Vec3b>(0,0), bbox);
 	cout << "Bouding Box: " << bbox.x << ", " << bbox.y << ", " << bbox.width << ", " << bbox.height << endl;
-	txtf << gOutFolder << filename << " " << bbox.x << " " << bbox.y << " " << (bbox.x + bbox.width) << " " << (bbox.y + bbox.height) << " " << 0 << endl;
+	//txtf << gOutFolder << filename << " " << bbox.x << " " << bbox.y << " " << (bbox.x + bbox.width) << " " << (bbox.y + bbox.height) << " " << clsIdx << endl;
+	txtf << config.output_folder << filename << " " << bbox.x << " " << bbox.y << " " << (bbox.x + bbox.width) << " " << (bbox.y + bbox.height) << " " << clsIdx << endl;
 	txtf.close();
-	cv::rectangle(flipped, bbox, bbcolor, 1, cv::LINE_8, 0 );
-	std::string outImageName = gOutFolder + filename;
+	//cv::rectangle(flipped, bbox, bbcolor, 1, cv::LINE_8, 0 );
+	std::string outImageName = config.output_folder + filename;
 	imwrite(outImageName, flipped);
 	// imwrite(filename, flipped);
 }

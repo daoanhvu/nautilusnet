@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 
 //define token codes
-#define CODE_PLY 			  1
+#define CODE_PLY 			  			1
 #define CODE_PROPERTY 	      2
 #define CODE_NUMBER 		      3
 #define CODE_COORD_X 	        4
@@ -25,9 +25,9 @@
 #define CODE_UNIT32	          17
 #define CODE_UNIT8	          18
 
-#define CODE_RED	          19
+#define CODE_RED	          	19
 #define CODE_GREEN	          20
-#define CODE_BLUE	          21
+#define CODE_BLUE	          	21
 
 //Codes for config file
 #define CODE_EQUAL_SIGN		22
@@ -38,6 +38,7 @@
 #define CODE_WINDOW_WIDTH	27
 #define CODE_WINDOW_HEIGHT	28
 #define CODE_OUTPUT_FOLDER	29
+#define CODE_STRING				30
 
 using namespace std;
 
@@ -46,6 +47,7 @@ typedef struct tagTK {
 
 		//In case of code = CODE_NUMBER
 		float value;
+		std::string str;
 
 		tagTK() {
 			code = 0;
@@ -69,6 +71,7 @@ typedef struct tagConfig {
   int window_width;
   int window_height;
   std::vector<glm::vec3> camera_positions;
+	std::string output_folder;
 } Configuration;
 
 

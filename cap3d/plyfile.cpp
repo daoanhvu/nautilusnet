@@ -344,6 +344,22 @@ int PlyFile::save(const char *filename) {
 	return 0;
 }
 
+void PlyFile::translate(float vx, float vy, float vz) {
+	unsigned int nc = vertices.size();
+	unsigned int i;
+
+	for(i=0; i<nc; i++) {
+		vertices[i].v[0] += vx;
+		vertices[i].v[1] += vy;
+		vertices[i].v[2] += vz;
+	}
+}
+
+//TODO: Not implemented yet
+void PlyFile::rotate(float rad, float vx, float vy, float vz) {
+
+}
+
 void PlyFile::scale(float scale) {
 	unsigned int nc = vertices.size();
 	unsigned int i;

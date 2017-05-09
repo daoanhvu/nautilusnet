@@ -42,7 +42,7 @@ CLASSES = ["teddy", "ant", "airplane"]
 NUM_CLASSES = len(CLASSES)
 NUM_GRID = 7
 NUM_BOX = 2
-voc_data_path = '/Users/johnlambert/Documents/Stanford_2016-2017/CS_229/229CourseProject/YoloTensorFlow229/VOCdevkit_2012/'
+voc_data_path = ''
 numVar = 5
 
 VAL_SET_SIZE = 1
@@ -211,7 +211,7 @@ def unnormalizeBoxes(boxes, im):
 	return boxes
 
 
-def unnormalizeGTBoxes(boxes,im):
+def unnormalizeGTBoxes(boxes, im):
 	im = np.squeeze( im )
 	imWidth = im.shape[1]
 	imHeight = im.shape[0]

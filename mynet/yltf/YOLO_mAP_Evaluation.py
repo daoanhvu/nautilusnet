@@ -83,10 +83,10 @@ def intersection(BBGT,bb):
 	https://github.com/rbgirshick/py-faster-rcnn/blob/master/lib/datasets/voc_eval.py#L168
 	"""
 	#print BBGT[ 0], bb[0]
-	ixmin = np.maximum(BBGT[ 0], bb[0])
-	iymin = np.maximum(BBGT[ 1], bb[1])
-	ixmax = np.minimum(BBGT[ 2], bb[2])
-	iymax = np.minimum(BBGT[ 3], bb[3])
+	ixmin = np.maximum(BBGT[0], bb[0])
+	iymin = np.maximum(BBGT[1], bb[1])
+	ixmax = np.minimum(BBGT[2], bb[2])
+	iymax = np.minimum(BBGT[3], bb[3])
 	iw = np.maximum(ixmax - ixmin , 0.)
 	ih = np.maximum(iymax - iymin , 0.)
 	inters = iw * ih

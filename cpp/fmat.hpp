@@ -14,12 +14,19 @@ using namespace std;
 
 namespace gm {
 	template <typename T>
+	struct Tensor {
+			T *data;
+			short shape[16];
+			short len;
+	};
+
+	template <typename T>
 	struct FMat {
 	private:
 		T **data;
 		int row;
 		int column;
-		
+
 	public:
 		FMat() {
 			data = NULL;
@@ -36,7 +43,7 @@ namespace gm {
 			column = col;
 		}
 		*/
-		
+
 		FMat(const FMat<T> &m) {
 			//cout << "Copying constructor" << endl;
             data = new T*[m.row];
@@ -47,7 +54,7 @@ namespace gm {
 			row = m.row;
 			column = m.column;
 		}
-        
+
         FMat(int r, int col) {
 			data = new T*[r];
             for(int i=0; i<r; i++) {
@@ -56,7 +63,7 @@ namespace gm {
 			row = r;
 			column = col;
 		}
-		
+
 		FMat(T *value, int r, int col) {
 			data = new T*[r];
             for(int i=0; i<r; i++) {
@@ -77,7 +84,7 @@ namespace gm {
 				delete[] data;
 			}
 		}
-		
+
 		void release() {
 			//cout << "FMat-Destructor: started - data address:" << (void*)data << endl;
 			if(data != NULL) {
@@ -89,19 +96,19 @@ namespace gm {
 				data = NULL;
 			}
 		}
-		
+
 		void init(int r, int col) {
 			if(r == row && column == col) {
 				return;
 			}
-			
+
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
 					delete[] data[i];
 				}
 				delete[] data;
 			}
-			
+
 			data = new T*[r];
             for(int i=0; i<r; i++) {
                 data[i] = new T[col];
@@ -109,7 +116,7 @@ namespace gm {
 			row = r;
 			column = col;
 		}
-		
+
 		void init(int r, int col, T defaultValue) {
 			int i, j;
 			if(r == row && column == col) {
@@ -119,14 +126,14 @@ namespace gm {
 					}
 				}
 			}
-			
+
 			if(data != NULL) {
 				for(int i=0; i<row; i++) {
 					delete[] data[i];
 				}
 				delete[] data;
 			}
-			
+
 			data = new T*[r];
             for(int i=0; i<r; i++) {
                 data[i] = new T[col];
@@ -134,42 +141,42 @@ namespace gm {
 					data[i][j] = defaultValue;
 				}
             }
-			
+
 			row = r;
 			column = col;
 		}
-		
+
 		void setValueToColumn(int col, T value) {
             for(int i=0; i<row; i++) {
                 data[i][col] = value;
             }
 		}
-		
+
 		void setValues(const T *d) {
             if(data == NULL) {
 				throw "matrix's data is NULL";
 			}
-			
+
 			for(int i=0; i<row; i++) {
 				memcpy(data[i], d + (i*column), column * sizeof(T));
 			}
         }
-		
+
 		void setValues(const T *d, int r, int l, int offs=0) {
             if(data == NULL) {
 				throw "matrix's data is NULL";
 			}
-			
-			
+
+
 			memcpy(data[r] + offs, d, l * sizeof(T));
-			
+
         }
-		
+
 		void setAt(int r, int col, T d) {
             if( (data == NULL) || (r<0 || r>=row) || (col <0 || col >= column) ) {
 				throw "matrix's data is NULL OR index is out of bound!";
 			}
-			
+
 			data[r][col] = d;
         }
 
@@ -181,11 +188,11 @@ namespace gm {
 				}
 			}
         }
-		
+
 		int getRow(){ return row; }
-		
+
 		int getColumn() { return column; };
-		
+
 		ostream& print(ostream &o) {
 			int i, j;
             cout << "[" << row << "x" << column << "]" << endl;
@@ -195,15 +202,15 @@ namespace gm {
 				}
 				o << endl;
 			}
-			
+
 			return o;
 		}
-		
+
 		ostream& printSize(ostream &o) const {
             cout << "[" << row << "x" << column << "]";
 			return o;
 		}
-		
+
 		friend ostream& operator <<(ostream &o, const FMat &m) {
 			int i, j;
 			for(i=0; i<m.row; i++) {
@@ -212,11 +219,11 @@ namespace gm {
 				}
 				o << "\n";
 			}
-			
+
 			return o;
 		}
-		
-		
+
+
 		FMat mulElement(const FMat<T> &m2) {
 			int i, j;
 			FMat<T> result(row, column);
@@ -228,7 +235,7 @@ namespace gm {
 
 			return result;
 		}
-		
+
 
 		void setIdentity() {
 			int i, j;
@@ -241,7 +248,7 @@ namespace gm {
 				}
 			}
 		}
-		
+
 		FMat<T> transpose() {
 			int i, j;
 			FMat<T> t(column, row);
@@ -268,19 +275,19 @@ namespace gm {
 			}
 			return t;
 		}
-        
+
         T* getRow(int index) const {
             return data[index];
         }
 
-		T* operator [](int index) { 
+		T* operator [](int index) {
 			return data[index];
 		}
-        
+
         T value(int r, int c) const {
             return data[r][c];
         }
-		
+
 		T sumRow(int idx) {
 			int c;
 			T s = (T)0;
@@ -289,7 +296,7 @@ namespace gm {
 			}
 			return s;
 		}
-		
+
 		T sumColumn(int idx) {
 			int r;
 			T s = (T)0;
@@ -298,7 +305,7 @@ namespace gm {
 			}
 			return s;
 		}
-		
+
 		T sum() {
 			int c, r;
 			T s = (T)0;
@@ -318,7 +325,7 @@ namespace gm {
 					r[i][j] = data[i][j] + value;
 				}
 			}
-			
+
 			return r;
 		}
 
@@ -330,23 +337,23 @@ namespace gm {
 					r[i][j] = data[i][j] - value;
 				}
 			}
-			
+
 			return r;
 		}
-		
+
 		FMat<T> operator +(const FMat<T> &m) {
 			int i, j;
 			if(this->row != m.row || this->column != m.column) {
 				throw "Indexes not match!";
 			}
-			
+
 			FMat<T> r(row, column);
 			for(i=0; i<row; i++) {
 				for(j=0; j<column; j++) {
 					r[i][j] = data[i][j] + m.value(i,j);
 				}
 			}
-			
+
 			return r;
 		}
 
@@ -355,17 +362,17 @@ namespace gm {
 			if(this->row != m.row || this->column != m.column) {
 				throw "Indexes not match!";
 			}
-			
+
 			FMat<T> r(row, column);
 			for(i=0; i<row; i++) {
 				for(j=0; j<column; j++) {
 					r[i][j] = data[i][j] - m.value(i,j);
 				}
 			}
-			
+
 			return r;
 		}
-		
+
 		FMat<T>& operator +=(const FMat<T> &m) {
 			int i, j;
 			if(this->row != m.row || this->column != m.column) {
@@ -377,7 +384,7 @@ namespace gm {
 					data[i][j] = data[i][j] + m.value(i,j);
 				}
 			}
-			
+
 			return *this;
 		}
 
@@ -393,7 +400,7 @@ namespace gm {
 					data[i] = new T[column];
 				}
 			}
-			
+
 			for(i=0; i<row; i++) {
 				//data[i]->copyFrom(m1.data[i]);
 				memcpy(data[i], m1.getRow(i), column * sizeof(T));
@@ -405,12 +412,12 @@ namespace gm {
 			if(column != m2.row) {
 				throw "Vec * FMat: Operands are not match!";
 			}
-			
+
 			FMat<T> result(row, m2.column);
 			int c, i, j;
 			int newSize = row * m2.column;
 			T s;
-			
+
 			i = 0;
 			for(i=0; i<row; i++) {
 				for(j=0; j<m2.column; j++) {
@@ -419,25 +426,25 @@ namespace gm {
                         //cout << data[i][c] << " * " << m2.value(c, j) << " = " << (data[i][c] * m2.value(c,j)) << endl;
                         s += data[i][c] * m2.value(c,j);
                     }
-					result[i][j] = s;				
+					result[i][j] = s;
 				}
 			}
-			
+
 			return result;
 		}
-		
+
         /**
             This matrix multiply to transpose m2
             params:
                 m2 a matrix
         */
-		FMat<T> mulToTranspose(const FMat<T> &m2) {			
+		FMat<T> mulToTranspose(const FMat<T> &m2) {
 			int i, j;
 			int c;
 			if(column != m2.column) {
 				throw "FMat * transpose(FMat): Operands are not match in dimensions!";
 			}
-			
+
 			FMat<T> result(row, m2.row);
 			T s;
 			for(i=0; i<row; i++) {
@@ -451,7 +458,7 @@ namespace gm {
 			}
 			return result;
 		}
-		
+
         /**
             Get transpose of this matrix and multiply to m2
             params:
@@ -475,7 +482,7 @@ namespace gm {
 			}
 			return result;
 		}
-		
+
 		friend FMat<T> operator *(T v, const FMat<T> &m2) {
 			FMat<T> result(m2.row, m2.column);
 			int i, j;
@@ -484,10 +491,10 @@ namespace gm {
 					result[i][j] = v * m2.value(i,j);
 				}
 			}
-			
+
 			return result;
 		}
-		
+
 		friend FMat<T> operator +(T v, const FMat<T> &m2) {
 			FMat<T> result(m2.row, m2.column);
 			int i, j;
@@ -496,7 +503,7 @@ namespace gm {
 					result[i][j] = v + m2.value(i,j);
 				}
 			}
-			
+
 			return result;
 		}
 	};

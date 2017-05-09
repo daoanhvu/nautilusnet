@@ -51,6 +51,13 @@ int parse_config_line(string line, vector<Token> &v) {
 		} else if(tk == "output_folder") {
 			Token t(CODE_OUTPUT_FOLDER);
 			v.push_back(t);
+			str >> tk; // get = sign
+			if(tk == "=") {
+				str >> tk; // the the path
+				Token t(CODE_STRING);
+				t.str = tk;
+				v.push_back(t);
+			}
 		}	else if(tk == "=") {
 			//Token t(CODE_EQUAL_SIGN);
 			//v.push_back(t);
@@ -102,7 +109,9 @@ int read_configuration(const char *filename, Configuration &config) {
       config.background[0] = tokens[1].value;
       config.background[1] = tokens[2].value;
       config.background[2] = tokens[3].value;
-    } else if( (tokens[0].code == CODE_NUMBER) && (tokens[1].code == CODE_NUMBER) ) {
+    } else if(tokens[0].code == CODE_OUTPUT_FOLDER) {
+			config.output_folder = tokens[1].str;
+		} else if( (tokens[0].code == CODE_NUMBER) && (tokens[1].code == CODE_NUMBER) ) {
       glm::vec3 pos = glm::vec3(tokens[0].value, tokens[1].value, tokens[2].value);
       config.camera_positions.push_back(pos);
     }

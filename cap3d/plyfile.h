@@ -99,7 +99,10 @@ class PlyFile {
 
 		int save(const char *filename);
 
+		void translate(float vx, float vy, float vz);
+		void rotate(float rad, float vx, float vy, float vz);
 		void scale(float scale);
+
 		void scaleToFit(float value);
 		int add_normal_vectors();
 
