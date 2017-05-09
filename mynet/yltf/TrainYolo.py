@@ -1,7 +1,7 @@
 # John Lambert, Matt Vilim, Konstantine Buhler
 # CS 229, Stanford University
 # December 15, 2016
-
+# Modified by Dao Anh Vu
 
 # TO-DO:
 # Verify Indicator Probabilities
@@ -22,7 +22,8 @@ import matplotlib.patches as patches
 from preprocess_data import *
 from YOLO_TrainingNetwork import YOLO_TrainingNetwork
 from YOLO_PlottingUtils import *
-from YOLO_DataUtils import *
+# from YOLO_DataUtils import *
+from Nautilus3D_Data import *
 from YOLO_mAP_Evaluation import * # mean average precision utils
 
 ####### HYPERPARAMETERS ###########################################
@@ -124,7 +125,7 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 		for i in range(NUM_BOX):
 			for j in range(NUM_CLASSES):
 				class_probs[:,i,j] = np.multiply(class_probs_giv_obj[:,j],confidences[:,i])
-				print("class probs: ", class_probs[:, i, j])
+				# print("class probs: ", class_probs[:, i, j])
 
 		#class_probs = np.reshape( class_probs, [-1,20] )
 		class_probs = np.reshape( class_probs, [-1, NUM_CLASSES] )
@@ -152,7 +153,7 @@ def runEvalStep( splitType, yoloNet, annotatedImages ,sess, epoch, saver, best_v
 		#print 'Shrunken gt_classes: ', gt_classes
 		gt_classes = np.argmax( gt_classes, axis = 1)
 		#print 'argmaxed gt_classes: ', gt_classes
-
+		print( 'Class: ', class_indices, ', confidences: ', confidences)
 		detections.append( { 'pred_classes':class_indices, 'confidences':confidences,\
 			'bboxes':boxes, 'gt_boxes_j0':gt_boxes_j0, 'gt_classes': gt_classes, 'im':minibatchIms   })
 
@@ -252,7 +253,9 @@ if __name__ == '__main__':
 
 	best_val_mAP = -1 * float('inf')
 	# annotatedImages = getData(getPickledData,vocImagesPklFilename)
-	annotatedImages = getData(False, vocImagesPklFilename)
+
+	# get data from Nautilus3D_Data
+	annotatedImages = getData("../../data/textdata.txt")
 	trainData, valData, testData = separateDataSets(annotatedImages)
 	#print("Training data size: ", trainData, ", Validation size: ", valData, ", Testing size: ", testData)
 	if plot_im_bboxes == True:

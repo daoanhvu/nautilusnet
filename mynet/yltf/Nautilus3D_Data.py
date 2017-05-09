@@ -15,7 +15,7 @@ PERCENT_TRAIN_SET = 0.8
 PERCENT_VAL_SET = 0.1
 PERCENT_TEST_SET = 0.1
 S = 7
-B = 2.0
+B = 2
 CLASSES = ["teddy", "ant", "airplane"]
 NUM_CLASSES = len(CLASSES)
 classnameToIdxDict = {}
@@ -30,16 +30,16 @@ CONTAINS_IMAGE_FLAG = 1
 
 class BBox:
 	def __init__(self, x, y, w, h, _cls):
-		self.left = x
-		self.top = y
-		self.right = x + w
-		self.bottom = y + h
-		self.cls = _cls
+		self.x_min = x
+		self.y_min = y
+		self.w = w
+		self.h = h
+		self.category = _cls
 
 class Image:
 	def __init__(self, imgpath):
-		self.path = imgpath
-		self.bboxes = [];
+		self.image_path = imgpath
+		self.bounding_boxes = [];
 
 
 def getData(textdatapath):
@@ -84,7 +84,7 @@ def getData(textdatapath):
 			h = bbs[i*5 + 3]
 			c = bbs[i*5 + 4]
 			bb = BBox(x, y, w, h, c)
-			img.bboxes.append(bb)
+			img.bounding_boxes.append(bb)
 
 		annotatedImages.append(img)
 
@@ -140,7 +140,8 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 		normalizedH = bbox.h * 1.0 / im.shape[0] # dividing by im height
 		gridCellRow = int(gridCellRow)
 		gridCellCol = int(gridCellCol)
-		classIdx = classnameToIdxDict[ bbox.category ] # convert string to int
+		# classIdx = classnameToIdxDict[ bbox.category ] # convert string to int
+		classIdx = int(bbox.category)
 		coverageMap = computeCoverageMap(im, bbox) # Returns 49x1 coverage map
 
   		# indicating if that grid cell contains any object
@@ -168,14 +169,9 @@ def sampleMinibatch(annotatedImages, plot_yolo_grid_cells, plot_bbox_centerpoint
 		else:
 			#print 'In Image %d, no more room in some grid cell for this bbox.' % (imNum)
 			pass
-	if plot_bbox_centerpoints == True:
-		plt.scatter(x_cent,y_cent)
-	if plot_bbox_centerpoints or plot_yolo_grid_cells:
-		plt.tight_layout()
-		plt.show()
-		plt.gcf().set_size_inches(15, 12)
 
 	minibatchIms = img
+	print("BOXES: ", gt_boxes_j0)
 	return minibatchIms, (gt_conf,gt_classes,ind_obj_i,gt_boxes_j0)
 
 def normXYToGrid(x_cent,y_cent,im):
