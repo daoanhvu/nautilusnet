@@ -7,7 +7,8 @@
 #include <vector>
 #include <camera.h>
 
-#include <plyfile.h>
+#include "reader.h"
+#include "model3d.h"
 #include <glrenderer.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -58,7 +59,8 @@ void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
 void storeFramebuffer(const Configuration &config, std::string filename, int clsIdx, int ww, int wh);
 
 int main(int argc, char* args[]) {
-	PlyFile f;
+	Reader f;
+	Model3D *model;
 	unsigned int buflen;
 	Configuration config;
 
@@ -97,18 +99,19 @@ int main(int argc, char* args[]) {
 	cout << "Output folder: " << config.output_folder << endl;
 	// return 0;
 
-	if(f.load(args[1]) != OK) {
+	if((model = f.load(args[1]) )== NULL) {
 		cout << "Could not load input file!" << endl;
+		delete model;
 		return 1;
 	}
 
-	f.scaleToFit(2.0f);
+	model->scaleToFit(2.0f);
 
 	// f.print(cout);
-	f.add_normal_vectors();
+	model->add_normal_vectors();
 
 	BBox3d bbox;
-	f.getBBox(bbox);
+	model->getBBox(bbox);
 	cout << "Bounding Box (left, top, right, bottom) = (" << bbox.minx << ", ";
 	cout << bbox.miny << ", " << bbox.maxx << ", " << bbox.maxy << ")" << endl;
 
@@ -118,11 +121,12 @@ int main(int argc, char* args[]) {
 	// cout << "Center of object: " << object_center << endl;
 
 	//TODO: Do we need to do this???
-	f.translate(-object_center.x, -object_center.y, -object_center.z);
+	model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	if(config.camera_positions.size() < 1) {
 		cout << "At least one camera position defined." << endl;
+		delete model;
 		return -1;
 	}
 
@@ -130,6 +134,7 @@ int main(int argc, char* args[]) {
 	if( !glfwInit() )	{
 		fprintf( stderr, "Failed to initialize GLFW\n" );
 		getchar();
+		delete model;
 		return -1;
 	}
 	GLFWwindow *window;
@@ -146,6 +151,7 @@ int main(int argc, char* args[]) {
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
 		getchar();
 		glfwTerminate();
+		delete model;
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
@@ -156,6 +162,7 @@ int main(int argc, char* args[]) {
 		fprintf(stderr, "Failed to initialize GLEW\n");
 		getchar();
 		glfwTerminate();
+		delete model;
 		return -1;
 	}
 
@@ -180,9 +187,9 @@ int main(int argc, char* args[]) {
 	glEnable(GL_CULL_FACE);
 
 	unsigned int num_of_vertex, index_size;
-	float *vertices_buf_data = f.getVertexBuffer(buflen);
-	float *normal_buf_data = f.getNormalBuffer(num_of_vertex);
-	unsigned short *indices = f.getElementIndices(index_size);
+	float *vertices_buf_data = model->getVertexBuffer(buflen);
+	float *normal_buf_data = model->getNormalBuffer(num_of_vertex);
+	unsigned short *indices = model->getElementIndices(index_size);
 
 	//testing
 	// int k;
@@ -436,6 +443,7 @@ int main(int argc, char* args[]) {
 	delete[] vertices_buf_data;
 	delete[] normal_buf_data;
 	delete[] indices;
+	delete model;
 	return 0;
 }
 

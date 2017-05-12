@@ -168,7 +168,7 @@ int GLRenderer::initGL(const char* vertexFile, const char* fragmentFile) {
 	return 0;
 }
 
-void GLRenderer::moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const PlyFile *model, const char *exportedFile){
+void GLRenderer::moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const Model3D *model, const char *exportedFile){
 	Camera cam;
 
 	int vertex_count = model->getVertexCount();

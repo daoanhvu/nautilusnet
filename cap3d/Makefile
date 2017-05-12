@@ -15,7 +15,8 @@ CXXFLAGS = -std=c++11 -Wall -g
 BUILD = ./build/camera.o \
 				./build/cap3d.o \
 				./build/glrenderer.o \
-				./build/plyfile.o \
+				./build/model3d.o \
+				./build/reader.o \
 				./build/utils.o \
 				./build/shader.o \
 				./build/lexer_parser.o \
@@ -37,7 +38,8 @@ $(BUILD): camera.cpp cap3d.cpp utils.cpp
 	$(CXX) -c -o ./build/lexer_parser.o $(CPFLAGS) lexer_parser.cpp
 	$(CXX) -c -o ./build/image_processor.o $(CPFLAGS) image_processor.cpp
 	$(CXX) -c -o ./build/shader.o $(CPFLAGS) shader.cpp
-	$(CXX) -c -o ./build/plyfile.o $(CPFLAGS) plyfile.cpp
+	$(CXX) -c -o ./build/reader.o $(CPFLAGS) reader.cpp
+	$(CXX) -c -o ./build/model3d.o $(CPFLAGS) model3d.cpp
 	$(CXX) -c -o ./build/glrenderer.o $(CPFLAGS) glrenderer.cpp
 	$(CXX) -c -o ./build/image_processor.o $(CPFLAGS) image_processor.cpp
 	$(CXX) -c -o ./build/cap3d.o $(CPFLAGS) cap3d.cpp

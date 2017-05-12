@@ -15,7 +15,7 @@
 
 // #include <camera.h>
 
-#include <plyfile.h>
+#include <model3d.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
@@ -61,7 +61,7 @@ class GLRenderer {
 		int storeScene(GLuint x, GLuint y, GLuint width, GLuint height);
 
 
-		void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const PlyFile *model, const char *exportedFile);
+		void moveCameraTo(float ex, float ey, float ez, float cx, float cy, float cz, const Model3D *model, const char *exportedFile);
 };
 
 #endif
