@@ -22,11 +22,12 @@ def computeMeanAveragePrecision(detections, splitType):
 	"""
 
 	#plotDets(detections)
+	print("Dections: ", detections)
 	aps = []
 	for classIdx, cls in enumerate(CLASSES):
 		# pdb.set_trace()s
 		print('Evaluate class: ', cls, ' with class index: ', classIdx)
-		rec, prec, ap = matchGTsAndComputePrecRecallAP(classIdx,detections,iouthresh=0.5)
+		rec, prec, ap = matchGTsAndComputePrecRecallAP(classIdx, detections, iouthresh=0.5)
 		if ap is not None:
 			aps += [ap]
 			print('AP for {} = {:.4f}'.format(cls, ap))

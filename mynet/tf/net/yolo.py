@@ -91,7 +91,6 @@ class YOLO(basenet.BaseNet):
 
     def local(self, scope, input, in_dimension, out_dimension, leaky=True, pretrain=True, train=True):
         """Fully connection layer
-
         Args:
           scope: variable_scope name
           input: [batch_size, ???]
@@ -141,7 +140,7 @@ class YOLO(basenet.BaseNet):
 
         temp_conv = self.conv2d('conv' + str(conv_num), temp_conv, [3, 3, 256, 512], stride=1)
         conv_num += 1
-        
+
         temp_conv = self.max_pool(temp_conv, [2, 2], 2)
 
         for i in range(4):
