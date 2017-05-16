@@ -20,7 +20,7 @@ START_IDX_CONFIDENCES = END_IDX_PROBS
 END_IDX_CONFIDENCES = START_IDX_CONFIDENCES + (NUM_GRID**2)*2
 START_IDX_BBOXES = END_IDX_CONFIDENCES
 END_IDX_BBOXES = START_IDX_BBOXES + (NUM_GRID**2)*2*4
-global_batch_size = 2
+global_batch_size = 5
 
 NUM_EPOCH = 2
 
@@ -108,7 +108,9 @@ class NautilusDark:
         self.weight_decay = 0.0000005
         self.B = 2
         self.S = 7
-        self.input_layer = tf.placeholder(tf.float32, (global_batch_size, self.height, self.width, 3))
+        self.lr = 0.00000000001
+        self.input_layer = tf.placeholder(tf.float32, (1, self.height, self.width, 3))
+        # self.input_layer = tf.placeholder(tf.float32, (1, self.height, self.width, 3))
         self.gt_conf = tf.placeholder(tf.float32, shape=[49,4],name='GT_CONF')
         self.gt_classes = tf.placeholder(tf.float32,shape=[49,NUM_CLASSES],name='GT_CLASSES')
         self.ind_obj_i = tf.placeholder(tf.float32, shape=[7*7],name='ind_obj_i')
@@ -183,32 +185,36 @@ class NautilusDark:
         d_local = self.S * self.S * (self.B * 5 + NUM_CLASSES)
         local2 = self.full_connect('local2', dropout1, 4096, d_local, leaky=False)
 
-        last_reshape = tf.reshape(local2, [tf.shape(local2)[0], self.S, self.S, self.B * 5 + NUM_CLASSES])
+        # print("local2 shape: ", tf.shape(local2))
+        # last_reshape = tf.reshape(local2, [tf.shape(local2)[0], self.S, self.S, self.B * 5 + NUM_CLASSES])
 
-        self.output_layer = last_reshape
+        self.output_layer = local2
+        # print("BBOX shapes: ", self.output_layer)
 
         self.class_probs = self.output_layer[:, START_IDX_PROBS: END_IDX_PROBS ]
         self.confidences = self.output_layer[:, START_IDX_CONFIDENCES: END_IDX_CONFIDENCES ]
         self.bboxes = self.output_layer[:, START_IDX_BBOXES : END_IDX_BBOXES]
 
-        self.class_probs = tf.reshape( self.class_probs,shape=[NUM_GRID*NUM_GRID,NUM_CLASSES])
-        self.confidences = tf.reshape( self.confidences,shape=[NUM_GRID*NUM_GRID,2])
-        self.bboxes = tf.reshape(self.bboxes, shape=[NUM_GRID*NUM_GRID,2*4])
+        self.class_probs = tf.reshape( self.class_probs,shape=[NUM_GRID*NUM_GRID, NUM_CLASSES])
+        self.confidences = tf.reshape( self.confidences,shape=[NUM_GRID*NUM_GRID, 2])
+        self.bboxes = tf.reshape(self.bboxes, shape=[NUM_GRID*NUM_GRID, 2*4])
 
         self.loss = self.yolo_loss(self.class_probs, self.confidences, self.bboxes, self.gt_conf,self.gt_classes, self.ind_obj_i, self.gt_boxes_j0)
+
+        self.train_op = tf.train.GradientDescentOptimizer(self.lr).minimize(self.loss)
 
     def yolo_loss(self, pred_classes, pred_conf, pred_boxes, gt_conf, gt_classes, ind_obj_i, gt_boxes_j0):
         """
         As a simplification, right now I only match one bounding box predictor
-        to 1 ground truth, in each grid cell when compute iou, need to have 
-        pred boxes norm to image, wh as is when compute coord loss, need to 
+        to 1 ground truth, in each grid cell when compute iou, need to have
+        pred boxes norm to image, wh as is when compute coord loss, need to
         have true boxes norm to grid, wh square root
 
         Confidence computed as Pr(Object) * IOUtruth_pred
         If no object exists in that cell, the confidence scores should be zero.
-        Otherwise we want the confidence score to equal the intersection over union (IOU) 
+        Otherwise we want the confidence score to equal the intersection over union (IOU)
         between the predicted box and the ground truth.
-        Finally the confidence prediction represents the IOU between the predicted box 
+        Finally the confidence prediction represents the IOU between the predicted box
         and any ground truth box.
 
         We assign one predictor to be "responsible" for predicting an object
@@ -317,10 +323,15 @@ class NautilusDark:
 
     def conv2d(self, scope, input, kernel_size, stride=1, padding_="SAME", pretrain=True, train=True):
         with tf.variable_scope(scope) as scope:
-            kernel = self.variable_with_weight_decay('weights',
+            # kernel = self.variable_with_weight_decay('weights',
+            #                                         shape=kernel_size,
+            #                                         stddev=5e-2,
+            #                                         wd=self.weight_decay,
+            #                                         pretrain=pretrain,
+            #                                         train=train)
+            kernel = self.variable_on_cpu('weights',
                                                     shape=kernel_size,
-                                                    stddev=5e-2,
-                                                    wd=self.weight_decay,
+                                                    initializer= tf.contrib.layers.xavier_initializer_conv2d(),
                                                     pretrain=pretrain,
                                                     train=train)
             conv = tf.nn.conv2d(input, kernel, [1, stride, stride, 1], padding=padding_)
@@ -447,23 +458,30 @@ def process_image(record):
     return [image, labels, object_num]
 
 def train(net):
-    annotatedImages = dt.getData('/home/davu/projects/nautilusnet/data/textdata.txt')
+    # annotatedImages = dt.getData('/home/davu/projects/nautilusnet/data/textdata.txt')
+    annotatedImages = dt.getData('/Volumes/data/projects/nautilusnet/data/textdata.txt')
 
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
         for epoch in range(NUM_EPOCH):
-            minibatchIms, minibatchGT = dt.get_batch(annotatedImages)
-            minibatchIms = np.expand_dims( minibatchIms, 0)
-            gt_conf,gt_classes,ind_obj_i,gt_boxes_j0 = minibatchGT
-            gt_conf = gt_conf.astype(np.float32)
-            gt_classes = gt_classes.astype(np.float32)
-            ind_obj_i = ind_obj_i.astype(np.float32)
-            gt_boxes_j0 = gt_boxes_j0.astype(np.float32)
-            ## FEED DROPOUT 0.5 AT TRAIN TIME, 1.0 AT TEST TIME #######
-            feed = { net.input_layer: minibatchIms , net.gt_conf : gt_conf, \
-                yoloNet.gt_classes : gt_classes, yoloNet.ind_obj_i: ind_obj_i, \
-                yoloNet.dropout_prob: TRAIN_DROP_PROB, yoloNet.gt_boxes_j0 : gt_boxes_j0 }
-            trainLossVal = sess.run(net.loss ,feed_dict=feed ) # yoloNet.train_op
+            print("=== Start epoch ", epoch)
+            minibatchIms, minibatchGT = dt.get_batch_data(annotatedImages, global_batch_size)
+            gt_confs, gt_classes1, ind_obj_is, gt_boxes_j0s = minibatchGT
+            # minibatchIms = np.expand_dims( minibatchIms, 0)
+            # print(minibatchGT.shape)
+            for step in range(global_batch_size):
+                gt_conf = gt_confs[step].astype(np.float32)
+                gt_classes = gt_classes1[step].astype(np.float32)
+                ind_obj_i = ind_obj_is[step].astype(np.float32)
+                gt_boxes_j0 = gt_boxes_j0s[step].astype(np.float32)
+                image_i = minibatchIms[step, :, :, :]
+                image_i = np.reshape(image_i, (1, 448, 448, 3))
+                ## FEED DROPOUT 0.5 AT TRAIN TIME, 1.0 AT TEST TIME #######
+                feed = { net.input_layer:image_i , net.gt_conf : gt_conf, \
+                    net.gt_classes : gt_classes, net.ind_obj_i: ind_obj_i, \
+                    net.dropout_prob: 0.5, net.gt_boxes_j0 : gt_boxes_j0 }
+                _, trainLossVal = sess.run([net.train_op, net.loss] ,feed_dict=feed ) # net.train_op
+                print("Loss at step {0}: {1}" .format(step, trainLossVal))
 
 def main():
     net = NautilusDark()
