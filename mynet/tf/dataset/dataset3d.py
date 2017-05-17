@@ -232,14 +232,13 @@ def get_batch_data(annotatedImages, bs):
 	ind_obj_i = np.zeros((batch_size, 49))
 	gt_boxes_j0 = np.zeros((batch_size, 49,4))
 	imgs = np.zeros((batch_size, 448, 448, 3))
-
-	print("Batch size: ", batch_size)
-	for k in range(batch_size):
-		imNum = mask[k]
-		print("Batch index: ", imNum)
+	# print("Batch size: {0} range: {1}" .format(batch_size, range(batch_size)))
+	idx = 0
+	for imNum in mask:
+		# print("Batch index: ", imNum)
 		annotatedImage = annotatedImages[imNum]
 		image_path = annotatedImage.image_path
-		print("Loading image: ", image_path)
+		# print("Loading image: ", image_path)
 		img = imread(image_path)
 		img = imresize(img, (448, 448))
 		img = img[...,::-1] # shape of [448, 448, 3]
@@ -264,22 +263,23 @@ def get_batch_data(annotatedImages, bs):
 			coverageMap = computeCoverageMap(im, bbox) # Returns 49x1 coverage map
 
 	  		# indicating if that grid cell contains any object
-			ind_obj_i[k, :] = np.logical_or(ind_obj_i[k, :], coverageMap).astype(np.int64)
+			ind_obj_i[idx, :] = np.logical_or(ind_obj_i[idx, :], coverageMap).astype(np.int64)
 
 			if occupiedSlot[gridCellRow,gridCellCol,0] == NO_IMAGE_FLAG:
 				j = 0 # 2nd box slot for this grid cell
-				gt_classes[k, gridCellRow * 7 + gridCellCol, classIdx ] = 1
+				gt_classes[idx, gridCellRow * 7 + gridCellCol, classIdx ] = 1
 				xywh = np.array([ normalizedXCent, normalizedYCent, math.sqrt(normalizedW), math.sqrt(normalizedH) ])
 				bboxGT = xywh # coverage map is the confidence
-				gt_boxes_j0[k, gridCellRow * 7 + gridCellCol, :] = bboxGT
+				gt_boxes_j0[idx, gridCellRow * 7 + gridCellCol, :] = bboxGT
 				occupiedSlot[gridCellRow,gridCellCol,j] = CONTAINS_IMAGE_FLAG
 
 				# values in each of 4 columns are identical (tiled/repmatted). Object here at cell i!
-				gt_conf[k, gridCellRow * 7 + gridCellCol,:] = np.ones((1,4))
+				gt_conf[idx, gridCellRow * 7 + gridCellCol,:] = np.ones((1,4))
 
-			imgs[k, : ] = img
+		imgs[idx, : ] = img
+		idx += 1
 
-		return imgs, (gt_conf,gt_classes,ind_obj_i,gt_boxes_j0)
+	return imgs, (gt_conf,gt_classes,ind_obj_i,gt_boxes_j0)
 
 def normXYToGrid(x_cent,y_cent,im):
 	"""
@@ -331,9 +331,10 @@ def separateDataSets(annotatedImages):
 
 #for testing
 def main():
-	mask = np.random.choice( 2 , 5 ) # RANDOM SAMPLE OF THE INDICES
-	for k in range(5):
-		print(mask[k])
+	annotatedImages = getData('/Volumes/data/projects/nautilusnet/data/textdata.txt')
+	for epoch in range(3):
+		print("=== Start epoch ", epoch)
+		minibatchIms, minibatchGT = get_batch_data(annotatedImages, 5)
 
 if __name__=='__main__':
 	main()

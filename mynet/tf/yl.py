@@ -22,7 +22,7 @@ START_IDX_BBOXES = END_IDX_CONFIDENCES
 END_IDX_BBOXES = START_IDX_BBOXES + (NUM_GRID**2)*2*4
 global_batch_size = 5
 
-NUM_EPOCH = 2
+NUM_EPOCH = 10
 
 # =============== Utility functions ======================
 def sqrt_wh(box):
@@ -108,7 +108,7 @@ class NautilusDark:
         self.weight_decay = 0.0000005
         self.B = 2
         self.S = 7
-        self.lr = 0.00000000001
+        self.lr = 0.00015
         self.input_layer = tf.placeholder(tf.float32, (1, self.height, self.width, 3))
         # self.input_layer = tf.placeholder(tf.float32, (1, self.height, self.width, 3))
         self.gt_conf = tf.placeholder(tf.float32, shape=[49,4],name='GT_CONF')
@@ -457,12 +457,17 @@ def process_image(record):
         break
     return [image, labels, object_num]
 
-def train(net):
+def train(net, pretrained = False):
     # annotatedImages = dt.getData('/home/davu/projects/nautilusnet/data/textdata.txt')
     annotatedImages = dt.getData('/Volumes/data/projects/nautilusnet/data/textdata.txt')
-
+    # saver = tf.train.Saver()
+    saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
+        if pretrained:
+            saver.restore(sess, tf.train.latest_checkpoint("ckpt/nautilus/"))
+            # saver.restore(sess, "ckpt/nautilus/yl.ckpt")
+
         for epoch in range(NUM_EPOCH):
             print("=== Start epoch ", epoch)
             minibatchIms, minibatchGT = dt.get_batch_data(annotatedImages, global_batch_size)
@@ -482,6 +487,9 @@ def train(net):
                     net.dropout_prob: 0.5, net.gt_boxes_j0 : gt_boxes_j0 }
                 _, trainLossVal = sess.run([net.train_op, net.loss] ,feed_dict=feed ) # net.train_op
                 print("Loss at step {0}: {1}" .format(step, trainLossVal))
+
+        print("Saving weights...")
+        saver.save(sess, "ckpt/nautilus/yl.ckpt")
 
 def main():
     net = NautilusDark()
