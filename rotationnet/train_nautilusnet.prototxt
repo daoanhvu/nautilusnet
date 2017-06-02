@@ -1,0 +1,47 @@
+name: "NautilusNet"
+layer {
+	name: "data"
+	type: "ImageData"
+	top: "data"
+	top: "label"
+	image_data_param {
+		source: "/Volumes/data/projects/nautilusnet/data/textdata1.txt"
+		batch_size: 4
+		new_height: 448
+		new_width: 448
+		shuffle: true
+	}
+
+	transform_param {
+		mirror: false
+		crop_size: 227
+		mean_file: "/Volumes/data/projects/nautilusnet/rotationnet/nautilus_mean_file.binaryproto"
+	}
+}
+
+layer {
+	bottom: "data"
+	top: "conv1"
+	type: "Convolution"
+	param {
+		lr_mult: 1
+		decay_mult: 1
+	}
+	param {
+		lr_mult: 2
+		decay_mult: 0
+	}
+	convolution_param {
+		num_output: 96
+		kernel_size: 11
+		stride: 4
+		weight_filler {
+			type: "gaussian"
+			std: 0.01
+		}
+		bias_filler {
+			type: "constant"
+			value: 0
+		}
+	}
+}
