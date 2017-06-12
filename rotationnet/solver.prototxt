@@ -1,0 +1,12 @@
+net: "/Volumes/data/projects/nautilusnet/rotationnet/train_nautilusnet.prototxt"
+base_lr: 0.001
+gamma: 0.1
+lr_policy: "step"
+stepsize: 2
+max_iter: 20
+snapshot: 10
+snapshot_prefix: "models/nautilus"
+display: 5
+momentum: 0.9
+weight_decay: 0.00005
+solver_mode: CPU
