@@ -62,4 +62,4 @@ test: ./build/cap3d
 	./build/cap3d data/simple_model_1.ply
 
 teddy: ./build/cap3d
-	./build/cap3d data/teddyPly/b1.ply
+	./build/cap3d data/teddy1.ply teddy 0

@@ -66,5 +66,29 @@ def main(argv):
 	net = cf.Classifier(args.model_def, args.pretrained_model, image_dims=image_dims, mean=mean,
 		input_scale=1.0, raw_scale=255.0, channel_swap=channel_swap)
 
+    # Load image file.
+    args.input_file = os.path.expanduser(args.input_file)
+    f = open(args.input_file)
+    im_files_ = f.readlines()
+    im_files = []
+    for i in range(len(im_files_)):
+        im_f = im_files_[ i ].split( ' ' )
+        if len(im_f) == 1:
+            im_f[ 0 ] = im_f[ 0 ][:-1]
+        im_files.append(im_f[ 0 ])
+
+    inputs =[caffe.io.load_image(im_f) for im_f in im_files]
+
+    print "Classifying %d inputs." % len(inputs)
+
+    # Classify.
+    start = time.time()
+    predictions = net.predict(inputs, not args.center_only)
+    print "Done in %.2f s." % (time.time() - start)
+
+    # Save
+    np.save(args.output_file, predictions)
+    print "Saved %s." % args.output_file
+
 if __name__=='__main__':
 	main(sys.argv)

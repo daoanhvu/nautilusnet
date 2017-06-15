@@ -1,24 +1,39 @@
 #include "utils.h"
 #include <stdlib.h>
+#include <iostream>
 
+using namespace std;
+
+/**
+	Convert n to string and store in s from offs
+
+*/
 int itostr(int n, char *s, int offs) {
 		int d, len = 0;
 		int l2, t = n;
 		int tmp;
+
+		if(n == 0) {
+			s[offs] = '0';
+			s[offs + 1] = 0;
+			return (offs + 1);
+		}
+
 		while( t > 0 ) {
 			d = t % 10;
 			t = t / 10;
 			s[offs + len] = d + 48;
 			len++;
 		}
-		s[len] = '\0';
+		s[offs+len] = '\0';
+		
 		l2 = len >> 1;
-		for(t=0; t<=l2; t++) {
+		for(t=0; t<l2; t++) {
 			tmp = s[offs+t];
 			s[offs + t] = s[offs + len-t-1];
 			s[offs + len-t-1] = tmp;
 		}
-
+		
 		return offs + len;
 }
 

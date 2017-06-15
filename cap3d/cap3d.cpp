@@ -26,6 +26,7 @@
 #include "lexer_parser.h"
 #include "shader.h"
 #include "image_processor.h"
+#include "utils.h"
 
 #define PI 3.14159f
 #define RAD(x) ( x * 3.14159f / 180.0f )
@@ -33,9 +34,29 @@
 
 #define OK 0
 
+#define OS_UNKNOWN 0
+#define OS_X 1
+#define LINUX 2
+#define WINDOWS 3
+
+
 using namespace std;
 using namespace fp;
 using namespace glm;
+
+#ifdef __APPLE__
+	const int OS = OS_X;
+#else
+	#ifdef __linux__
+		const int OS = LINUX;
+	#else
+		#ifdef _win32
+			const int OS = WINDOWS;
+		#else
+			const int OS = OS_UNKNOWN;
+		#endif
+	#endif
+#endif
 
 glm::mat4 viewMatrix;
 glm::mat4 projectionMatrix;
@@ -55,8 +76,23 @@ float mouseSpeed = 0.005f;
 //const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
 std::string gTextDatasetFile; //= gOutFolder + "textdata.txt";
 
+/**
+	Build a file name with format: <classname>_<poseNumber>.jpg
+*/
+void getFrameName(int idx, const char *cls, char *name) {
+	int i, len, cls_len = strlen(cls);
+	memcpy(name, cls, cls_len);
+	name[cls_len++] = '_';
+	len = itostr(idx, name, cls_len);
+	name[len] = '.';
+	name[len+1] = 'j';
+	name[len+2] = 'p';
+	name[len+3] = 'g';
+	name[len+4] = '\0';
+}
+
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
-void storeFramebuffer(const Configuration &config, std::string filename, int clsIdx, int ww, int wh);
+void storeFramebuffer(const Configuration &config, const char* filename, int clsIdx, int ww, int wh);
 
 int main(int argc, char* args[]) {
 	Reader f;
@@ -66,6 +102,7 @@ int main(int argc, char* args[]) {
 
 	char class_name[16];
 	int class_index = 0;
+	char out_filename[128];
 
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
@@ -304,10 +341,9 @@ int main(int argc, char* args[]) {
 			}
 		}
 
-		std::ostringstream outfile_name_sstream;
 		if(should_store_frame_buffer) {
 			cam_pos = config.camera_positions[cam_pos_i];
-			outfile_name_sstream << class_name <<"_pose_" << cam_pos_i << ".jpg";
+			getFrameName(cam_pos_i, class_name, out_filename);
 		}
 
 		//computeMatrices(window, object_center);
@@ -413,7 +449,6 @@ int main(int argc, char* args[]) {
 
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
-			std::string out_filename = outfile_name_sstream.str();
 			storeFramebuffer(config, out_filename, class_index, config.window_width, config.window_height);
 			cam_pos_i++;
 			if(cam_pos_i >= cam_pos_count)
@@ -524,7 +559,7 @@ void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
 		int ww [IN] windows width
 		int wh [IN] windows height
 */
-void storeFramebuffer(const Configuration &config, std::string filename, int clsIdx, int ww, int wh) {
+void storeFramebuffer(const Configuration &config, const char* filename, int clsIdx, int ww, int wh) {
 	int i, j;
 	int k;
 	cv::Mat img(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
