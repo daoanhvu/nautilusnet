@@ -1,17 +1,19 @@
 import os
 import sys
 import caffe
+import numpy as np
 import argparse
+import glob
+import time
+
 
 CAFFE_ROOT = "/Users/davu/framework/caffe/"
 
 
 def main(argv):
-
-	parser = argparse.ArgumentParser()
-
-	parser.add_argument("--input_file", help="Input Image directory")
-	parser.add_argument(
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input_file", help="Input Image directory")
+    parser.add_argument(
         "--output_file",
         help="Output npy filename."
     )
@@ -19,11 +21,15 @@ def main(argv):
     parser.add_argument(
         "--model_def",
         default="deploy_nautilusnet.prototxt",
-        help="Model definition file."
+        help="Model definition file")
+    parser.add_argument(
+        "--pretrained_model",
+        default="/Volumes/data/projects/nautilusnet/rotationnet/models/nautilus_iter_5000.caffemodel",
+        help="Trained model weights file."
     )
     parser.add_argument(
         "--mean_file",
-        default='nautilus_mean_file.binaryproto',
+        default='/Volumes/data/projects/nautilusnet/rotationnet/nautilus_mean.npy',
         help="Data set image mean of H x W x K dimensions (numpy array). " +
              "Set to '' for no mean subtraction."
     )
@@ -33,7 +39,7 @@ def main(argv):
         default=255,
         help="Multiply input features by this scale before input to net"
     )
-	parser.add_argument(
+    parser.add_argument(
         "--images_dim",
         default='448,448',
         help="Canonical 'height,width' dimensions of input images."
@@ -50,20 +56,34 @@ def main(argv):
         help="Switch for prediction from center crop alone instead of " +
              "averaging predictions across crops (default)."
     )
+    parser.add_argument(
+        "--gpu",
+        action='store_true',
+        help="Switch for gpu computation."
+    )
 
-	args = parser.parse_args()
-	print(args)
+    args = parser.parse_args()
+    print(args)
 
-	mean = None
-	if args.mean_file:
-		mean = np.load(args.mean_file)
+    image_dims = [int(s) for s in args.images_dim.split(',')]
+    channel_swap = [int(s) for s in args.channel_swap.split(',')]
+
+    mean = None
+    if args.mean_file:
+        mean = np.load(args.mean_file)
+        # Resize mean (which requires H x W x K input in range [0,1]).
+        in_shape = (227, 227)
+        m_min, m_max = mean.min(), mean.max()
+        normal_mean = (mean - m_min) / (m_max - m_min)
+        mean = caffe.io.resize_image(normal_mean.transpose((1,2,0)),
+                                     in_shape).transpose((2,0,1)) * (m_max - m_min) + m_min
 
 	if args.gpu:
 		caffe.set_mode_gpu()
 	else:
 		caffe.set_mode_cpu()
 
-	net = cf.Classifier(args.model_def, args.pretrained_model, image_dims=image_dims, mean=mean,
+	net = caffe.Classifier(args.model_def, args.pretrained_model, image_dims=image_dims, mean=mean,
 		input_scale=1.0, raw_scale=255.0, channel_swap=channel_swap)
 
     # Load image file.
