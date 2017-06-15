@@ -1,0 +1,87 @@
+http://data-slinky.com/2016/09/08/caffe_osx.html
+http://hoondy.com/2015/04/03/how-to-install-caffe-on-mac-os-x-10-10-for-dummies-like-me/
+
+http://www.megastormsystems.com/news/how-to-install-caffe-on-mac-os-x-10-11
+https://eddiesmo.wordpress.com/2016/12/20/how-to-set-up-caffe-environment-and-pycaffe-on-os-x-10-12-sierra/
+
+https://prateekvjoshi.com/2016/02/16/deep-learning-with-caffe-in-python-part-iii-training-a-cnn/
+
+Turorial of Caffe:
+https://medium.com/@shiyan/caffe-c-helloworld-example-with-memorydata-input-20c692a82a22
+
+
+I set up all the step but the command 'make all' failed as it couldn't find protobuf.pb.cc, the reason is descripted here: https://github.com/BVLC/caffe/issues/4853
+
+https://groups.google.com/forum/#!msg/caffe-users/eHcmYJvYBHs/IGX-1VfRHwAJ
+
+http://web.cs.hacettepe.edu.tr/~aykut/classes/spring2016/bil722/resources/Caffe_Installation_Guide.pdf
+
+
+set this to PATH
+/usr/local/Cellar/protobuf/3.2.0_1/bin
+
+Minh build caffe voi protobuf 3.2.0_1, day la ban protobuf 12.
+Nhung khi chay make runtest thi no lai tim protobuf 12 trong thu muc /usr/local/opt/protobuf va day la version 13 ?!!!!
+
+install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib .build_release/tools/caffe
+install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib .build_release/tools/caffe
+install_name_tool -change @rpath/libmkl_rt.dylib /opt/intel/mkl/lib/libmkl_rt.dylib .build_release/tools/caffe
+
+
+install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib .build_release/test/test_all.testbin
+install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib .build_release/test/test_all.testbin
+install_name_tool -change @rpath/libmkl_rt.dylib /opt/intel/mkl/lib/libmkl_rt.dylib .build_release/test/test_all.testbin
+
+
+if you want to use MKL:
+export MKLROOT=/opt/intel/mkl
+export DYLD_LIBRARY_PATH=/opt/intel/compilers_and_libraries/mac/lib:/opt/intel/mkl/lib:$DYLD_LIBRARY_PATH
+export LIBRARY_PATH=/opt/intel/compilers_and_libraries/mac/lib:/opt/intel/mkl/lib:$LIBRARY_PATH
+export NLSPATH=/opt/intel/mkl/lib/locale/%l_%t/%N:$NLSPATH
+export MANPATH=/opt/intel/man/en_US:/usr/local/share/man:/usr/share/man:/opt/intel/man:$MANPATH
+export INCLUDE=/opt/intel/mkl/include:$INCLUDE
+export CPATH=/opt/intel/mkl/include:/opt/intel/mkl/bin/intel64/mklvars_intel64.sh:$CPATH
+
+===========================================================================
+export PYTHONPATH=/Users/davu/framework/caffe/distribute/python:$PYTHONPATH
+===========================================================================
+
+Build thanh cong, nhung co the khong thuc thi duoc do cac thu vien khong duoc link dung
+Library not loaded: @rpath/libcaffe.so.1.0.0
+
+TODO:
+
+Su dung cau lenh sau de kiem tra xem mot lib cu duoc link dung hay khong
+otool -L python/caffe/_caffe.so
+ - @rpath not found
+
+Neu khong thi dung lenh sau de sua lai:
+ install_name_tool -change @rpath/libcaffe.so.1.0.0 /Users/davu/framework/caffe/distribute/lib/libcaffe.so.1.0.0 python/caffe/_caffe.so
+
+Trong truong hop cua toi, caffe lien ket den /System/Library/Frameworks/Python.framework/Versions/2.7/Python, cai nay la sai, duong dan dung phai la /Users/davu/anaconda3/envs/caffe/lib/libpython2.7.dylib nen toi su dung cau lenh sau de sua:
+ 
+install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.7/Python /Users/davu/anaconda3/envs/caffe/lib/libpython2.7.dylib python/caffe/_caffe.so
+
+Sau khi sua loi nay xong, toi thuc hien lai lenh "import caffe" va bi loi: "ImportError: No module named google.protobuf.internal", loi nay xay ra khi su dung khong dung phien ban protobuf, co qua nhieu ban protobuf tren may tinh la mot van de lon.
+Toi sua loi nay bang cach cai lai protobuf su dung pip
+pip install protobuf
+
+wget https://staff.aist.go.jp/kanezaki.asako/pretrained_models/rotationnet_modelnet40_case2.caffemodel
+
+
+
+Generate a mean_file for Caffe to be able to run:
+
+ GLOG_logtostderr=1 /Users/davu/framework/caffe/build/tools/convert_imageset --resize_height=227 --resize_width=227 --shuffle / /Volumes/data/projects/nautilusnet/data/textdata1.txt /Volumes/data/projects/nautilusnet/rotationnet/data
+
+
+ /Users/davu/framework/caffe/build/tools/compute_image_mean /Volumes/data/projects/nautilusnet/rotationnet/data /Volumes/data/projects/nautilusnet/rotationnet/nautilus_mean_file.binaryproto
+
+
+TRAIN:
+$CAFFE_HOME/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
+
+/Users/davu/framework/caffe/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
+
+SAVE SCORE
+python train.py --input_file /Volumes/data/projects/nautilusnet/data/textdata1.txt --output_file out_file.txt --model_def --mean_file
