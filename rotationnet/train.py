@@ -20,11 +20,11 @@ def main(argv):
     # Optional arguments.
     parser.add_argument(
         "--model_def",
-        default="deploy_nautilusnet.prototxt",
+        default="deploy_nautilus_3.prototxt",
         help="Model definition file")
     parser.add_argument(
         "--pretrained_model",
-        default="/Volumes/data/projects/nautilusnet/rotationnet/models/nautilus_iter_5000.caffemodel",
+        default="/Volumes/data/projects/nautilusnet/rotationnet/models/nautilus_iter_40.caffemodel",
         help="Trained model weights file."
     )
     parser.add_argument(

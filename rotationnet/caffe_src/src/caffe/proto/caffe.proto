@@ -814,6 +814,10 @@ message ImageDataParameter {
   // data.
   optional bool mirror = 6 [default = false];
   optional string root_folder = 12 [default = ""];
+
+  //DAVU: for RotationNet
+  optional uint32 num_rotation = 13 [default = 1];
+  //DAVU: End
 }
 
 message InfogainLossParameter {
@@ -937,16 +941,16 @@ message PowerParameter {
 //DAVU: Start Message that stores parameters for my layers
 message RotationNetAccuracyParameter {
   // Specify the infogain matrix source.
-  optional uint32 stride = 1;
+  optional uint32 stride = 1 [default = 1];
   optional bool using_upright = 2 [default = false];
 }
 message RotationNetSoftmaxParameter {
   // Specify the infogain matrix source.
-  optional uint32 stride = 1;
+  optional uint32 stride = 1 [default = 1];
 }
 message RotationNetSoftmaxLossParameter {
   // Specify the infogain matrix source.
-  optional uint32 stride = 1;
+  optional uint32 stride = 1 [default = 1];
   optional bool using_upright = 2 [default = false];
 }
 //DAVU: End

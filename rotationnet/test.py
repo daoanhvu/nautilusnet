@@ -5,7 +5,7 @@ from PIL import Image
 cf.set_mode_cpu()
 
 # net = cf.Net('test.prototxt', cf.TEST)
-net = cf.Net('train_nautilusnet.prototxt', cf.TEST)
+net = cf.Net('deploy_modelnet40_case1.prototxt', cf.TEST)
 # net = cf.Classifier('deploy_nautilusnet.prototxt', cf.TEST)
 # net = cf.Classifier('train_nautilusnet.prototxt', cf.TEST)
 
