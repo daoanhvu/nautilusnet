@@ -83,5 +83,7 @@ $CAFFE_HOME/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/
 
 /Users/davu/framework/caffe/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
 
+/Users/davu/framework/caffe/build/tools/caffe train --solver Training/small_modelnet40_case1_solver.prototxt --weights rotationnet_modelnet40_case1.caffemodel 2>&1 | tee log/train.log
+
 SAVE SCORE
 python train.py --input_file /Volumes/data/projects/nautilusnet/data/textdata1.txt --output_file out_file.txt --model_def --mean_file

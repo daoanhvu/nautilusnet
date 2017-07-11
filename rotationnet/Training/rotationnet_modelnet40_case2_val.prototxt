@@ -4,12 +4,13 @@ layer {
   type: "ImageData"
   top: "data"
   top: "label"
-  image_data_param {
+  rotationnet_image_data_param {
     source: "./Training/test_modelnet40_case2.txt"
     batch_size: 400
     new_height: 256
     new_width: 256
     shuffle: false
+    num_rotation: 20
   }
   transform_param {
 		mirror: false
