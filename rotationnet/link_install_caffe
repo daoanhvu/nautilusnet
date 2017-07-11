@@ -16,6 +16,9 @@ https://groups.google.com/forum/#!msg/caffe-users/eHcmYJvYBHs/IGX-1VfRHwAJ
 
 http://web.cs.hacettepe.edu.tr/~aykut/classes/spring2016/bil722/resources/Caffe_Installation_Guide.pdf
 
+THAM KHAO QUAN TRONG:
+http://slidingshapes.cs.princeton.edu/
+
 
 set this to PATH
 /usr/local/Cellar/protobuf/3.2.0_1/bin
@@ -45,6 +48,7 @@ export CPATH=/opt/intel/mkl/include:/opt/intel/mkl/bin/intel64/mklvars_intel64.s
 ===========================================================================
 export PYTHONPATH=/Users/davu/framework/caffe/distribute/python:$PYTHONPATH
 ===========================================================================
+export PYTHONPATH=/Users/davu/framework/caffe/build/python:$PYTHONPATH
 
 Build thanh cong, nhung co the khong thuc thi duoc do cac thu vien khong duoc link dung
 Library not loaded: @rpath/libcaffe.so.1.0.0
@@ -56,7 +60,10 @@ otool -L python/caffe/_caffe.so
  - @rpath not found
 
 Neu khong thi dung lenh sau de sua lai:
- install_name_tool -change @rpath/libcaffe.so.1.0.0 /Users/davu/framework/caffe/distribute/lib/libcaffe.so.1.0.0 python/caffe/_caffe.so
+ install_name_tool -change @rpath/libcaffe.so.1.0.0 /Users/davu/framework/caffe/distribute/lib/libcaffe.so.1.0.0 distribute/python/caffe/_caffe.so
+ install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib distribute/python/caffe/_caffe.so
+ install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib distribute/python/caffe/_caffe.so
+ install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.7/Python /Users/davu/anaconda3/envs/caffe/lib/libpython2.7.dylib distribute/python/caffe/_caffe.so
 
 Trong truong hop cua toi, caffe lien ket den /System/Library/Frameworks/Python.framework/Versions/2.7/Python, cai nay la sai, duong dan dung phai la /Users/davu/anaconda3/envs/caffe/lib/libpython2.7.dylib nen toi su dung cau lenh sau de sua:
  
@@ -66,9 +73,35 @@ Sau khi sua loi nay xong, toi thuc hien lai lenh "import caffe" va bi loi: "Impo
 Toi sua loi nay bang cach cai lai protobuf su dung pip
 pip install protobuf
 
+libcaffe.so.1.0.0
+install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib build/lib/libcaffe.so.1.0.0
+install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib build/lib/libcaffe.so.1.0.0
+
+build/tools/caffe
+install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib build/tools/caffe
+install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib build/tools/caffe
+
+Sua loi testbin
+install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib build/test/test_all.testbin
+install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib build/test/test_all.testbin
+
+install_name_tool -change @rpath/libhdf5_hl.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib distribute/python/caffe/_caffe.so
+install_name_tool -change @rpath/libhdf5.10.dylib /Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib distribute/python/caffe/_caffe.so
+
+
+After fixing:
+/Users/davu/anaconda3/envs/caffe/lib/libhdf5_hl.10.dylib (compatibility version 12.0.0, current version 12.0.0)
+/Users/davu/anaconda3/envs/caffe/lib/libhdf5.10.dylib (compatibility version 13.0.0, current version 13.0.0)
+
 wget https://staff.aist.go.jp/kanezaki.asako/pretrained_models/rotationnet_modelnet40_case2.caffemodel
 
+Run test:
+build/test/test_rotationnet_softmax.testbin
+cd /Volumes/data/projects/nautilusnet/rotationnet
 
+python save_scores.py --center_only --cpu --model_def deploy_modelnet40_case1.prototxt --pretrained_model rotationnet_modelnet40_case1.caffemodel --input_file ModelNet40v1/test_car.txt --output_file ModelNet40v1/test_car.npy
+
+python classify_npyfile_case1_all_views.py scores_case1_toilet_000000020.npy
 
 Generate a mean_file for Caffe to be able to run:
 
@@ -83,5 +116,10 @@ $CAFFE_HOME/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/
 
 /Users/davu/framework/caffe/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
 
+TRAIN WITH PRETRAINED WEIGHTS:
+/Users/davu/framework/caffe/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt --weights models/nautilus_iter_40.caffemodel 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
+
 SAVE SCORE
-python train.py --input_file /Volumes/data/projects/nautilusnet/data/textdata1.txt --output_file out_file.txt --model_def --mean_file
+python train.py --input_file /Volumes/data/projects/nautilusnet/data/textdata1.txt --output_file score_file --model_def --mean_file
+
+python classify.py score_file.npy teddy
