@@ -21,14 +21,14 @@ namespace caffe {
 			virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
 			virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       				const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-    			NOT_IMPLEMENTED;
+    			// NOT_IMPLEMENTED;
   			}
 
 		public:
 			explicit RotationNetAccuracyLayer(const LayerParameter &param): Layer<Dtype>(param){};
 			virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
 			virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-				NOT_IMPLEMENTED;
+				// NOT_IMPLEMENTED;
 			}
 			//https://github.com/BVLC/caffe/issues/4535
 			virtual inline const char* type() const { return "RotationNetAccuracy"; }

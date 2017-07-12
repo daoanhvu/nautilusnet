@@ -32,7 +32,7 @@ namespace caffe {
 			explicit RotationNetSoftmaxLayer(const LayerParameter &param): Layer<Dtype>(param){
 				shared_ptr<SoftmaxLayer<Dtype> > p1(new SoftmaxLayer<Dtype>(param));
 				softmax_layer_ = p1;
-			};
+			}
 			virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
 			virtual void Reshape(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
 				// NOT_IMPLEMENTED;

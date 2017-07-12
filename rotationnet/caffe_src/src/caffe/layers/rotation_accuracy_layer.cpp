@@ -146,7 +146,47 @@ namespace caffe {
 	       			}
       			}
     		}
+
+
+    		// calc scores ==========
+    	for (int j = 0; j < nClassLabel - 1; ++j)
+      		scores[ j ] = 0;
+    	for (int i = 0; i < nRotation; ++i) {
+      		int idx = -1;
+      		if ( using_upright ){
+				idx = i + max_ang;
+				if( idx > nRotation - 1 )
+	  				idx -= nRotation;
+      		} else
+				idx = ang[ max_ang ][ i ];
+
+      		for (int j = 0; j < nClassLabel - 1; ++j)
+				scores[ j ] += log( bottom_data[ ( n * nRotation + idx ) * dim + i * nClassLabel + j ] ) - log( max(bottom_data[ ( n * nRotation + idx ) * dim + i * nClassLabel + nClassLabel - 1 ], Dtype(FLT_MIN)) );
+    	}
+
+    	// calc accuracy
+    	for (int j = 0; j < nClassLabel - 1; ++j) {
+      		if (scores[ j ] > maxval) {
+				maxval = scores[ j ];
+				max_id = j;
+      		}
+      		if( j == static_cast<int>(bottom_label[ n * nRotation ]) )
+				if (scores[ j ] > maxval_gt)
+	  				maxval_gt = scores[ j ];
+    	}
+
+    	if (max_id == static_cast<int>(bottom_label[ n * nRotation ])) {
+      		++accuracy;
+    	}
+    	Dtype prob = max(maxval_gt, Dtype(kLOG_THRESHOLD));
+    	logprob -= log(prob);
+    	///=====================
+
+
+
   		}
+
+  		
 
   		top[0]->mutable_cpu_data()[0] = accuracy / nSample;
   		top[0]->mutable_cpu_data()[1] = logprob / nSample;

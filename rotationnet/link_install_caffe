@@ -99,6 +99,8 @@ Run test:
 build/test/test_rotationnet_softmax.testbin
 cd /Volumes/data/projects/nautilusnet/rotationnet
 
+cd ~/framework/caffe
+
 python save_scores.py --center_only --cpu --model_def deploy_modelnet40_case1.prototxt --pretrained_model rotationnet_modelnet40_case1.caffemodel --input_file ModelNet40v1/test_car.txt --output_file ModelNet40v1/test_car.npy
 
 python classify_npyfile_case1_all_views.py scores_case1_toilet_000000020.npy
@@ -116,8 +118,12 @@ $CAFFE_HOME/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/
 
 /Users/davu/framework/caffe/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
 
+<<<<<<< HEAD
 TRAIN WITH PRETRAINED WEIGHTS:
 /Users/davu/framework/caffe/build/tools/caffe train --solver /Volumes/data/projects/nautilusnet/rotationnet/solver.prototxt --weights models/nautilus_iter_40.caffemodel 2>&1 | tee /Volumes/data/projects/nautilusnet/rotationnet/log/train.log
+=======
+/Users/davu/framework/caffe/build/tools/caffe train --solver Training/small_modelnet40_case1_solver.prototxt --weights rotationnet_modelnet40_case1.caffemodel 2>&1 | tee log/train.log
+>>>>>>> 26119055a815ed926d1bb497d2583de7e6a99d0a
 
 SAVE SCORE
 python train.py --input_file /Volumes/data/projects/nautilusnet/data/textdata1.txt --output_file score_file --model_def --mean_file

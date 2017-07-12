@@ -308,7 +308,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 150 (last added: recurrent_param)
+// LayerParameter next available layer-specific ID: 151 (last added: recurrent_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -409,6 +409,7 @@ message LayerParameter {
   optional RotationNetAccuracyParameter rotationnet_accuracy_param = 147;
   optional RotationNetSoftmaxParameter rotationnet_softmax_param = 148;
   optional RotationNetSoftmaxLossParameter rotationnet_softmax_loss_param = 149;
+  optional RotationNetImageDataParameter rotationnet_image_data_param = 150;
 }
 
 // Message that stores parameters used to apply transformation
@@ -814,10 +815,6 @@ message ImageDataParameter {
   // data.
   optional bool mirror = 6 [default = false];
   optional string root_folder = 12 [default = ""];
-
-  //DAVU: for RotationNet
-  optional uint32 num_rotation = 13 [default = 1];
-  //DAVU: End
 }
 
 message InfogainLossParameter {
@@ -937,23 +934,6 @@ message PowerParameter {
   optional float scale = 2 [default = 1.0];
   optional float shift = 3 [default = 0.0];
 }
-
-//DAVU: Start Message that stores parameters for my layers
-message RotationNetAccuracyParameter {
-  // Specify the infogain matrix source.
-  optional uint32 stride = 1 [default = 1];
-  optional bool using_upright = 2 [default = false];
-}
-message RotationNetSoftmaxParameter {
-  // Specify the infogain matrix source.
-  optional uint32 stride = 1 [default = 1];
-}
-message RotationNetSoftmaxLossParameter {
-  // Specify the infogain matrix source.
-  optional uint32 stride = 1 [default = 1];
-  optional bool using_upright = 2 [default = false];
-}
-//DAVU: End
 
 message PythonParameter {
   optional string module = 1;
@@ -1190,6 +1170,56 @@ message ThresholdParameter {
   optional float threshold = 1 [default = 0]; // Strictly positive values
 }
 
+//DAVU: Start Message that stores parameters for my layers
+message RotationNetImageDataParameter {
+  // Specify the data source.
+  optional string source = 1;
+  // Specify the batch size.
+  optional uint32 batch_size = 4 [default = 1];
+  // The rand_skip variable is for the data layer to skip a few data points
+  // to avoid all asynchronous sgd clients to start at the same point. The skip
+  // point would be set as rand_skip * rand(0,1). Note that rand_skip should not
+  // be larger than the number of keys in the database.
+  optional uint32 rand_skip = 7 [default = 0];
+  // Whether or not ImageLayer should shuffle the list of files at every epoch.
+  optional bool shuffle = 8 [default = false];
+  // It will also resize images if new_height or new_width are not zero.
+  optional uint32 new_height = 9 [default = 0];
+  optional uint32 new_width = 10 [default = 0];
+  // Specify if the images are color or gray
+  optional bool is_color = 11 [default = true];
+  // DEPRECATED. See TransformationParameter. For data pre-processing, we can do
+  // simple scaling and subtracting the data mean, if provided. Note that the
+  // mean subtraction is always carried out before scaling.
+  optional float scale = 2 [default = 1];
+  optional string mean_file = 3;
+  // DEPRECATED. See TransformationParameter. Specify if we would like to randomly
+  // crop an image.
+  optional uint32 crop_size = 5 [default = 0];
+  // DEPRECATED. See TransformationParameter. Specify if we want to randomly mirror
+  // data.
+  optional bool mirror = 6 [default = false];
+  optional string root_folder = 12 [default = ""];
+
+  optional uint32 num_rotation = 13 [default = 1];
+}
+
+message RotationNetAccuracyParameter {
+  // Specify the infogain matrix source.
+  optional uint32 stride = 1 [default = 1];
+  optional bool using_upright = 2 [default = false];
+}
+message RotationNetSoftmaxParameter {
+  // Specify the infogain matrix source.
+  optional uint32 stride = 1 [default = 1];
+}
+message RotationNetSoftmaxLossParameter {
+  // Specify the infogain matrix source.
+  optional uint32 stride = 1 [default = 1];
+  optional bool using_upright = 2 [default = false];
+}
+//DAVU: End
+
 message WindowDataParameter {
   // Specify the data source.
   optional string source = 1;
@@ -1248,14 +1278,14 @@ message V1LayerParameter {
   repeated NetStateRule exclude = 33;
   enum LayerType {
     NONE = 0;
+    ABSVAL = 35;
     ACCURACY = 1;
+    ARGMAX = 30;
     BNLL = 2;
     CONCAT = 3;
+    CONTRASTIVE_LOSS = 37;
     CONVOLUTION = 4;
     DATA = 5;
-    ARGMAX = 30;
-    ABSVAL = 35;
-    CONTRASTIVE_LOSS = 37;
     DECONVOLUTION = 39;
     DROPOUT = 6;
     DUMMY_DATA = 32;
@@ -1287,9 +1317,6 @@ message V1LayerParameter {
     TANH = 23;
     WINDOW_DATA = 24;
     THRESHOLD = 31;
-    //DAVU Start
-    //ROTATIONNET_ACCURACY = 40;
-    //DAVU End
   }
   optional LayerType type = 5;
   repeated BlobProto blobs = 6;
@@ -1332,11 +1359,6 @@ message V1LayerParameter {
   optional WindowDataParameter window_data_param = 20;
   optional TransformationParameter transform_param = 36;
   optional LossParameter loss_param = 42;
-
-  //DAVU Start
-  //optional RotationNetAccuracyParameter rotationnet_accuracy_param = 43;
-  //DAVU End
-
   optional V0LayerParameter layer = 1;
 }
 
