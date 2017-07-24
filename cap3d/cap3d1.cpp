@@ -5,6 +5,11 @@
 #include <cstring>
 #include <sstream>
 #include <vector>
+#include <camera.h>
+
+#include "reader.h"
+#include "model3d.h"
+#include <glrenderer.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <opencv2/opencv.hpp>
@@ -18,12 +23,6 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/norm.hpp>
 
-#include "camera.h"
-#include "reader/pcdreader.h"
-#include "reader/pcdmodel3d.h"
-#include "reader/plyreader.h"
-#include "reader/plymodel3d.h"
-#include "glrenderer.h"
 #include "lexer_parser.h"
 #include "shader.h"
 #include "image_processor.h"
@@ -102,7 +101,7 @@ enum FILE_TYPE {
 };
 
 int main(int argc, char* args[]) {
-	Reader *reader;
+	Reader f;
 	Model3D *model;
 	unsigned int buflen;
 	Configuration config;
@@ -124,13 +123,10 @@ int main(int argc, char* args[]) {
 
 	FILE_TYPE input_type;
 	//Determine the input file type
-	if(find(args[1], ".pcd") >=0 ) {
+	if(find(args[1], ".pcd")) {
 		input_type = TYPE_PCD;
-		reader = new PCDReader();
-	} else if (find(args[1], ".ply") >=0 ) {
+	} else if (find(args[1], ".ply")) {
 		input_type = TYPE_PLY;
-		reader = new PLYReader();
-		cout << "[DEBUG] Created PLYReader !!!!!!!!!" << endl;
 	}
 
 	//Load config file - hardcode filename here!
@@ -154,13 +150,16 @@ int main(int argc, char* args[]) {
 	cout << "Output folder: " << config.output_folder << endl;
 	// return 0;
 
-	if((model = reader->load(args[1], 2.0f))== NULL) {
+	if((model = f.load(args[1]) )== NULL) {
 		cout << "Could not load input file!" << endl;
+		delete model;
 		return 1;
 	}
 
-	//We don't need the reader anymore so delete here!
-	delete reader;
+	model->scaleToFit(2.0f);
+
+	// f.print(cout);
+	model->add_normal_vectors();
 
 	BBox3d bbox;
 	model->getBBox(bbox);
@@ -519,7 +518,6 @@ int main(int argc, char* args[]) {
 	delete[] vertices_buf_data;
 	delete[] normal_buf_data;
 	delete[] indices;
-	cout << "[DEBUG] Going to release model!!!" << endl;
 	delete model;
 	return 0;
 }

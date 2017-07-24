@@ -15,7 +15,7 @@
 
 // #include <camera.h>
 
-#include <model3d.h>
+#include "reader/model3d.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 

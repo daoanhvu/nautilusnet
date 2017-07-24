@@ -89,7 +89,7 @@ int PCDReader::parse_line2(string line, vector<Token> &v) {
 	return error;
 }
 
-PCDModel3D* PCDReader::load(const char *filename, float scale) {
+Model3D* PCDReader::load(const char *filename, float scale) {
 	ifstream f(filename);
 	string line;
 	vector<Token> tokens(0);
@@ -97,14 +97,14 @@ PCDModel3D* PCDReader::load(const char *filename, float scale) {
 	int size;
 	float tmp;
 	int vertex_index, vertex_count;
-	PCDModel3D *result;
+	Model3D *result;
 	if(f.fail()) {
 		cout << "Failed to open this file " << filename << endl;
 		return NULL;
 	}
 
 	int float_stride = 0;
-	vector<PCDVertex> vertices;
+	vector<Vertex> vertices;
 
 	while(!f.eof()) {
 		std::getline(f, line);
@@ -125,9 +125,9 @@ PCDModel3D* PCDReader::load(const char *filename, float scale) {
 			for(int i=0; i<vertex_count; i++) {
 				std::getline(f, line);
 				istringstream str(line);
-				PCDVertex vt;
+				Vertex vt;
 				vt.v = new float[float_stride];
-				vt.length = 0;
+				vt.count = float_stride;
 				for(int j=0; j<float_stride; j++) {
 					str >> tmp;
 					vt.v[j] = tmp / scale;

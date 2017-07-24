@@ -16,7 +16,11 @@ BUILD = ./build/camera.o \
 				./build/cap3d.o \
 				./build/glrenderer.o \
 				./build/model3d.o \
+				./build/plymodel3d.o \
+				./build/pcdmodel3d.o \
 				./build/reader.o \
+				./build/pcdreader.o \
+				./build/plyreader.o \
 				./build/utils.o \
 				./build/shader.o \
 				./build/lexer_parser.o \
@@ -38,8 +42,12 @@ $(BUILD): camera.cpp cap3d.cpp utils.cpp
 	$(CXX) -c -o ./build/lexer_parser.o $(CPFLAGS) lexer_parser.cpp
 	$(CXX) -c -o ./build/image_processor.o $(CPFLAGS) image_processor.cpp
 	$(CXX) -c -o ./build/shader.o $(CPFLAGS) shader.cpp
-	$(CXX) -c -o ./build/reader.o $(CPFLAGS) reader.cpp
-	$(CXX) -c -o ./build/model3d.o $(CPFLAGS) model3d.cpp
+	$(CXX) -c -o ./build/reader.o $(CPFLAGS) reader/reader.cpp
+	$(CXX) -c -o ./build/plyreader.o $(CPFLAGS) reader/plyreader.cpp
+	$(CXX) -c -o ./build/pcdreader.o $(CPFLAGS) reader/pcdreader.cpp
+	$(CXX) -c -o ./build/model3d.o $(CPFLAGS) reader/model3d.cpp
+	$(CXX) -c -o ./build/plymodel3d.o $(CPFLAGS) reader/plymodel3d.cpp
+	$(CXX) -c -o ./build/pcdmodel3d.o $(CPFLAGS) reader/pcdmodel3d.cpp
 	$(CXX) -c -o ./build/glrenderer.o $(CPFLAGS) glrenderer.cpp
 	$(CXX) -c -o ./build/image_processor.o $(CPFLAGS) image_processor.cpp
 	$(CXX) -c -o ./build/cap3d.o $(CPFLAGS) cap3d.cpp

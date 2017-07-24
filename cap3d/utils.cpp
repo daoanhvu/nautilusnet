@@ -119,3 +119,29 @@ float parseFloat(string str, int start, int end, int &error){
 	error = 0;
 	return val * negative;
 }
+
+/**
+	Check if s1 existed in s, return the position of the first character of s1 in s, return -1 in case of
+	s1 is not existed in s.
+	CAUTION: both s and s1 must be ended with end-string character '\0'
+
+	BRUTE-FORCE????
+*/
+int find(const char* s, const char* s1) {
+	int i = 0;
+	int k = 0;
+
+	while(s[i] != 0) {
+		k = 0;
+		while( (s[i+k] == s1[k]) && (s1[k] != 0) ) {
+			k++;
+		}
+		if(s1[k] == 0) {
+			//found!
+			return i;
+		}
+		i++;
+	}
+
+	return -1;
+}

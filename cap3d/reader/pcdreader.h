@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "reader.h"
 #include "pcdmodel3d.h"
 #include "../lexer_parser.h"
 
@@ -33,11 +34,13 @@
 #define CODE_PCD_UNSIGNED	21
 
 
-class PCDReader {
+class PCDReader: public Reader {
 protected:
 public:
+	virtual ~PCDReader(){};
+	
 	int parse_line2(string line, vector<Token> &v);
-	virtual PCDModel3D* load(const char *filename, float scale);
+	virtual Model3D* load(const char *filename, float scale);
 };
 
 #endif

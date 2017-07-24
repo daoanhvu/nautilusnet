@@ -1,34 +1,70 @@
-#ifndef _PCDMODEL3D_H_
-#define _PCDMODEL3D_H_
+#ifndef _MODEL3D_H_
+#define _MODEL3D_H_
 
 #include <vector>
 #include <iostream>
-#include "model3d.h"
 
 using namespace std;
 
-class PCDModel3D: public Model3D {
+typedef struct tagVertex {
+	float *v;
+	float normal[3];
+	int *face_indices;
+	unsigned int count; //number of faces this vertex belong to
+	unsigned int log_face_size;
+
+	tagVertex() {
+		v = NULL;
+		count = 0;
+		face_indices = new int[8];
+		log_face_size = 8;
+	}
+} Vertex;
+
+typedef struct tagFace {
+	unsigned char vertex_count;
+	int vertex_indices[5];
+	float normal[3];
+} Face;
+
+typedef struct tagBBox3D {
+	float minx;
+	float maxx;
+	float miny;
+	float maxy;
+	float minz;
+	float maxz;
+} BBox3d;
+
+
+
+class Model3D {
   protected:
+    vector<Vertex> vertices;
+    //Number of float per vertex
+    int float_stride;
+
   public:
-    PCDModel3D(){};
-    PCDModel3D(vector<Vertex> vs, int floatStride) {
+    Model3D(){};
+    Model3D(vector<Vertex> vs, vector<Face> f, int floatStride) {
       vertices = vs;
       float_stride = floatStride;
     }
 
-    virtual ~PCDModel3D() {
-			unsigned int size = vertices.size();
-			unsigned int i, j;
+    virtual ~Model3D() {
+		unsigned int size = vertices.size();
+		unsigned int i;
 
-			for(i=0; i<size; i++) {
-				delete[] vertices[i].v;
-			}
+		for(i=0; i<size; i++) {
+			delete[] vertices[i].v;
 		}
+	}
 
 	void translate(float vx, float vy, float vz);
 	void rotate(float rad, float vx, float vy, float vz);
 	void scale(float scale);
 	void scaleToFit(float value);
+	int add_normal_vectors();
 
     void setFloatStride(int fs) {
       this->float_stride = fs;
@@ -44,8 +80,12 @@ class PCDModel3D: public Model3D {
     }
 
     void pushVertex(Vertex v) {
-    	vertices.push_back(v);
+      vertices.push_back(v);
     }
+
+    int getVertexCount() const {
+		return vertices.size();
+	}
 
     void setAll(vector<Vertex> vs, int floatStride) {
       vertices = vs;
@@ -53,9 +93,9 @@ class PCDModel3D: public Model3D {
     }
 
     /*
-			This will make the performance down
-			Need const ???
-		*/
+		This will make the performance down
+		Need const ???
+	*/
 	Vertex getVertex(int idx) const {
 		return vertices[idx];
 	}
@@ -69,32 +109,14 @@ class PCDModel3D: public Model3D {
 	float* getVertexBuffer(unsigned int &);
 	float* getNormalBuffer(unsigned int &);
 
-	/*
+    virtual void getBBox(BBox3d &bbox);
+
+    /*
 			TODO: This function will fail if the number of vertex per face is not a constant
 			PARAMS:
 				[OUT] nc: total number of vertex
 		*/
-    virtual unsigned short *getElementIndices(unsigned int &nc) {
-    	nc = 0;
-    }
-
-    // void getBBox(BBox3d &bbox);
-
-    /*
-	 	For testing
-	*/
-	void print(ostream &out) {
-		int i, j, k;
-		int vertex_count = vertices.size();
-		out << "Number of vertex: " << vertex_count << endl;
-		out << "Number of float per vertex: " << float_stride << endl;
-		out << "Vertices: " << endl;
-		for(i=0; i<vertex_count; i++) {
-			for(j=0; j<float_stride; j++)
-				out << vertices[i].v[j] << " ";
-			out << endl;
-		}
-	}
+    virtual unsigned short *getElementIndices(unsigned int &nc) = 0;
 };
 
 #endif
