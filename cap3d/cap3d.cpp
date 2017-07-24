@@ -439,6 +439,7 @@ int main(int argc, char* args[]) {
 		glUniformMatrix4fv(viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
 
 		//Now, we draw the model
+		// user GL_POINTS to draw pixel per pixel
 		//glDrawArrays(GL_TRIANGLES, 0, num_of_vertex);
 		glDrawElements(
 				GL_TRIANGLES,      // mode
