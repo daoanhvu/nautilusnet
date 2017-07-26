@@ -42,7 +42,6 @@
 
 
 using namespace std;
-using namespace fp;
 using namespace glm;
 
 #ifdef __APPLE__
@@ -101,7 +100,16 @@ enum FILE_TYPE {
 	TYPE_OBJ
 };
 
-int main(int argc, char* args[]) {
+int main() {
+	Reader *reader = new PCDReader();;
+	Model3D *model = reader->load("/Volumes/Data/projects/data/rgbd-dataset/apple/apple_1/apple_1_1_1.pcd", 2.0f);
+
+	delete reader;
+	delete model;
+	return 0;
+}
+
+int main1(int argc, char* args[]) {
 	Reader *reader;
 	Model3D *model;
 	unsigned int buflen;
@@ -294,7 +302,7 @@ int main(int argc, char* args[]) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned short), indices , GL_STATIC_DRAW);
 
-	GLuint programID = loadShaders( "vertex1.shader", "fragment1.shader");
+	GLuint programID = loadShaders( "vertex.shader", "fragment.shader");
 	GLuint mvpMatrixId = glGetUniformLocation(programID, "MVP");
 	GLuint viewMatrixId = glGetUniformLocation(programID, "V");
 	GLuint modelMatrixId = glGetUniformLocation(programID, "M");

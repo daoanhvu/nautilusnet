@@ -2,6 +2,7 @@
 #define _VIEWER_H_
 
 #include <vector>
+#include "camera.h"
 #include "reader/model3d.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ class Viewer {
 		int height;
 
 		float bgColor[3];
-
+		Camera camera;
 		vector<Model3D*> models;
 
 	public:

@@ -13,10 +13,8 @@ class PLYModel3D: public Model3D {
 
   public:
     PLYModel3D(){};
-    PLYModel3D(vector<Vertex> vs, vector<Face> f, int floatStride) {
-      vertices = vs;
+    PLYModel3D(vector<Vertex> vs, vector<Face> f, int floatStride): Model3D(vs, floatStride) {\
       faces = f;
-      float_stride = floatStride;
     }
 
     virtual ~PLYModel3D() {
@@ -27,11 +25,11 @@ class PLYModel3D: public Model3D {
 		}
 	}
 
-		void translate(float vx, float vy, float vz);
-		void rotate(float rad, float vx, float vy, float vz);
-		void scale(float scale);
-		void scaleToFit(float value);
-		int add_normal_vectors();
+	void translate(float vx, float vy, float vz);
+	void rotate(float rad, float vx, float vy, float vz);
+	void scale(float scale);
+	void scaleToFit(float value);
+	int add_normal_vectors();
 
     void setFloatStride(int fs) {
       this->float_stride = fs;
@@ -71,10 +69,10 @@ class PLYModel3D: public Model3D {
     /*
 			This will make the performance down
 			Need const ???
-		*/
-		Vertex getVertex(int idx) const {
-			return vertices[idx];
-		}
+	*/
+	Vertex getVertex(int idx) const {
+		return vertices[idx];
+	}
 
     int getFloatStride() const { return float_stride; }
 
@@ -82,8 +80,8 @@ class PLYModel3D: public Model3D {
 			Params:
 				n [OUT] number of float returned
 		*/
-		float* getVertexBuffer(unsigned int &);
-		float* getNormalBuffer(unsigned int &);
+	float* getVertexBuffer(unsigned int &);
+	float* getNormalBuffer(unsigned int &);
 
     void getBBox(BBox3d &bbox);
 

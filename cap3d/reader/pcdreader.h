@@ -32,11 +32,57 @@
 #define CODE_PCD_FLOAT		19
 #define CODE_PCD_SIGNED		20
 #define CODE_PCD_UNSIGNED	21
+#define CODE_PCD_IMX	22
+#define CODE_PCD_IMY	23
 
+namespace pcd {
+
+	enum FieldCode {
+		X,
+		Y,
+		Z,
+		NORMAL_X,
+		NORMAL_Y,
+		NORMAL_Z,
+		RGB,
+		IMX,
+		IMY
+	};
+
+	enum FieldType {
+		INT8,
+		UINT8,
+		INT16,
+		UINT16,
+		INT32,
+		UINT32,
+		FLOAT32,
+		FLOAT64
+	};
+
+	typedef struct tagPointField {
+		FieldCode code;
+		FieldType type;
+		short index;
+
+		public:
+			tagPointField(){}
+			tagPointField(FieldCode c, FieldType t){
+				code = c;
+				type = t;
+			}
+	} PointField;
+
+}
 
 class PCDReader: public Reader {
+private:
+	vector<pcd::PointField> fields;
 protected:
 public:
+	PCDReader() {
+	}
+
 	virtual ~PCDReader(){};
 	
 	int parse_line2(string line, vector<Token> &v);

@@ -7,23 +7,17 @@
 
 using namespace std;
 
+
+
 class PCDModel3D: public Model3D {
   protected:
   public:
     PCDModel3D(){};
-    PCDModel3D(vector<Vertex> vs, int floatStride) {
-      vertices = vs;
-      float_stride = floatStride;
+    PCDModel3D(vector<Vertex> vs, int floatStride): Model3D(vs, floatStride) {
     }
 
-    virtual ~PCDModel3D() {
-			unsigned int size = vertices.size();
-			unsigned int i, j;
-
-			for(i=0; i<size; i++) {
-				delete[] vertices[i].v;
-			}
-		}
+    virtual ~PCDModel3D() {		
+	}
 
 	void translate(float vx, float vy, float vz);
 	void rotate(float rad, float vx, float vy, float vz);
@@ -76,6 +70,7 @@ class PCDModel3D: public Model3D {
 		*/
     virtual unsigned short *getElementIndices(unsigned int &nc) {
     	nc = 0;
+    	return NULL;
     }
 
     // void getBBox(BBox3d &bbox);

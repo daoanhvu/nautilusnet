@@ -68,6 +68,12 @@ int PCDReader::parse_line2(string line, vector<Token> &v) {
 		} else if(tk == "normal_z") {
 			Token t(CODE_PCD_NORM_Z);
 			v.push_back(t);
+		} else if(tk == "imX") {
+			Token t(CODE_PCD_IMX);
+			v.push_back(t);
+		} else if(tk == "imY") {
+			Token t(CODE_PCD_IMY);
+			v.push_back(t);
 		} else if(tk == "ascii") {
 			Token t(CODE_PCD_ASCII);
 			v.push_back(t);
@@ -80,8 +86,7 @@ int PCDReader::parse_line2(string line, vector<Token> &v) {
 		} else if(tk == "I") {
 			Token t(CODE_PCD_SIGNED);
 			v.push_back(t);
-		}
-		else if(tk == "comment" || tk == "converted" || tk == "from" || tk == "OBJ" ) {
+		} else if(tk == "comment" || tk == "converted" || tk == "from" || tk == "OBJ" ) {
 
 		}
 	}
@@ -106,6 +111,8 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 	int float_stride = 0;
 	vector<Vertex> vertices;
 
+	fields.clear();
+
 	while(!f.eof()) {
 		std::getline(f, line);
 		tokens.clear();
@@ -121,7 +128,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 			read_vertex = true;
 
 			vertices.reserve(vertex_count);
-
+			float_stride = fields.size();
 			for(int i=0; i<vertex_count; i++) {
 				std::getline(f, line);
 				istringstream str(line);
@@ -129,26 +136,118 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 				vt.v = new float[float_stride];
 				vt.count = float_stride;
 				for(int j=0; j<float_stride; j++) {
-					str >> tmp;
-					vt.v[j] = tmp / scale;
+					if(fields[j].code == pcd::RGB) {
+						switch(fields[j].type) {
+							case pcd::INT8:
+							break;
+							case pcd::UINT8:
+							break;
+							case pcd::INT16:
+							break;
+							case pcd::UINT16:
+							break;
+							case pcd::INT32:
+							break;
+							case pcd::UINT32:
+							break;
+							case pcd::FLOAT32:
+								uint32_t color_value;
+								str >> tmp;
+								memcpy(&color_value, reinterpret_cast<const char*>(&tmp), sizeof(float));
+								// cout << "[DEBUG] uint32_t Color: " << color_value << endl;
+							break;
+							case pcd::FLOAT64:
+							break;
+						}
+					} else {
+						str >> tmp;
+						vt.v[j] = tmp / scale;
+					}
 				}
 				vertices.push_back(vt);
 			}
 		} else if(tokens[0].code == CODE_PCD_FIELDS) {
-			int l = tokens.size();
-			int idx = 1;
-			while(idx < l) {
-				if(tokens[idx].code == CODE_PCD_X || (tokens[idx].code == CODE_PCD_Y) || 
-					tokens[idx].code == CODE_PCD_Z || tokens[idx].code == CODE_PCD_NORM_X || 
-					tokens[idx].code == CODE_PCD_NORM_Y || tokens[idx].code == CODE_PCD_NORM_Z) {
-					float_stride++;
+			pcd::PointField f;
+			for(int i=1; i<tokens.size(); i++) {
+				switch(tokens[i].code) {
+					case CODE_PCD_X:
+						f.code = pcd::X;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_Y:
+						f.code = pcd::Y;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_Z:
+						f.code = pcd::Z;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_NORM_X:
+						f.code = pcd::NORMAL_X;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_NORM_Y:
+						f.code = pcd::NORMAL_Y;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_NORM_Z:
+						f.code = pcd::NORMAL_Z;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_RGB:
+						f.code = pcd::RGB;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_IMX:
+						f.code = pcd::IMX;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
+
+					case CODE_PCD_IMY:
+						f.code = pcd::IMY;
+						f.index = i-1;
+						fields.push_back(f);
+					break;
 				}
-				idx++;
+			}
+		} else if(tokens[0].code == CODE_PCD_TYPE) {
+			for(int i=1; i<tokens.size(); i++) {
+				switch(tokens[i].code) {
+					case CODE_PCD_FLOAT:
+						fields[i].type = pcd::FLOAT32;
+					break;
+
+					case CODE_PCD_SIGNED:
+						fields[i].type = pcd::INT32;
+					break;
+
+					case CODE_PCD_UNSIGNED:
+						fields[i].type = pcd::UINT32;
+					break;
+				}
 			}
 		} else if(tokens[0].code == CODE_PCD_POINTS) {
 			vertex_count = (int)(tokens[1].value);
 		}
 	}
+
+	cout << "[DEBUG] Number of vertex: " << vertex_count << endl;
+	cout << "[DEBUG] Number of field per vertex: " << fields.size() << endl;
 
 	f.close();
 	result = new PCDModel3D(vertices, float_stride);

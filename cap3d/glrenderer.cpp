@@ -21,7 +21,6 @@
 #define RAD(x) (x*3.14159f/180.0f)
 
 using namespace std;
-using namespace fp;
 
 GLRenderer::GLRenderer() {
 	programId = 0;

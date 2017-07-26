@@ -13,9 +13,8 @@
 using namespace std;
 
 class PLYReader: public Reader {
-	public:
-		// vector<PlyProperty> properties;
-
+	protected:
+		
 	public:
 		virtual ~PLYReader() {}
 

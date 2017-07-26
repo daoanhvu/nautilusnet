@@ -3,7 +3,6 @@
 
 #include <glm/glm.hpp>
 
-namespace fp {
 	class Camera {
 	private:
 		glm::mat4 mvp;
@@ -71,6 +70,5 @@ namespace fp {
 			}
 		}
 	};
-}
 
 #endif

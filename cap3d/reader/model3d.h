@@ -36,17 +36,32 @@ typedef struct tagBBox3D {
 	float maxz;
 } BBox3d;
 
+enum VertexAttribute {
+	POSITION = 0,
+	COLOR,
+	NORMAL,
+	TEXTTURE
+};
 
+typedef struct tagVertexAttrib {
+	//	0. Position
+	//	1. Color
+	//	2. Normal
+	//	3. Texture
+	VertexAttribute code;
+	short offset;
+} VertexAttrib;
 
 class Model3D {
   protected:
     vector<Vertex> vertices;
     //Number of float per vertex
     int float_stride;
+	vector<VertexAttrib> vertex_attribs;
 
   public:
-    Model3D(){};
-    Model3D(vector<Vertex> vs, vector<Face> f, int floatStride) {
+    Model3D() {};
+    Model3D(vector<Vertex> vs, int floatStride) {
       vertices = vs;
       float_stride = floatStride;
     }
@@ -64,7 +79,34 @@ class Model3D {
 	void rotate(float rad, float vx, float vy, float vz);
 	void scale(float scale);
 	void scaleToFit(float value);
-	int add_normal_vectors();
+
+
+	virtual short getColorOffset() {
+		for(int i=0; i<vertex_attribs.size(); i++) {
+			if(vertex_attribs[i].code == COLOR) {
+				return vertex_attribs[i].offset;
+			}
+		}
+		return -1;
+	}
+
+	virtual int getNormalOffset() {
+		for(int i=0; i<vertex_attribs.size(); i++) {
+			if(vertex_attribs[i].code == NORMAL) {
+				return vertex_attribs[i].offset;
+			}
+		}
+		return -1;
+	}
+
+	virtual int getTextureOffset() {
+		for(int i=0; i<vertex_attribs.size(); i++) {
+			if(vertex_attribs[i].code == TEXTTURE) {
+				return vertex_attribs[i].offset;
+			}
+		}
+		return -1;
+	}
 
     void setFloatStride(int fs) {
       this->float_stride = fs;

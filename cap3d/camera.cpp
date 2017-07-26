@@ -5,7 +5,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace std;
-using namespace fp;
 
 Camera::Camera(): pitchAccum(0), yawAccum(0), rollAccum(0) {
 	xAxis = glm::vec4(1, 0, 0, 0);

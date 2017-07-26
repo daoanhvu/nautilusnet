@@ -11,11 +11,6 @@
 
 using namespace std;
 
-typedef struct tagProp {
-	string name;
-	int datatype;
-} PlyProperty;
-
 struct OpenFileException : public exception {
    const char * what () const throw () {
       return "Could not open this file.";
@@ -23,8 +18,7 @@ struct OpenFileException : public exception {
 };
 
 class Reader {
-	public:
-		// vector<PlyProperty> properties;
+	protected:
 
 	public:
 		virtual ~Reader() {}
