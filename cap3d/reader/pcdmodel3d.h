@@ -83,6 +83,7 @@ class PCDModel3D: public Model3D {
 		int vertex_count = vertices.size();
 		out << "Number of vertex: " << vertex_count << endl;
 		out << "Number of float per vertex: " << float_stride << endl;
+		out << "Number of component: " << vertex_attribs.size() << endl;
 		out << "Vertices: " << endl;
 		for(i=0; i<vertex_count; i++) {
 			for(j=0; j<float_stride; j++)
@@ -90,6 +91,8 @@ class PCDModel3D: public Model3D {
 			out << endl;
 		}
 	}
+
+	virtual void draw();
 };
 
 #endif

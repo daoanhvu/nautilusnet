@@ -106,31 +106,33 @@ class PLYModel3D: public Model3D {
 		}
 
     /*
-		 	For testing
-		*/
-		void print(ostream &out) {
-			int i, j, k;
-			int vertex_count = vertices.size();
-			int face_count = faces.size();
+		For testing
+	*/
+	void print(ostream &out) {
+		int i, j, k;
+		int vertex_count = vertices.size();
+		int face_count = faces.size();
 
-			out << "Number of vertex: " << vertex_count << endl;
-			out << "Number of faces: " << face_count << endl;
-			out << "Number of float per vertex: " << float_stride << endl;
-			out << "Vertices: " << endl;
-			for(i=0; i<vertex_count; i++) {
-				for(j=0; j<float_stride; j++)
-					out << vertices[i].v[j] << " ";
-				out << endl;
-			}
-
-			for(i=0; i<face_count; i++) {
-				k = faces[i].vertex_count;
-				out << k << " ";
-				for(j=0; j<k; j++)
-					out << faces[i].vertex_indices[j] << " ";
-				out << endl;
-			}
+		out << "Number of vertex: " << vertex_count << endl;
+		out << "Number of faces: " << face_count << endl;
+		out << "Number of float per vertex: " << float_stride << endl;
+		out << "Vertices: " << endl;
+		for(i=0; i<vertex_count; i++) {
+			for(j=0; j<float_stride; j++)
+				out << vertices[i].v[j] << " ";
+			out << endl;
 		}
+
+		for(i=0; i<face_count; i++) {
+			k = faces[i].vertex_count;
+			out << k << " ";
+			for(j=0; j<k; j++)
+				out << faces[i].vertex_indices[j] << " ";
+			out << endl;
+		}
+	}
+
+	virtual void draw();
 };
 
 #endif

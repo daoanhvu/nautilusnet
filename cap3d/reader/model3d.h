@@ -13,11 +13,34 @@ typedef struct tagVertex {
 	unsigned int count; //number of faces this vertex belong to
 	unsigned int log_face_size;
 
+public:
 	tagVertex() {
 		v = NULL;
 		count = 0;
-		face_indices = new int[8];
-		log_face_size = 8;
+		// face_indices = new int[8];
+		face_indices = NULL;
+		log_face_size = 0;
+	}
+
+	tagVertex(const struct tagVertex &vt) {
+		this->v = vt.v;
+		this->count = vt.count;
+		this->face_indices = vt.face_indices;
+		this->log_face_size = vt.log_face_size;
+		this->normal[0] = vt.normal[0];
+		this->normal[1] = vt.normal[1];
+		this->normal[2] = vt.normal[2];
+	}
+
+	struct tagVertex& operator=(const struct tagVertex& v) {
+		this->v = v.v;
+		this->count = v.count;
+		this->face_indices = v.face_indices;
+		this->log_face_size = v.log_face_size;
+		this->normal[0] = v.normal[0];
+		this->normal[1] = v.normal[1];
+		this->normal[2] = v.normal[2];
+		return *this;
 	}
 } Vertex;
 
@@ -38,9 +61,10 @@ typedef struct tagBBox3D {
 
 enum VertexAttribute {
 	POSITION = 0,
-	COLOR,
+	COLOR3,
+	COLOR4,
 	NORMAL,
-	TEXTTURE
+	TEXTURE
 };
 
 typedef struct tagVertexAttrib {
@@ -60,10 +84,10 @@ class Model3D {
 	vector<VertexAttrib> vertex_attribs;
 
   public:
-    Model3D() {};
-    Model3D(vector<Vertex> vs, int floatStride) {
-      vertices = vs;
-      float_stride = floatStride;
+    Model3D(): bufferCount(0) {}
+    Model3D(vector<Vertex> vs, int floatStride): bufferCount(0) {
+    	vertices = vs;
+    	float_stride = floatStride;
     }
 
     virtual ~Model3D() {
@@ -80,10 +104,13 @@ class Model3D {
 	void scale(float scale);
 	void scaleToFit(float value);
 
+	virtual void addAttrib(VertexAttrib att) {
+		vertex_attribs.push_back(att);
+	}
 
 	virtual short getColorOffset() {
 		for(int i=0; i<vertex_attribs.size(); i++) {
-			if(vertex_attribs[i].code == COLOR) {
+			if(vertex_attribs[i].code == COLOR3 || vertex_attribs[i].code == COLOR4) {
 				return vertex_attribs[i].offset;
 			}
 		}
@@ -101,7 +128,7 @@ class Model3D {
 
 	virtual int getTextureOffset() {
 		for(int i=0; i<vertex_attribs.size(); i++) {
-			if(vertex_attribs[i].code == TEXTTURE) {
+			if(vertex_attribs[i].code == TEXTURE) {
 				return vertex_attribs[i].offset;
 			}
 		}
@@ -129,7 +156,7 @@ class Model3D {
 		return vertices.size();
 	}
 
-    void setAll(vector<Vertex> vs, int floatStride) {
+    virtual void setAll(vector<Vertex> vs, int floatStride) {
       vertices = vs;
       float_stride = floatStride;
     }
@@ -159,6 +186,8 @@ class Model3D {
 				[OUT] nc: total number of vertex
 		*/
     virtual unsigned short *getElementIndices(unsigned int &nc) = 0;
+
+    virtual void draw() = 0;
 };
 
 #endif

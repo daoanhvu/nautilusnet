@@ -25,15 +25,16 @@
 #define CODE_PCD_Y 		    12
 #define CODE_PCD_Z 	        13
 #define CODE_PCD_RGB 	    14
-#define CODE_PCD_NORM_X	    15
-#define CODE_PCD_NORM_Y		16
-#define CODE_PCD_NORM_Z     17
-#define CODE_PCD_ASCII		18
-#define CODE_PCD_FLOAT		19
-#define CODE_PCD_SIGNED		20
-#define CODE_PCD_UNSIGNED	21
-#define CODE_PCD_IMX	22
-#define CODE_PCD_IMY	23
+#define CODE_PCD_RGBA 	    15
+#define CODE_PCD_NORM_X	    16
+#define CODE_PCD_NORM_Y		17
+#define CODE_PCD_NORM_Z     18
+#define CODE_PCD_IMX		19
+#define CODE_PCD_IMY		20
+#define CODE_PCD_ASCII		21
+#define CODE_PCD_FLOAT		22
+#define CODE_PCD_SIGNED		23
+#define CODE_PCD_UNSIGNED	24
 
 namespace pcd {
 
@@ -45,6 +46,7 @@ namespace pcd {
 		NORMAL_Y,
 		NORMAL_Z,
 		RGB,
+		RGBA,
 		IMX,
 		IMY
 	};

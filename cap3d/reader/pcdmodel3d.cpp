@@ -67,3 +67,7 @@ void PCDModel3D::scaleToFit(float value) {
 		vertices[i].v[2] *= factor;
 	}
 }
+
+void PCDModel3D::draw() {
+	
+}

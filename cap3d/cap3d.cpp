@@ -102,7 +102,7 @@ enum FILE_TYPE {
 
 int main() {
 	Reader *reader = new PCDReader();;
-	Model3D *model = reader->load("/Volumes/Data/projects/data/rgbd-dataset/apple/apple_1/apple_1_1_1.pcd", 2.0f);
+	Model3D *model = reader->load("/Volumes/Data/projects/nautilusnet/data/simple.pcd", 2.0f);
 
 	delete reader;
 	delete model;

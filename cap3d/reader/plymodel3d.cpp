@@ -179,3 +179,7 @@ void PLYModel3D::getBBox(BBox3d &bbox) {
 		}
 	}
 }
+
+void PLYModel3D::draw() {
+
+}
