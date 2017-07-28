@@ -1,20 +1,6 @@
 #include "pcdmodel3d.h"
 #include <glm/glm.hpp>
 
-float* PCDModel3D::getVertexBuffer(unsigned int &nc) {
-	int i, j;
-	nc = vertices.size();
-	unsigned int n = nc * float_stride;
-	float *buf = new float[n];
-	int offs = 0;
-	unsigned int normal_size_in_byte = sizeof(float) * float_stride;
-	for(i=0; i<nc; i++) {
-		std::memcpy(buf + offs, vertices[i].v, normal_size_in_byte);
-		offs += float_stride;
-	}
-	return buf;
-}
-
 void PCDModel3D::translate(float vx, float vy, float vz) {
 	unsigned int nc = vertices.size();
 	unsigned int i;
@@ -66,8 +52,4 @@ void PCDModel3D::scaleToFit(float value) {
 		vertices[i].v[1] *= factor;
 		vertices[i].v[2] *= factor;
 	}
-}
-
-void PCDModel3D::draw() {
-	
 }

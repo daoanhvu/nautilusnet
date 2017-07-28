@@ -12,7 +12,7 @@ class PLYModel3D: public Model3D {
     vector<Face> faces;
 
   public:
-    PLYModel3D(){};
+    PLYModel3D():Model3D() {};
     PLYModel3D(vector<Vertex> vs, vector<Face> f, int floatStride): Model3D(vs, floatStride) {\
       faces = f;
     }
@@ -74,36 +74,59 @@ class PLYModel3D: public Model3D {
 		return vertices[idx];
 	}
 
-    int getFloatStride() const { return float_stride; }
-
     /*
 			Params:
 				n [OUT] number of float returned
 		*/
 	float* getVertexBuffer(unsigned int &);
-	float* getNormalBuffer(unsigned int &);
 
-    void getBBox(BBox3d &bbox);
+	/*
+		TODO: This function will fail if the number of vertex per face is not a constant
+		PARAMS:
+			[OUT] nc: total number of vertex
+	*/
+	unsigned short *getElementIndices(unsigned int &nc) {
+		unsigned int face_count = faces.size();
+		unsigned int i;
+		int j, k, c;
+		unsigned short *indices = NULL;
 
-		/*
-			TODO: This function will fail if the number of vertex per face is not a constant
-			PARAMS:
-				[OUT] nc: total number of vertex
-		*/
-		unsigned short *getElementIndices(unsigned int &nc) {
-			unsigned int face_count = faces.size();
-			unsigned int i;
-			int j, k = faces[0].vertex_count;
+		nc = 0;
+		if(face_count > 0) {
+			c = 0;
+			k = faces[0].vertex_count;
 			nc = face_count * k;
-			int c = 0;
-			unsigned short *indices = new unsigned short[nc];
+			indices = new unsigned short[nc];
 			for(i=0; i<face_count; i++) {
 				for(j=0; j<k; j++) {
 					indices[c++] = faces[i].vertex_indices[j];
 				}
 			}
-			return indices;
 		}
+
+		return indices;
+	}
+
+	void addDefaultColor(float r, float g, float b) {
+		int old_float_stride = float_stride;
+		float_stride += 3;
+		float *temp_p, *new_v;
+		int vxcount = vertices.size();
+		for(int i=0; i<vxcount; i++) {
+			temp_p = vertices[i].v;
+			new_v = new float[float_stride];
+			memcpy(new_v, temp_p, sizeof(float) * old_float_stride);
+			new_v[old_float_stride] = r;
+			new_v[old_float_stride + 1] = g;
+			new_v[old_float_stride + 2] = b;
+			vertices[i].v = new_v;
+		}
+		VertexAttrib color_att;
+		color_att.code = COLOR3;
+		color_att.offset = old_float_stride;
+		// cout << "[DEBUG] Color offset: " << old_float_stride << endl;
+		vertex_attribs.push_back(color_att);
+	}
 
     /*
 		For testing
@@ -112,6 +135,14 @@ class PLYModel3D: public Model3D {
 		int i, j, k;
 		int vertex_count = vertices.size();
 		int face_count = faces.size();
+
+		int offset = getPositionOffset();
+		cout << "[DEBUG] Position offset: " << offset << endl;
+		offset = getNormalOffset();
+		cout << "[DEBUG] Normal offset: " << offset << endl;
+		offset = getColorOffset();
+		cout << "[DEBUG] Color offset: " << offset << endl;
+
 
 		out << "Number of vertex: " << vertex_count << endl;
 		out << "Number of faces: " << face_count << endl;
@@ -131,8 +162,6 @@ class PLYModel3D: public Model3D {
 			out << endl;
 		}
 	}
-
-	virtual void draw();
 };
 
 #endif

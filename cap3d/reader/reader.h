@@ -17,9 +17,52 @@ struct OpenFileException : public exception {
    }
 };
 
+namespace type {
+	enum FieldType {
+		INT8,
+		UINT8,
+		INT16,
+		UINT16,
+		INT32,
+		UINT32,
+		FLOAT32,
+		FLOAT64
+	};
+}
+
+enum FieldCode {
+		X,
+		Y,
+		Z,
+		NORMAL_X,
+		NORMAL_Y,
+		NORMAL_Z,
+		RGB,
+		RGBA,
+		RED,
+		GREEN,
+		BLUE,
+		ALPHA,
+		IMX,
+		IMY
+};
+
+typedef struct tagPointField {
+	FieldCode code;
+	type::FieldType type;
+	short index;
+
+	public:
+		tagPointField(){}
+		tagPointField(FieldCode c, type::FieldType t){
+			code = c;
+			type = t;
+		}
+} PointField;
+
 class Reader {
 	protected:
-
+		vector<PointField> fields;
 	public:
 		virtual ~Reader() {}
 

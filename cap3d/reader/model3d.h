@@ -6,17 +6,19 @@
 
 using namespace std;
 
+/**
+	deprecated!!!!
+*/
 typedef struct tagVertex {
 	float *v;
-	float normal[3];
 	int *face_indices;
-	unsigned int count; //number of faces this vertex belong to
+	unsigned int face_size; //number of faces this vertex belong to
 	unsigned int log_face_size;
 
 public:
 	tagVertex() {
 		v = NULL;
-		count = 0;
+		face_size = 0;
 		// face_indices = new int[8];
 		face_indices = NULL;
 		log_face_size = 0;
@@ -24,22 +26,16 @@ public:
 
 	tagVertex(const struct tagVertex &vt) {
 		this->v = vt.v;
-		this->count = vt.count;
+		this->face_size = vt.face_size;
 		this->face_indices = vt.face_indices;
 		this->log_face_size = vt.log_face_size;
-		this->normal[0] = vt.normal[0];
-		this->normal[1] = vt.normal[1];
-		this->normal[2] = vt.normal[2];
 	}
 
 	struct tagVertex& operator=(const struct tagVertex& v) {
 		this->v = v.v;
-		this->count = v.count;
+		this->face_size = v.face_size;
 		this->face_indices = v.face_indices;
 		this->log_face_size = v.log_face_size;
-		this->normal[0] = v.normal[0];
-		this->normal[1] = v.normal[1];
-		this->normal[2] = v.normal[2];
 		return *this;
 	}
 } Vertex;
@@ -84,10 +80,9 @@ class Model3D {
 	vector<VertexAttrib> vertex_attribs;
 
   public:
-    Model3D(): bufferCount(0) {}
-    Model3D(vector<Vertex> vs, int floatStride): bufferCount(0) {
+    Model3D(): float_stride(0) {    }
+    Model3D(vector<Vertex> vs, int floatStride): float_stride(floatStride) {
     	vertices = vs;
-    	float_stride = floatStride;
     }
 
     virtual ~Model3D() {
@@ -106,6 +101,15 @@ class Model3D {
 
 	virtual void addAttrib(VertexAttrib att) {
 		vertex_attribs.push_back(att);
+	}
+
+	virtual short getPositionOffset() {
+		for(int i=0; i<vertex_attribs.size(); i++) {
+			if(vertex_attribs[i].code == POSITION) {
+				return vertex_attribs[i].offset;
+			}
+		}
+		return -1;
 	}
 
 	virtual short getColorOffset() {
@@ -169,14 +173,14 @@ class Model3D {
 		return vertices[idx];
 	}
 
-    int getFloatStride() const { return float_stride; }
+    virtual int getFloatStride() const { return float_stride; }
 
     /*
 		Params:
 		n [OUT] number of float returned
 	*/
 	float* getVertexBuffer(unsigned int &);
-	float* getNormalBuffer(unsigned int &);
+	virtual float* getNormalBuffer(unsigned int &);
 
     virtual void getBBox(BBox3d &bbox);
 
@@ -187,7 +191,9 @@ class Model3D {
 		*/
     virtual unsigned short *getElementIndices(unsigned int &nc) = 0;
 
-    virtual void draw() = 0;
+
+    //For Debuging
+    virtual void print(ostream &out) {}
 };
 
 #endif

@@ -18,6 +18,7 @@ BUILD = ./build/camera.o \
 				./build/model3d.o \
 				./build/plymodel3d.o \
 				./build/pcdmodel3d.o \
+				./build/vbo.o \
 				./build/reader.o \
 				./build/pcdreader.o \
 				./build/plyreader.o \
@@ -48,6 +49,7 @@ $(BUILD): camera.cpp cap3d.cpp utils.cpp
 	$(CXX) -c -o ./build/model3d.o $(CPFLAGS) reader/model3d.cpp
 	$(CXX) -c -o ./build/plymodel3d.o $(CPFLAGS) reader/plymodel3d.cpp
 	$(CXX) -c -o ./build/pcdmodel3d.o $(CPFLAGS) reader/pcdmodel3d.cpp
+	$(CXX) -c -o ./build/vbo.o $(CPFLAGS) VBO.cpp
 	$(CXX) -c -o ./build/glrenderer.o $(CPFLAGS) glrenderer.cpp
 	$(CXX) -c -o ./build/image_processor.o $(CPFLAGS) image_processor.cpp
 	$(CXX) -c -o ./build/cap3d.o $(CPFLAGS) cap3d.cpp
@@ -58,16 +60,15 @@ linux: $(BUILD)
 mac: $(BUILD)
 	$(CXX) -v -o ./build/cap3d $(BUILD) $(OPENCV_LIB_DIR) $(LIBS) -framework OpenGL -framework GLUT -lGLEW -lglfw.3
 
-viewer: $(BUILD)
-	$(CXX) -v -o ./build/viewer view3d.cpp \
-					./build/utils.o ./build/shader.o $(CPFLAGS) $(OPENCV_LIB_DIR) $(LIBS) -framework OpenGL -framework GLUT -lGLEW -lglfw.3
-
 clean:
 	rm ./build/*
 	cp *.shader ./build/
 
 test: ./build/cap3d
 	./build/cap3d data/simple_model_1.ply
+
+pcd: ./build/cap3d
+	./build/cap3d data/apple_1_4_1.pcd
 
 teddy: ./build/cap3d
 	./build/cap3d data/teddy1.ply teddy 0

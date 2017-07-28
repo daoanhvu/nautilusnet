@@ -54,15 +54,6 @@ class PCDModel3D: public Model3D {
 		return vertices[idx];
 	}
 
-    int getFloatStride() const { return float_stride; }
-
-    /*
-		Params:
-		n [OUT] number of float returned
-	*/
-	float* getVertexBuffer(unsigned int &);
-	float* getNormalBuffer(unsigned int &);
-
 	/*
 			TODO: This function will fail if the number of vertex per face is not a constant
 			PARAMS:
@@ -91,8 +82,6 @@ class PCDModel3D: public Model3D {
 			out << endl;
 		}
 	}
-
-	virtual void draw();
 };
 
 #endif

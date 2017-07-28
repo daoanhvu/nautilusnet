@@ -25,9 +25,10 @@ float* Model3D::getNormalBuffer(unsigned int &nc) {
 	unsigned int n = nc * 3;
 	float *buf = new float[n];
 	int offs = 0;
+	int normal_offset = getNormalOffset();
 	unsigned int normal_size_in_byte = sizeof(float) * 3;
 	for(i=0; i<nc; i++) {
-		std::memcpy(buf + offs, vertices[i].normal, normal_size_in_byte);
+		std::memcpy(buf + offs, vertices[i].v + normal_offset, normal_size_in_byte);
 		offs += 3;
 	}
 	return buf;

@@ -147,24 +147,24 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 				istringstream str(line);
 				Vertex vt;
 				vt.v = new float[float_stride];
-				vt.count = float_stride;
+				// vt.face_size = 0;
 				offset = 0;
 				for(int j=0; j<field_size; j++) {
-					if(fields[j].code == pcd::RGB) {
+					if(fields[j].code == RGB) {
 						switch(fields[j].type) {
-							case pcd::INT8:
+							case type::INT8:
 							break;
-							case pcd::UINT8:
+							case type::UINT8:
 							break;
-							case pcd::INT16:
+							case type::INT16:
 							break;
-							case pcd::UINT16:
+							case type::UINT16:
 							break;
-							case pcd::INT32:
+							case type::INT32:
 							break;
-							case pcd::UINT32:
+							case type::UINT32:
 							break;
-							case pcd::FLOAT32:
+							case type::FLOAT32:
 								uint32_t color_value;
 								str >> tmp;
 								memcpy(&color_value, reinterpret_cast<const char*>(&tmp), sizeof(float));
@@ -176,10 +176,10 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 								vt.v[offset++] = g/255.0f;
 								vt.v[offset++] = b/255.0f;
 							break;
-							case pcd::FLOAT64:
+							case type::FLOAT64:
 							break;
 						}
-					} else if(fields[j].code == pcd::RGBA) {
+					} else if(fields[j].code == RGBA) {
 
 					} else {
 						str >> tmp;
@@ -190,14 +190,14 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 				vertices.push_back(vt);
 			}
 		} else if(tokens[0].code == CODE_PCD_FIELDS) {
-			pcd::PointField f;
+			PointField f;
 			offset = 0;
 			VertexAttrib att;
 			for(int i=1; i<tokens.size(); i++) {
 				switch(tokens[i].code) {
 					case CODE_PCD_X:
 						cout << "[DEBUG] X located at " << fields.size() << endl;
-						f.code = pcd::X;
+						f.code = X;
 						f.index = i-1;
 						fields.push_back(f);
 
@@ -209,20 +209,20 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 
 					case CODE_PCD_Y:
 						cout << "[DEBUG] Y located at " << fields.size() << endl;
-						f.code = pcd::Y;
+						f.code = Y;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
 					case CODE_PCD_Z:
 						cout << "[DEBUG] Y located at " << fields.size() << endl;
-						f.code = pcd::Z;
+						f.code = Z;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
 					case CODE_PCD_NORM_X:
-						f.code = pcd::NORMAL_X;
+						f.code = NORMAL_X;
 						f.index = i-1;
 						fields.push_back(f);
 
@@ -233,20 +233,20 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 					break;
 
 					case CODE_PCD_NORM_Y:
-						f.code = pcd::NORMAL_Y;
+						f.code = NORMAL_Y;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
 					case CODE_PCD_NORM_Z:
-						f.code = pcd::NORMAL_Z;
+						f.code = NORMAL_Z;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
 					case CODE_PCD_RGB:
 						cout << "[DEBUG] grb located at " << fields.size() << endl;
-						f.code = pcd::RGB;
+						f.code = RGB;
 						f.index = i-1;
 						fields.push_back(f);
 						color = 3;
@@ -259,7 +259,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 					break;
 
 					case CODE_PCD_RGBA:
-						f.code = pcd::RGBA;
+						f.code = RGBA;
 						f.index = i-1;
 						fields.push_back(f);
 						color = 4;
@@ -273,7 +273,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 
 					case CODE_PCD_IMX:
 						cout << "[DEBUG] imX located at " << fields.size() << endl;
-						f.code = pcd::IMX;
+						f.code = IMX;
 						f.index = i-1;
 						fields.push_back(f);
 
@@ -285,7 +285,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 
 					case CODE_PCD_IMY:
 						cout << "[DEBUG] imY located at " << fields.size() << endl;
-						f.code = pcd::IMY;
+						f.code = IMY;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
@@ -295,15 +295,15 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 			for(int i=1; i<tokens.size(); i++) {
 				switch(tokens[i].code) {
 					case CODE_PCD_FLOAT:
-						fields[i].type = pcd::FLOAT32;
+						fields[i].type = type::FLOAT32;
 					break;
 
 					case CODE_PCD_SIGNED:
-						fields[i].type = pcd::INT32;
+						fields[i].type = type::INT32;
 					break;
 
 					case CODE_PCD_UNSIGNED:
-						fields[i].type = pcd::UINT32;
+						fields[i].type = type::UINT32;
 					break;
 				}
 			}
@@ -313,10 +313,11 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 	}
 
 	result->setAll(vertices, float_stride);
+	result->scaleToFit(scale);
 
 	cout << "[DEBUG] Number of vertex: " << vertex_count << endl;
 	cout << "[DEBUG] Number of field per vertex: " << fields.size() << endl;
-	(dynamic_cast<PCDModel3D*>(result))->print(cout);
+	// (dynamic_cast<PCDModel3D*>(result))->print(cout);
 
 	file.close();
 	return result;

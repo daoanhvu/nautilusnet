@@ -28,6 +28,8 @@
 #define CODE_RED	          	19
 #define CODE_GREEN	          20
 #define CODE_BLUE	          	21
+#define CODE_UCHAR 		        31
+#define CODE_CAMERA 		    32
 
 //Codes for config file
 #define CODE_EQUAL_SIGN		22

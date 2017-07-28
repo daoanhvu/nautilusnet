@@ -19,6 +19,7 @@
 #include <glm/gtx/norm.hpp>
 
 #include "camera.h"
+#include "vbo.h"
 #include "reader/pcdreader.h"
 #include "reader/pcdmodel3d.h"
 #include "reader/plyreader.h"
@@ -57,6 +58,11 @@ using namespace glm;
 		#endif
 	#endif
 #endif
+
+
+const GLuint POSITION_LOCATION = 0;
+const GLuint NORMAL_LOCATION = 1;
+const GLuint COLOR_LOCATION = 2;
 
 glm::mat4 viewMatrix;
 glm::mat4 projectionMatrix;
@@ -100,16 +106,7 @@ enum FILE_TYPE {
 	TYPE_OBJ
 };
 
-int main() {
-	Reader *reader = new PCDReader();;
-	Model3D *model = reader->load("/Volumes/Data/projects/nautilusnet/data/simple.pcd", 2.0f);
-
-	delete reader;
-	delete model;
-	return 0;
-}
-
-int main1(int argc, char* args[]) {
+int main(int argc, char* args[]) {
 	Reader *reader;
 	Model3D *model;
 	unsigned int buflen;
@@ -149,20 +146,20 @@ int main1(int argc, char* args[]) {
 
 	gTextDatasetFile = config.output_folder + "textdata.txt";
 
-	cout << "window_width: " << config.window_width << endl;
-	cout << "window_height: " << config.window_height << endl;
-	cout << "background: " << config.background[0] << ", " << config.background[1] << ", " << config.background[2] << endl;
-	cout << "scale: " << config.scale_factor << endl;
-	cout << "number of camera: " << config.camera_positions.size() << endl;
+	cout << "[DEBUG-CAP3D] window_width: " << config.window_width << endl;
+	cout << "[DEBUG-CAP3D] window_height: " << config.window_height << endl;
+	cout << "[DEBUG-CAP3D] background: " << config.background[0] << ", " << config.background[1] << ", " << config.background[2] << endl;
+	cout << "[DEBUG-CAP3D] scale: " << config.scale_factor << endl;
+	cout << "[DEBUG-CAP3D] number of camera: " << config.camera_positions.size() << endl;
 	for(int i=0; i<config.camera_positions.size(); i++) {
 		cout << config.camera_positions[i][0] << ", " << config.camera_positions[i][1] << ", " << config.camera_positions[i][2] << endl;
 	}
-	cout << "lightpos_1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
-	cout << "lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
-	cout << "Output folder: " << config.output_folder << endl;
+	cout << "[DEBUG-CAP3D] lightpos_1: " << config.lightpos1[0] << ", " << config.lightpos1[1] << ", " << config.lightpos1[2] << endl;
+	cout << "[DEBUG-CAP3D] lightpos_2: " << config.lightpos2[0] << ", " << config.lightpos2[1] << ", " << config.lightpos2[2] << endl;
+	cout << "[DEBUG-CAP3D] Output folder: " << config.output_folder << endl;
 	// return 0;
 
-	if((model = reader->load(args[1], 2.0f))== NULL) {
+	if((model = reader->load(args[1], config.scale_factor))== NULL) {
 		cout << "Could not load input file!" << endl;
 		return 1;
 	}
@@ -172,7 +169,7 @@ int main1(int argc, char* args[]) {
 
 	BBox3d bbox;
 	model->getBBox(bbox);
-	cout << "Bounding Box (left, top, right, bottom) = (" << bbox.minx << ", ";
+	cout << "[DEBUG-CAP3D] Bounding Box (left, top, right, bottom) = (" << bbox.minx << ", ";
 	cout << bbox.miny << ", " << bbox.maxx << ", " << bbox.maxy << ")" << endl;
 
 	glm::vec3 object_center = glm::vec3((bbox.minx + bbox.maxx)/2.0f,
@@ -183,6 +180,9 @@ int main1(int argc, char* args[]) {
 	//TODO: Do we need to do this???
 	model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	// VBO vbo(model, GL_POINTS, GL_STATIC_DRAW);
+	VBO vbo(model, GL_TRIANGLES, GL_STATIC_DRAW);
 
 	if(config.camera_positions.size() < 1) {
 		cout << "At least one camera position defined." << endl;
@@ -286,26 +286,13 @@ int main1(int argc, char* args[]) {
 	glBufferData(GL_ARRAY_BUFFER, 54 * sizeof(float), axesVertices, GL_STATIC_DRAW);
 
 
-	// Load it into a VBO
-	GLuint vertex_buffer;
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, num_of_vertex * sizeof(glm::vec3), vertices_buf_data, GL_STATIC_DRAW);
-
-	GLuint normal_buffer;
-	glGenBuffers(1, &normal_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-	glBufferData(GL_ARRAY_BUFFER, num_of_vertex * sizeof(glm::vec3), normal_buf_data, GL_STATIC_DRAW);
-
-	GLuint element_buffer;
-	glGenBuffers(1, &element_buffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned short), indices , GL_STATIC_DRAW);
+	vbo.setup();
 
 	GLuint programID = loadShaders( "vertex.shader", "fragment.shader");
 	GLuint mvpMatrixId = glGetUniformLocation(programID, "MVP");
 	GLuint viewMatrixId = glGetUniformLocation(programID, "V");
 	GLuint modelMatrixId = glGetUniformLocation(programID, "M");
+	GLint useNormal = glGetUniformLocation(programID, "useNormal");
 
 	// Get handles for our "lightPos" uniforms, we're going to use two lights
 	glUseProgram(programID);
@@ -408,27 +395,7 @@ int main1(int argc, char* args[]) {
 		glUniform3f(lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
 		glUniform3f(lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-		glVertexAttribPointer(0, //Attribute index
-			3,  //Number of component per vertex
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0);
-
-		//Normal data
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
-		glVertexAttribPointer(1, //Attribute index
-			3,  //Number of component per vertex
-			GL_FLOAT,
-			GL_FALSE,
-			0,
-			(void*)0);
-
-		// Index buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+		glUniform1i(useNormal, vbo.gotNormal());
 
 		glfwGetCursorPos(window, &xpos, &ypos);
 		button_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -486,15 +453,7 @@ int main1(int argc, char* args[]) {
 		glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
 		glUniformMatrix4fv(viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
 
-		//Now, we draw the model
-		// user GL_POINTS to draw pixel per pixel
-		//glDrawArrays(GL_TRIANGLES, 0, num_of_vertex);
-		glDrawElements(
-				GL_TRIANGLES,      // mode
-				index_size,    // count
-				GL_UNSIGNED_SHORT,   // type
-				(void*)0           // element array buffer offset
-			);
+		vbo.draw(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION);
 
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
@@ -504,8 +463,9 @@ int main1(int argc, char* args[]) {
 				should_store_frame_buffer = false;
 		}
 
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(POSITION_LOCATION);
+		glDisableVertexAttribArray(COLOR_LOCATION);
+		glDisableVertexAttribArray(NORMAL_LOCATION);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -515,9 +475,7 @@ int main1(int argc, char* args[]) {
 	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 			 glfwWindowShouldClose(window) == 0 );
 
-	glDeleteBuffers(1, &vertex_buffer);
-	glDeleteBuffers(1, &normal_buffer);
-	glDeleteBuffers(1, &element_buffer);
+	vbo.releaseBuffer();
 	glDeleteProgram(programID);
 	glDeleteVertexArrays(1, &vertexArrayId);
 
@@ -527,7 +485,6 @@ int main1(int argc, char* args[]) {
 	delete[] vertices_buf_data;
 	delete[] normal_buf_data;
 	delete[] indices;
-	cout << "[DEBUG] Going to release model!!!" << endl;
 	delete model;
 	return 0;
 }

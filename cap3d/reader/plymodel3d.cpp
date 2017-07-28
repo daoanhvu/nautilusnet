@@ -15,24 +15,6 @@ float* PLYModel3D::getVertexBuffer(unsigned int &nc) {
 	return buf;
 }
 
-/*
-	Params
-	Return
-*/
-float* PLYModel3D::getNormalBuffer(unsigned int &nc) {
-	int i, j;
-	nc = vertices.size();
-	unsigned int n = nc * 3;
-	float *buf = new float[n];
-	int offs = 0;
-	unsigned int normal_size_in_byte = sizeof(float) * 3;
-	for(i=0; i<nc; i++) {
-		std::memcpy(buf + offs, vertices[i].normal, normal_size_in_byte);
-		offs += 3;
-	}
-	return buf;
-}
-
 void PLYModel3D::translate(float vx, float vy, float vz) {
 	unsigned int nc = vertices.size();
 	unsigned int i;
@@ -61,7 +43,7 @@ void PLYModel3D::scale(float scale) {
 }
 
 void PLYModel3D::scaleToFit(float value) {
-	float maxx = -9999.0f;
+	float maxx = -9999999.0f;
 	int i;
 	int vertex_count = vertices.size();
 
@@ -79,6 +61,7 @@ void PLYModel3D::scaleToFit(float value) {
 		}
 	}
 	float factor = value / maxx;
+	cout << "Scale factor: " << factor << endl;
 	for(i=0; i<vertex_count; i++) {
 		vertices[i].v[0] *= factor;
 		vertices[i].v[1] *= factor;
@@ -99,6 +82,10 @@ int PLYModel3D::add_normal_vectors() {
 	float v1a, v1b, v1c;
 	float v2a, v2b, v2c;
 	int face_count = faces.size();
+
+	//short-circuit
+	if(face_count <= 0)
+		return 0;
 
 	for(i=0; i<face_count; i++) {
 		vxcount = faces[i].vertex_count;
@@ -127,59 +114,36 @@ int PLYModel3D::add_normal_vectors() {
 		//cout << "Normal vector: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
 	}
 
+	/**
+		We are going to add 3 components to vertex, so float_stride need to be increase 3
+	*/
+	int old_float_stride = float_stride;
+	float_stride += 3;
+	float *temp_p, *new_v;
 	vxcount = vertices.size();
 	for(i=0; i<vxcount; i++) {
 		normal = glm::vec3(0, 0, 0);
-		for(int j=0; j<vertices[i].count; j++) {
+		for(int j=0; j<vertices[i].face_size; j++) {
 			normal[0] += faces[vertices[i].face_indices[j]].normal[0];
 			normal[1] += faces[vertices[i].face_indices[j]].normal[1];
 			normal[2] += faces[vertices[i].face_indices[j]].normal[2];
 		}
 		normal = glm::normalize(normal);
-		vertices[i].normal[0] = normal[0];
-		vertices[i].normal[1] = normal[1];
-		vertices[i].normal[2] = normal[2];
+		temp_p = vertices[i].v;
+		
+		new_v = new float[float_stride];
+		memcpy(new_v, temp_p, sizeof(float) * old_float_stride);
+
+		new_v[old_float_stride] = normal[0];
+		new_v[old_float_stride + 1] = normal[1];
+		new_v[old_float_stride + 2] = normal[2];
+
+		vertices[i].v = new_v;
 	}
+	VertexAttrib normal_att;
+	normal_att.code = NORMAL;
+	normal_att.offset = old_float_stride;
+	// cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
+	vertex_attribs.push_back(normal_att);
 	return 0;
-}
-
-void PLYModel3D::getBBox(BBox3d &bbox) {
-	bbox.minx = 999999.0f;
-	bbox.maxx = -9999.0f;
-	bbox.miny = 999999.0f;
-	bbox.maxy = -9999.0f;
-	bbox.minz = 999999.0f;
-	bbox.maxz = -9999.0f;
-
-	int vertex_count = vertices.size();
-
-	for(int i=0; i<vertex_count; i++) {
-		if(vertices[i].v[0] < bbox.minx) {
-			bbox.minx = vertices[i].v[0];
-		}
-
-		if(vertices[i].v[0] > bbox.maxx) {
-			bbox.maxx = vertices[i].v[0];
-		}
-
-		if(vertices[i].v[1] < bbox.miny) {
-			bbox.miny = vertices[i].v[1];
-		}
-
-		if(vertices[i].v[1] > bbox.maxy) {
-			bbox.maxy = vertices[i].v[1];
-		}
-
-		if(vertices[i].v[2] < bbox.minz) {
-			bbox.minz = vertices[i].v[2];
-		}
-
-		if(vertices[i].v[2] > bbox.maxz) {
-			bbox.maxz = vertices[i].v[2];
-		}
-	}
-}
-
-void PLYModel3D::draw() {
-
 }

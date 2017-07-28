@@ -10,11 +10,20 @@ using namespace std;
 class VBO {
 	protected:
 		GLuint drawType;
-		GLuint bufferType;
 		GLuint buffer;
 		GLuint element_buffer;
+
+		//GL_TRIANGLES
+		//GL_POINTS..
+		GLuint primitive;
 		int bufferCount;
 
+		bool useElementBuffer;
+		unsigned int vertex_count;
+		unsigned int index_size;
+
+		int float_stride;
+		GLsizei float_stride_in_byte;
 		int colorIdx;
 		int positionIdx;
 		int normalIdx;
@@ -24,74 +33,48 @@ class VBO {
 		bool hasNormal;
 		bool hasTexture;
 
+		Model3D *mModel;
+
 	public:
-		VBO(const Model3D *model);
+		VBO(Model3D *model, GLuint primitive_, GLuint drawType_);
 		virtual ~VBO() {
 			glDeleteBuffers(1, &buffer);
-			glDeleteBuffers(1, &element_buffer);
+
+			if(useElementBuffer) {
+				glDeleteBuffers(1, &element_buffer);
+			}
 		}
 
-		void setup(int vertex_count, int float_stride, float* vertices_buf_data) {
-			glGenBuffers(1, &buffer);
-			glBindBuffer(GL_ARRAY_BUFFER, buffer);
-			glBufferData(bufferType, vertex_count * float_stride, vertices_buf_data, drawType);
+		void releaseBuffer() {
+			glDeleteBuffers(1, &buffer);
 
-			glGenBuffers(1, &element_buffer);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned short), indices , drawType);
+			if(useElementBuffer) {
+				glDeleteBuffers(1, &element_buffer);
+			}	
 		}
 
-		void draw() {
-			int offset = 0;
-			// int stride;
-			glEnableVertexAttribArray(0);
-			glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-			glVertexAttribPointer(0, //Attribute index
-				3,  //Number of component per vertex
-				GL_FLOAT,
-				GL_FALSE,
-				float_stride,
-				(void*)offset);
-			offset += 3 * sizeof(float);
-
-			if(hasColor) {
-				glVertexAttribPointer(0, //Attribute index
-					3,  //Number of component per vertex
-					GL_FLOAT,
-					GL_FALSE,
-					float_stride,
-					(void*)offset);
-				offset += 3 * sizeof(float);
-			}
-
-			if(hasNormal) {
-				glVertexAttribPointer(0, //Attribute index
-					3,  //Number of component per vertex
-					GL_FLOAT,
-					GL_FALSE,
-					float_stride,
-					(void*)offset);
-				offset += 3 * sizeof(float);
-			}
-
-			if(hasTexture) {
-
-			}
-
-			// Index buffer
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-
-			if(primitive == GL_TRIANGLES) {
-
-			} else if (primitive == GL_LINES) {
-
-			} else if(primitive == GL_POINTS) {
-
-			}
-
-
-			glDisableVertexAttribArray(0);
+		GLint gotNormal() {
+			return hasNormal?1:0;
 		}
+
+		void getComponentConfig(float *config) {
+			config[0] = 0.0f;
+			config[1] = 0.0f;
+
+			if(hasNormal)
+				config[0] = 1;
+
+			if(hasColor)
+				config[1] = 1;
+		}
+
+		void setDrawPrimitive(GLuint dp) {
+			primitive = dp;
+		}
+
+		void setup();
+
+		void draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint normalHandlerIndex);
 };
 
 #endif
