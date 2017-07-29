@@ -170,6 +170,9 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 								str >> tmp;
 								vt.v[j] = tmp;
 							break;
+
+							default:
+							break;
 						}
 					} else {
 						str >> tmp;

@@ -22,7 +22,10 @@ uniform vec3 lightPos1_worldspace;
 uniform vec3 lightColor1;
 uniform vec3 lightPos2_worldspace;
 uniform vec3 lightColor2;
+
 uniform int useNormal;
+uniform int useLighting;
+uniform float pointSize;
 
 void main(){
 
@@ -49,6 +52,14 @@ void main(){
 		Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
 		oUseNormal[0] = 1;
 	}
+
+	oUseNormal[1] = 0;
+	if(useLighting >= 1) {
+		oUseNormal[1] = 1;
+	}
+
+	//Set point size
+	gl_PointSize = pointSize;
 
 	Color_vertex = vertexColor;
 }

@@ -111,10 +111,14 @@ int main(int argc, char* args[]) {
 	Model3D *model;
 	unsigned int buflen;
 	Configuration config;
+	int needLighting = 1;
+	GLfloat pointSize = 3.0f;
 
 	char class_name[16];
 	int class_index = 0;
 	char out_filename[128];
+
+	GLFWwindow *window;
 
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
@@ -181,8 +185,8 @@ int main(int argc, char* args[]) {
 	model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	// VBO vbo(model, GL_POINTS, GL_STATIC_DRAW);
-	VBO vbo(model, GL_TRIANGLES, GL_STATIC_DRAW);
+	VBO vbo(model, GL_POINTS, GL_STATIC_DRAW);
+	// VBO vbo(model, GL_TRIANGLES, GL_STATIC_DRAW);
 
 	if(config.camera_positions.size() < 1) {
 		cout << "At least one camera position defined." << endl;
@@ -197,8 +201,7 @@ int main(int argc, char* args[]) {
 		delete model;
 		return -1;
 	}
-	GLFWwindow *window;
-
+	
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -232,11 +235,11 @@ int main(int argc, char* args[]) {
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-  // Hide the mouse and enable unlimited mouvement
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-  // Set the mouse at the center of the screen
-  glfwPollEvents();
-  glfwSetCursorPos(window, config.window_width/2, config.window_height/2);
+  	// Hide the mouse and enable unlimited mouvement
+  	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  	// Set the mouse at the center of the screen
+  	glfwPollEvents();
+  	glfwSetCursorPos(window, config.window_width/2, config.window_height/2);
 	// Dark blue background
 	glClearColor(config.background[0], config.background[1], config.background[2], 1.0f);
 	// Enable depth test
@@ -245,6 +248,9 @@ int main(int argc, char* args[]) {
 	glDepthFunc(GL_LESS);
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
+
+	//turn on GL_PROGRAM_POINT_SIZE 
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
 	unsigned int num_of_vertex, index_size;
 	float *vertices_buf_data = model->getVertexBuffer(buflen);
@@ -293,6 +299,8 @@ int main(int argc, char* args[]) {
 	GLuint viewMatrixId = glGetUniformLocation(programID, "V");
 	GLuint modelMatrixId = glGetUniformLocation(programID, "M");
 	GLint useNormal = glGetUniformLocation(programID, "useNormal");
+	GLint useLighting = glGetUniformLocation(programID, "useLighting");
+	GLfloat pointSizeLocation = glGetUniformLocation(programID, "pointSize");
 
 	// Get handles for our "lightPos" uniforms, we're going to use two lights
 	glUseProgram(programID);
@@ -324,8 +332,9 @@ int main(int argc, char* args[]) {
 	int button_state;
 	bool should_store_frame_buffer = false;
 
-	double key_press_time;
-	double last_key_press_time = lastTime;
+	double p_key_press_time, l_key_press_time;
+	double p_last_key_press_time = lastTime;
+	double l_last_key_press_time = lastTime;
 
 	//glm::vec3 cam_pos = glm::vec3(0.0f, 7.0f, 0.0f);
 	glm::vec3 cam_pos = config.camera_positions[0];
@@ -352,19 +361,28 @@ int main(int argc, char* args[]) {
 
 		// P key for printing to file
 		if (glfwGetKey( window, GLFW_KEY_P ) == GLFW_PRESS) {
-			key_press_time = glfwGetTime();
-			if(key_press_time - last_key_press_time >= 0.5) {
+			p_key_press_time = glfwGetTime();
+			if(p_key_press_time - p_last_key_press_time >= 0.5) {
 				// position -= right * deltaTime * speed;
 				should_store_frame_buffer = true;
 				cam_pos_i = 0;
 				cout << "Key P pressed!" << endl;
-				last_key_press_time = key_press_time;
+				p_last_key_press_time = p_key_press_time;
 			}
 		}
 
 		if(should_store_frame_buffer) {
 			cam_pos = config.camera_positions[cam_pos_i];
 			getFrameName(cam_pos_i, class_name, out_filename);
+		}
+
+		//Nedd lighting??
+		if(glfwGetKey( window, GLFW_KEY_L ) == GLFW_PRESS) {
+			l_key_press_time = glfwGetTime();
+			if(l_key_press_time - l_last_key_press_time >= 0.5) {
+				needLighting = (needLighting == 0)?1:0;
+				l_last_key_press_time = l_key_press_time;
+			}
 		}
 
 		//computeMatrices(window, object_center);
@@ -396,13 +414,19 @@ int main(int argc, char* args[]) {
 		glUniform3f(lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
 		glUniform1i(useNormal, vbo.gotNormal());
+		glUniform1i(useLighting, needLighting);
+		glUniform1f(pointSizeLocation, pointSize);
 
 		glfwGetCursorPos(window, &xpos, &ypos);
 		button_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		if(button_state == GLFW_PRESS) {
 			// Compute new orientation
+			// verticalAngle = -1 * mouseSpeed * float(last_xpos - xpos)/2.0f;
+			// horizontalAngle = -1 * mouseSpeed * float(last_ypos - ypos)/2.0f;
+
 			verticalAngle = -1 * mouseSpeed * float(last_xpos - xpos)/2.0f;
 			horizontalAngle = -1 * mouseSpeed * float(last_ypos - ypos)/2.0f;
+
 			glm::vec4 xrotv = glm::inverse(rotationMatrix) * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 			rotationMatrix = glm::rotate(rotationMatrix, horizontalAngle, glm::vec3(xrotv.x, xrotv.y, xrotv.z));
 			glm::vec4 yrotv = glm::inverse(rotationMatrix) * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
