@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <GL/glew.h>
+#include <glm/glm.hpp>
 #include "reader/model3d.h"
 
 using namespace std;
@@ -34,8 +35,10 @@ class VBO {
 		bool hasTexture;
 
 		Model3D *mModel;
+		glm::mat4 modelMatrix;
 
 	public:
+		VBO():mModel(NULL){}
 		VBO(Model3D *model, GLuint primitive_, GLuint drawType_);
 		virtual ~VBO() {
 			glDeleteBuffers(1, &buffer);
@@ -73,6 +76,7 @@ class VBO {
 		}
 
 		void setup();
+		void setup(const float *vertices, int vc, int fstride, const unsigned short *indices, int idx_size);
 
 		void draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint normalHandlerIndex);
 };

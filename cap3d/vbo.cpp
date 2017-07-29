@@ -44,6 +44,25 @@ void VBO::setup() {
 	delete[] vertices_buf_data;
 }
 
+void VBO::setup(const float *vertices, int vc, int fstride, const unsigned short *indices, int idx_size) {
+	float_stride = fstride;
+	vertex_count = vc;
+	float_stride_in_byte = float_stride * sizeof(float);
+
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, vertex_count * float_stride_in_byte, vertices, drawType);
+
+	index_size = idx_size;
+	useElementBuffer = false;
+	if(indices != NULL) {
+		useElementBuffer = true;
+		glGenBuffers(1, &element_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned short), indices , drawType);
+	}
+}
+
 void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint normalHandlerIndex) {
 	// int stride;
 	glEnableVertexAttribArray(positionHandlerIndex);

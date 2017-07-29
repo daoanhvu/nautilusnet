@@ -17,4 +17,6 @@ float parseFloat(string str, int start, int end, int &error);
 */
 int find(const char* s, const char* s1);
 
+void getFrameName(int idx, const char *cls, char *name);
+
 #endif

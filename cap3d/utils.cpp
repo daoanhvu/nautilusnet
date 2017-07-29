@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <iostream>
 
+#ifdef __linux__
+	#include <cstring>
+#endif
+
 using namespace std;
 
 /**
@@ -144,4 +148,19 @@ int find(const char* s, const char* s1) {
 	}
 
 	return -1;
+}
+
+/**
+	Build a file name with format: <classname>_<poseNumber>.jpg
+*/
+void getFrameName(int idx, const char *cls, char *name) {
+	int i, len, cls_len = strlen(cls);
+	memcpy(name, cls, cls_len);
+	name[cls_len++] = '_';
+	len = itostr(idx, name, cls_len);
+	name[len] = '.';
+	name[len+1] = 'j';
+	name[len+2] = 'p';
+	name[len+3] = 'g';
+	name[len+4] = '\0';
 }

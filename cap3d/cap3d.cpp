@@ -82,21 +82,6 @@ float mouseSpeed = 0.005f;
 //const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
 std::string gTextDatasetFile; //= gOutFolder + "textdata.txt";
 
-/**
-	Build a file name with format: <classname>_<poseNumber>.jpg
-*/
-void getFrameName(int idx, const char *cls, char *name) {
-	int i, len, cls_len = strlen(cls);
-	memcpy(name, cls, cls_len);
-	name[cls_len++] = '_';
-	len = itostr(idx, name, cls_len);
-	name[len] = '.';
-	name[len+1] = 'j';
-	name[len+2] = 'p';
-	name[len+3] = 'g';
-	name[len+4] = '\0';
-}
-
 void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
 void storeFramebuffer(const Configuration &config, const char* filename, int clsIdx, int ww, int wh);
 
@@ -139,7 +124,7 @@ int main(int argc, char* args[]) {
 	} else if (find(args[1], ".ply") >=0 ) {
 		input_type = TYPE_PLY;
 		reader = new PLYReader();
-		cout << "[DEBUG] Created PLYReader !!!!!!!!!" << endl;
+		cout << "[DEBUG-CAP3D] Created PLYReader !!!!!!!!!" << endl;
 	}
 
 	//Load config file - hardcode filename here!

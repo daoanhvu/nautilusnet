@@ -2,6 +2,10 @@
 #include <cstring>
 #include "pcdreader.h"
 
+#ifdef __linux__
+	#include <cstdint>
+#endif
+
 int PCDReader::parse_line2(string line, vector<Token> &v) {
 	int error = 0;
 	istringstream str(line);
