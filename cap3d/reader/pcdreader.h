@@ -35,6 +35,7 @@
 #define CODE_PCD_FLOAT		22
 #define CODE_PCD_SIGNED		23
 #define CODE_PCD_UNSIGNED	24
+#define CODE_PCD_BINARY		25
 
 class PCDReader: public Reader {
 private:

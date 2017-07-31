@@ -20,6 +20,7 @@
 
 #include "camera.h"
 #include "vbo.h"
+#include "viewer.h"
 #include "reader/pcdreader.h"
 #include "reader/pcdmodel3d.h"
 #include "reader/plyreader.h"
@@ -104,6 +105,7 @@ int main(int argc, char* args[]) {
 	char out_filename[128];
 
 	GLFWwindow *window;
+	Viewer viewer;
 
 	if(argc < 2) {
 		cout << "Not enough parameters. \n";
@@ -115,12 +117,14 @@ int main(int argc, char* args[]) {
 		strcpy(class_name, args[2]);
 		class_index = std::stoi(args[3]);
 	}
+	GLint primitive = GL_TRIANGLES;
 
 	FILE_TYPE input_type;
 	//Determine the input file type
 	if(find(args[1], ".pcd") >=0 ) {
 		input_type = TYPE_PCD;
 		reader = new PCDReader();
+		primitive = GL_POINTS;
 	} else if (find(args[1], ".ply") >=0 ) {
 		input_type = TYPE_PLY;
 		reader = new PLYReader();
@@ -170,7 +174,7 @@ int main(int argc, char* args[]) {
 	model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	VBO vbo(model, GL_POINTS, GL_STATIC_DRAW);
+	VBO vbo(model, primitive, GL_STATIC_DRAW);
 	// VBO vbo(model, GL_TRIANGLES, GL_STATIC_DRAW);
 
 	if(config.camera_positions.size() < 1) {
@@ -265,18 +269,6 @@ int main(int argc, char* args[]) {
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
 
-	//Coordinator
-	GLuint axes_vertex_buffer;
-	glGenBuffers(1, &axes_vertex_buffer);
-	float axesVertices[] = {
-			0, 0, 0, 0, 1, 0, 1, 0, 0,	1, 0, 0, 0, 1, 0, 1, 0, 0, 
-			0, 0, 0, 1, 0, 0, 0, 1, 0,	0, 1, 0, 1, 0, 0, 0, 1, 0,
-			0, 0, 0, 0, 1, 0, 0, 0, 1,	0, 0, 1, 0, 1, 0, 0, 0, 1
-			};
-	glBindBuffer(GL_ARRAY_BUFFER, axes_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, 54 * sizeof(float), axesVertices, GL_STATIC_DRAW);
-
-
 	vbo.setup();
 
 	GLuint programID = loadShaders( "vertex.shader", "fragment.shader");
@@ -317,6 +309,8 @@ int main(int argc, char* args[]) {
 	int button_state;
 	bool should_store_frame_buffer = false;
 
+	bool is_control_down = false;
+	double i_o_time, i_o_last_time = lastTime;
 	double p_key_press_time, l_key_press_time;
 	double p_last_key_press_time = lastTime;
 	double l_last_key_press_time = lastTime;
@@ -329,6 +323,9 @@ int main(int argc, char* args[]) {
 	glfwGetCursorPos(window, &xpos, &ypos);
 	last_xpos = xpos;
 	last_ypos = ypos;
+
+	//Set locations to viewer
+	viewer.setLocations(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION, 0);
 
 	do {
 		currentTime = glfwGetTime();
@@ -391,7 +388,29 @@ int main(int argc, char* args[]) {
 
 		// GLES20.glDrawArrays(GLES20.GL_LINES, 0, 6);
 
-		/////////////////////Start Drawing//////////////////////////////		
+		/////////////////////Start Drawing//////////////////////////////	
+
+		if(glfwGetKey( window, GLFW_MOD_SHIFT ) == GLFW_PRESS) {
+			is_control_down = true;
+		}
+
+		if(glfwGetKey( window, GLFW_MOD_SHIFT ) == GLFW_RELEASE) {
+			is_control_down = false;
+		}
+
+		if(glfwGetKey( window, GLFW_KEY_I ) == GLFW_PRESS) {
+			i_o_time = glfwGetTime();
+			if(i_o_time - i_o_last_time > 0.4) {
+				pointSize += 0.5f;
+			}
+		}
+
+		if(glfwGetKey( window, GLFW_KEY_O ) == GLFW_PRESS) {
+			i_o_time = glfwGetTime();
+			if(i_o_time - i_o_last_time > 0.4) {
+				pointSize -= 0.5f;
+			}
+		}	
 
 		glUniform3f(lightPos1ID, lightPos1.x, lightPos1.y, lightPos1.z);
 		glUniform3f(lightPos2ID, lightPos2.x, lightPos2.y, lightPos2.z);

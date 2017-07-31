@@ -41,8 +41,10 @@ class Viewer {
 		virtual ~Viewer() {
 			int s = models.size();
 			for(int i=0; i<s; i++) {
-				delete models[i].model;
-				delete models[i].vbo;
+				if(models[i].model != NULL)
+					delete models[i].model;
+				if(models[i].vbo != NULL)
+					delete models[i].vbo;
 			}
 		}
 
@@ -51,6 +53,10 @@ class Viewer {
 			colorLocation = cl;
 			normalLocation = nl;
 			textureLocation = tl;
+		}
+
+		void setViewCoordinator(bool viewcoord) {
+			viewCoordinator = viewcoord;
 		}
 
 		void setup();
