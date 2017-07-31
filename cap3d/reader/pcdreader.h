@@ -40,6 +40,7 @@
 class PCDReader: public Reader {
 private:
 protected:
+		void readpoints(std::ifstream& file, unsigned int offs, int format_type, int vertex_count, vector<Vertex>& vertices, int float_stride);
 public:
 	PCDReader() {
 	}

@@ -14,7 +14,7 @@ using namespace std;
 
 class PLYReader: public Reader {
 	protected:
-		
+		void readpoints(std::ifstream& file, unsigned int offs, int format_type, int vertex_count, vector<Vertex>& vertices, int float_stride);
 	public:
 		virtual ~PLYReader() {}
 

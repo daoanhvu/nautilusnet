@@ -102,12 +102,14 @@ int PCDReader::parse_line2(string line, vector<Token> &v) {
 }
 
 Model3D* PCDReader::load(const char *filename, float scale) {
-	ifstream file(filename);
+
+	//Open file in binary mode
+	ifstream file(filename, std::ios::binary);
 	string line;
+	vector<Vertex> vertices;
 	vector<Token> tokens(0);
-	bool read_vertex;
+	bool should_stop = false;
 	int size;
-	float tmp;
 	int vertex_index, vertex_count;
 	int vertex_data_type = 0;
 	Model3D *result;
@@ -119,92 +121,20 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 	int float_stride = 0;
 	int field_size;
 	int offset;
+	unsigned int file_offset;
 	int color = 0;
 	int colorIndex = -1;
-	vector<Vertex> vertices;
 	fields.clear();
 
 	result = new PCDModel3D();
 
-	while(!file.eof()) {
+	while(!file.eof() && !should_stop) {
 		std::getline(file, line);
 		tokens.clear();
 		parse_line2(line, tokens);
 		size = tokens.size();
-		if(size == 2 && tokens[0].code == CODE_PCD_DATA) {
-
- 			if(tokens[1].code == CODE_PCD_ASCII) {
- 				//TODO: NOT Elemented yet!!!!
- 			}
-
- 			//If there is color field in the model and,
- 			//if color mode is RGB we add 3 - 1 = 2
- 			//if color mode is RGBA we add 4 - 1 = 2
- 			if(color > 0) {
- 				float_stride = fields.size() + color - 1; 
- 			}
-
-			//start read vertices
-			read_vertex = true;
-			uint8_t r, g, b;
-
-			vertices.reserve(vertex_count);
-			field_size = fields.size();
-			for(int i=0; i<vertex_count; i++) {
-
-				if(vertex_data_type == 0) {
-					//ASCII format 
-					std::getline(file, line);
-					istringstream str(line);
-					Vertex vt;
-					vt.v = new float[float_stride];
-					// vt.face_size = 0;
-					offset = 0;
-					for(int j=0; j<field_size; j++) {
-						if(fields[j].code == RGB) {
-							switch(fields[j].type) {
-								case type::INT8:
-								break;
-								case type::UINT8:
-								break;
-								case type::INT16:
-								break;
-								case type::UINT16:
-								break;
-								case type::INT32:
-								break;
-								case type::UINT32:
-								break;
-								case type::FLOAT32:
-									uint32_t color_value;
-									str >> tmp;
-									memcpy(&color_value, reinterpret_cast<const char*>(&tmp), sizeof(float));
-									// cout << "[DEBUG] uint32_t Color: " << color_value << endl;
-									r = (color_value >> 16) & 0x0000ff;
-									g = (color_value >> 8) & 0x0000ff;
-									b = color_value & 0x0000ff;
-									vt.v[offset++] = r/255.0f;
-									vt.v[offset++] = g/255.0f;
-									vt.v[offset++] = b/255.0f;
-								break;
-								case type::FLOAT64:
-								break;
-							}
-						} else if(fields[j].code == RGBA) {
-
-						} else {
-							str >> tmp;
-							vt.v[offset++] = tmp;
-						}
-					}
-				} else {
-					//Format = BINARY
-					
-				}
-				
-				// cout << "[DEBUG] vertex " << i << " " << vt.v[0] << ", " << vt.v[1] << ", " << vt.v[2] << ", " << vt.v[3] << ", " << vt.v[4] << ", " << vt.v[5] << ", " << vt.v[6] << ", " << vt.v[7] << endl;
-				vertices.push_back(vt);
-			}
+		if(tokens[0].code == CODE_PCD_SIZE) {
+ 			
 		} else if(tokens[0].code == CODE_PCD_FIELDS) {
 			PointField f;
 			offset = 0;
@@ -326,22 +256,145 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 		} else if(tokens[0].code == CODE_PCD_POINTS) {
 			vertex_count = (int)(tokens[1].value);
 		} else if(tokens[0].code == CODE_PCD_DATA) {
-			if(tokens[1].code == CODE_PCD_ASCII) {
-				vertex_data_type = 0;
-			} else if(tokens[1].code == CODE_PCD_BINARY) {
-				vertex_data_type = 1;
+			cout << "[DEBUG-PCDREADER] Going to read data!!!!" << endl;
+			vertex_data_type = tokens[1].code;
+			if(tokens[1].code == CODE_PCD_BINARY) {
+				file_offset = file.tellg();
+				cout << "[DEBUG-PCDREADER] start vertex data offset: " << file_offset << endl;
 			}
+
+			should_stop = true;
 		}
 	}
+
+	//Read points
+	//If there is color field in the model and,
+ 	//if color mode is RGB we add 3 - 1 = 2
+ 	//if color mode is RGBA we add 4 - 1 = 3
+ 	if(color > 0) {
+ 		float_stride = fields.size() + color - 1; 
+ 	}
+	readpoints(file, file_offset, vertex_data_type, vertex_count, vertices, float_stride);	
+
 
 	result->setAll(vertices, float_stride);
 	result->scaleToFit(scale);
 
 	cout << "[DEBUG] Number of vertex: " << vertex_count << endl;
 	cout << "[DEBUG] Number of field per vertex: " << fields.size() << endl;
-	// (dynamic_cast<PCDModel3D*>(result))->print(cout);
+	(dynamic_cast<PCDModel3D*>(result))->print(cout);
 
 	file.close();
 	return result;
+}
+
+void PCDReader::readpoints(std::ifstream& file, unsigned int offs, int format_type,
+		int vertex_count, vector<Vertex>& vertices, int float_stride) {
+
+	uint8_t r, g, b;
+	uint32_t color_value;
+	int offset;
+	string line;
+	float fTmp;
+	/**
+		[field_size] This is the actual number of field in the input file.
+	*/
+	unsigned int field_size = fields.size();
+	Vertex vt;
+	vertices.reserve(vertex_count);
+	if(format_type == CODE_PCD_ASCII) {
+		for(int i=0; i<vertex_count; i++) {
+			std::getline(file, line);
+			istringstream str(line);
+
+			vt.v = new float[float_stride];
+			offset = 0;
+			for(int j=0; j<field_size; j++) {
+				if(fields[j].code == RGB) {
+					switch(fields[j].type) {
+						case type::INT8:
+						break;
+						case type::UINT8:
+						break;
+						case type::INT16:
+						break;
+						case type::UINT16:
+						break;
+						case type::INT32:
+						break;
+						case type::UINT32:
+						break;
+						case type::FLOAT32:
+							str >> fTmp;
+							memcpy(&color_value, reinterpret_cast<const char*>(&fTmp), sizeof(float));
+							// cout << "[DEBUG] uint32_t Color: " << color_value << endl;
+							r = (color_value >> 16) & 0x0000ff;
+							g = (color_value >> 8) & 0x0000ff;
+							b = color_value & 0x0000ff;
+							vt.v[offset++] = r/255.0f;
+							vt.v[offset++] = g/255.0f;
+							vt.v[offset++] = b/255.0f;
+						break;
+						case type::FLOAT64:
+						break;
+					}
+				} else if(fields[j].code == RGBA) {
+
+				} else {
+					str >> fTmp;
+					vt.v[offset++] = fTmp;
+				}
+			}
+			// cout << "[DEBUG] vertex " << i << " " << vt.v[0] << ", " << vt.v[1] << ", " << vt.v[2] << ", " << vt.v[3] << ", " << vt.v[4] << ", " << vt.v[5] << ", " << vt.v[6] << ", " << vt.v[7] << endl;
+			vertices.push_back(vt);
+		}
+	} else /*CODE_PCD_BINARY*/{
+		// file.seekg(offs, std::ios::beg);
+		float *buff = new float[field_size];
+		for(int i=0; i<vertex_count; i++) {
+			file.read((char*)buff, sizeof(float) * field_size);
+			//std::cout << "x: " << v[0] << ", y: " << v[1] << ", z: " << v[2] << ", rgb: " << v[3] << std::endl;
+
+			vt.v = new float[float_stride];
+			offset = 0;
+			for(int j=0; j<field_size; j++) {
+				if(fields[j].code == RGB) {
+					switch(fields[j].type) {
+						case type::INT8:
+						break;
+						case type::UINT8:
+						break;
+						case type::INT16:
+						break;
+						case type::UINT16:
+						break;
+						case type::INT32:
+						break;
+						case type::UINT32:
+						break;
+						case type::FLOAT32:
+							memcpy(&color_value, reinterpret_cast<const char*>(buff+j), sizeof(float));
+							// cout << "[DEBUG] uint32_t Color: " << color_value << endl;
+							r = (color_value >> 16) & 0x0000ff;
+							g = (color_value >> 8) & 0x0000ff;
+							b = color_value & 0x0000ff;
+							vt.v[offset++] = r/255.0f;
+							vt.v[offset++] = g/255.0f;
+							vt.v[offset++] = b/255.0f;
+						break;
+						case type::FLOAT64:
+						break;
+					}
+				} else if(fields[j].code == RGBA) {
+
+				} else {
+					vt.v[offset++] = buff[j];
+				}
+			}
+			// cout << "[DEBUG] vertex " << i << " " << vt.v[0] << ", " << vt.v[1] << ", " << vt.v[2] << ", " << vt.v[3] << ", " << vt.v[4] << ", " << vt.v[5] << endl;
+			vertices.push_back(vt);
+		}
+		delete[] buff;
+	}
 }
 

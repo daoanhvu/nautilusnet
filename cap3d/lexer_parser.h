@@ -28,8 +28,6 @@
 #define CODE_RED	          	19
 #define CODE_GREEN	          20
 #define CODE_BLUE	          	21
-#define CODE_UCHAR 		        31
-#define CODE_CAMERA 		    32
 
 //Codes for config file
 #define CODE_EQUAL_SIGN		22
@@ -41,6 +39,12 @@
 #define CODE_WINDOW_HEIGHT	28
 #define CODE_OUTPUT_FOLDER	29
 #define CODE_STRING				30
+
+#define CODE_UCHAR 		        31
+#define CODE_CAMERA 		    32
+#define CODE_ASCII 		    33
+#define CODE_BINARY 		    34
+
 
 using namespace std;
 

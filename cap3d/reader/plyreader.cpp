@@ -45,6 +45,15 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 		if(tk == "ply") {
 			Token t(CODE_PLY);
 			v.push_back(t);
+		} else if(tk == "format") {
+			Token t(CODE_FORMAT);
+			v.push_back(t);
+		} else if(tk == "ascii") {
+			Token t(CODE_ASCII);
+			v.push_back(t);
+		} else if(tk == "binary") {
+			Token t(CODE_BINARY);
+			v.push_back(t);
 		} else if(tk == "property") {
 			Token t(CODE_PROPERTY);
 			v.push_back(t);
@@ -115,7 +124,7 @@ int PLYReader::load(const char *filename, float scale, Model3D &model) {
 }
 
 Model3D* PLYReader::load(const char *filename, float scale) {
-	ifstream file(filename);
+	ifstream file(filename, std::ios::binary);
 	string line;
 	vector<Token> tokens(0);
 	bool read_vertex;
@@ -282,6 +291,12 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 				break;
 
 			}
+		} else if(tokens[0].code == CODE_FORMAT) {
+			if(tokens[1].code == CODE_ASCII) {
+
+			} else {
+
+			}
 		} else if(tokens[0].code == CODE_ELEMENT) {
 			if(tokens[1].code == CODE_VERTEX) {
 				vertex_count = (int)(tokens[2].value);
@@ -325,7 +340,7 @@ void PLYReader::load(const char *filename, Model3D &model) {
 }
 
 Model3D* PLYReader::load(const char *filename) {
-	ifstream f(filename);
+	ifstream f(filename, std::ios::binary);
 	string line;
 	vector<Token> tokens(0);
 	bool read_vertex;
@@ -479,4 +494,10 @@ Model3D* PLYReader::load(const char *filename) {
 
 int PLYReader::save(const Model3D *model, const char *filename) {
 	return 0;
+}
+
+void readpoints(std::ifstream& file, unsigned int offs, 
+	int format_type, int vertex_count, vector<Vertex>& vertices, 
+	int float_stride) {
+
 }

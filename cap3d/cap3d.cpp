@@ -325,7 +325,7 @@ int main(int argc, char* args[]) {
 	last_ypos = ypos;
 
 	//Set locations to viewer
-	viewer.setLocations(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION, 0);
+	//viewer.setLocations(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION, 0);
 
 	do {
 		currentTime = glfwGetTime();
