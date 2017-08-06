@@ -92,7 +92,11 @@ enum FILE_TYPE {
 	TYPE_OBJ
 };
 
-int main(int argc, char* args[]) {
+int main() {
+	return 0;
+}
+
+int main2(int argc, char* args[]) {
 	Reader *reader;
 	Model3D *model;
 	unsigned int buflen;
@@ -358,7 +362,7 @@ int main(int argc, char* args[]) {
 			getFrameName(cam_pos_i, class_name, out_filename);
 		}
 
-		//Nedd lighting??
+		//Need lighting??
 		if(glfwGetKey( window, GLFW_KEY_L ) == GLFW_PRESS) {
 			l_key_press_time = glfwGetTime();
 			if(l_key_press_time - l_last_key_press_time >= 0.5) {
@@ -402,6 +406,7 @@ int main(int argc, char* args[]) {
 			i_o_time = glfwGetTime();
 			if(i_o_time - i_o_last_time > 0.4) {
 				pointSize += 0.5f;
+				i_o_last_time = i_o_time;
 			}
 		}
 
@@ -409,6 +414,7 @@ int main(int argc, char* args[]) {
 			i_o_time = glfwGetTime();
 			if(i_o_time - i_o_last_time > 0.4) {
 				pointSize -= 0.5f;
+				i_o_last_time = i_o_time;
 			}
 		}	
 

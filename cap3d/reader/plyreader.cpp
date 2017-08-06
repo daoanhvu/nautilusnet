@@ -54,6 +54,13 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 		} else if(tk == "binary") {
 			Token t(CODE_BINARY);
 			v.push_back(t);
+		} else if(tk == "binary_little_endian") {
+			Token t(CODE_BINARY);
+			v.push_back(t);
+		} else if(tk == "binary_big_endian") {
+			isBigEndian = true;
+			Token t(CODE_BINARY);
+			v.push_back(t);
 		} else if(tk == "property") {
 			Token t(CODE_PROPERTY);
 			v.push_back(t);
@@ -158,7 +165,7 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 		if(size == 1 && tokens[0].code == CODE_END_HEADER) {
 			//start read vertices
 			read_vertex = true;
-
+			char buff[4];
 			vertices.reserve(vertex_count);
 			// cout << "[DEBUG] vertex count: " << vertex_count << endl;
 			for(int i=0; i<vertex_count; i++) {
@@ -176,7 +183,10 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 								vt.v[j] = tmp/255.0f;
 							break;
 							case type::FLOAT32:
-								str >> tmp;
+								// str >> tmp;
+								// vt.v[j] = tmp;
+								file.read((char*)buff, sizeof(float));
+								ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
 								vt.v[j] = tmp;
 							break;
 
@@ -184,7 +194,10 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 							break;
 						}
 					} else {
-						str >> tmp;
+						// str >> tmp;
+						// vt.v[j] = tmp;
+						file.read((char*)buff, sizeof(float));
+						ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
 						vt.v[j] = tmp;
 					}
 				}
@@ -496,8 +509,12 @@ int PLYReader::save(const Model3D *model, const char *filename) {
 	return 0;
 }
 
-void readpoints(std::ifstream& file, unsigned int offs, 
-	int format_type, int vertex_count, vector<Vertex>& vertices, 
-	int float_stride) {
-
+void PLYReader::readpoints(std::ifstream& file, unsigned int offs, int format_type, int vertex_count, vector<Vertex>& vertices, int float_stride) {
+	if(format_type == CODE_ASCII) {
+		for(int i=0; i<vertex_count; i++) {
+		}
+	} else {
+		for(int i=0; i<vertex_count; i++) {
+		}
+	}
 }
