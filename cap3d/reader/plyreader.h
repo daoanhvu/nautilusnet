@@ -34,9 +34,8 @@ class PLYReader: public Reader {
 		virtual Model3D* load(const char *filename);
 		virtual void load(const char *filename, Model3D &);
 		virtual int save(const Model3D *, const char *filename);
-		int parse_line2(string line, vector<Token> &v);
-		void readpoints(std::ifstream& file, unsigned int offs, int format_type, int vertex_count, vector<Vertex>& vertices, int float_stride);
-};
+		int parse_line2(string line, vector<Token> &v);		
+	};
 
 template<typename T> T endian_swap(const T & v) { return v; }
 	template<> inline uint16_t endian_swap(const uint16_t & v) { return (v << 8) | (v >> 8); }

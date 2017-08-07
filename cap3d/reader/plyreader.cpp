@@ -141,7 +141,7 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 	bool start_reading_camera_properties = false;
 	bool start_reading_face_properties = false;
 	int offset = 0;
-	float tmp;
+	int format_type;
 	int vertex_index, vertex_count, face_count;
 
 	if(file.fail()) {
@@ -163,71 +163,7 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 		parse_line2(line, tokens);
 		size = tokens.size();
 		if(size == 1 && tokens[0].code == CODE_END_HEADER) {
-			//start read vertices
 			read_vertex = true;
-			char buff[4];
-			vertices.reserve(vertex_count);
-			// cout << "[DEBUG] vertex count: " << vertex_count << endl;
-			for(int i=0; i<vertex_count; i++) {
-				std::getline(file, line);
-				istringstream str(line);
-				Vertex vt;
-				vt.v = new float[float_stride];
-				vt.face_size = 0;
-				for(int j=0; j<float_stride; j++) {
-					if(fields[j].code == RED || fields[j].code == GREEN || 
-							fields[j].code == BLUE || fields[j].code == ALPHA) {
-						switch(fields[j].type) {
-							case type::UINT8:
-								str >> tmp;
-								vt.v[j] = tmp/255.0f;
-							break;
-							case type::FLOAT32:
-								// str >> tmp;
-								// vt.v[j] = tmp;
-								file.read((char*)buff, sizeof(float));
-								ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
-								vt.v[j] = tmp;
-							break;
-
-							default:
-							break;
-						}
-					} else {
-						// str >> tmp;
-						// vt.v[j] = tmp;
-						file.read((char*)buff, sizeof(float));
-						ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
-						vt.v[j] = tmp;
-					}
-				}
-				vertices.push_back(vt);
-			}
-			// cout << "Number of face: " << face_count << endl;
-			faces.reserve(face_count);
-			//Now read face
-			for(int i=0; i<face_count; i++) {
-				std::getline(file, line);
-				istringstream str1(line);
-				Face face;
-				str1 >> v_per_face;
-				face.vertex_count = v_per_face;
-				// cout << "Face line("<< i <<"): " << line << " v_per_face: "<< v_per_face << endl;
-				for(int j=0; j<v_per_face; j++) {
-					str1 >> vertex_index;
-					face.vertex_indices[j] = vertex_index;
-
-					if(vertices[vertex_index].face_size >= vertices[vertex_index].log_face_size) {
-						vertices[vertex_index].log_face_size += 8;
-						face_indices = new int[vertices[vertex_index].log_face_size];
-						std::memcpy(face_indices, vertices[vertex_index].face_indices, sizeof(int) * vertices[vertex_index].face_size);
-						delete[] vertices[vertex_index].face_indices;
-						vertices[vertex_index].face_indices = face_indices;
-					}
-					vertices[vertex_index].face_indices[vertices[vertex_index].face_size++] = i;
-				}
-				faces.push_back(face);
-			}
 		} else if(tokens[0].code == CODE_PROPERTY) {
 			PointField f;
 			VertexAttrib att;
@@ -305,11 +241,7 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 
 			}
 		} else if(tokens[0].code == CODE_FORMAT) {
-			if(tokens[1].code == CODE_ASCII) {
-
-			} else {
-
-			}
+			format_type = tokens[1].code;
 		} else if(tokens[0].code == CODE_ELEMENT) {
 			if(tokens[1].code == CODE_VERTEX) {
 				vertex_count = (int)(tokens[2].value);
@@ -328,6 +260,10 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 			}
 		}
 	}
+
+	vertices.reserve(vertex_count);
+	faces.reserve(face_count);
+	readpoints(file, 0, format_type, vertex_count, vertices, float_stride);
 
 	file.close();
 	result->setAll(vertices, faces, float_stride);
@@ -388,7 +324,6 @@ Model3D* PLYReader::load(const char *filename) {
 			read_vertex = true;
 
 			vertices.reserve(vertex_count);
-
 			for(int i=0; i<vertex_count; i++) {
 				std::getline(f, line);
 				istringstream str(line);
@@ -498,6 +433,10 @@ Model3D* PLYReader::load(const char *filename) {
 		}
 	}
 
+	if(read_vertex) {
+
+	}
+
 	f.close();
 
 	result->setAll(vertices, faces, float_stride);
@@ -509,12 +448,75 @@ int PLYReader::save(const Model3D *model, const char *filename) {
 	return 0;
 }
 
+
 void PLYReader::readpoints(std::ifstream& file, unsigned int offs, int format_type, int vertex_count, vector<Vertex>& vertices, int float_stride) {
 	if(format_type == CODE_ASCII) {
+		//Reading vertices data
 		for(int i=0; i<vertex_count; i++) {
+			std::getline(file, line);
+			istringstream str(line);
+			Vertex vt;
+			vt.v = new float[float_stride];
+			vt.face_size = 0;
+			for(int j=0; j<float_stride; j++) {
+				if(fields[j].code == RED || fields[j].code == GREEN || 
+						fields[j].code == BLUE || fields[j].code == ALPHA) {
+					switch(fields[j].type) {
+						case type::UINT8:
+							str >> tmp;
+							vt.v[j] = tmp/255.0f;
+						break;
+						case type::FLOAT32:
+							// str >> tmp;
+							// vt.v[j] = tmp;
+							file.read((char*)buff, sizeof(float));
+							ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
+							vt.v[j] = tmp;
+						break;
+
+						default:
+						break;
+					}
+				} else {
+					// str >> tmp;
+					// vt.v[j] = tmp;
+					file.read((char*)buff, sizeof(float));
+					ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
+					vt.v[j] = tmp;
+				}
+			}
+			vertices.push_back(vt);
+		}
+		//Reading face data
+		for(int i=0; i<face_count; i++) {
+			std::getline(file, line);
+			istringstream str1(line);
+			Face face;
+			str1 >> v_per_face;
+			face.vertex_count = v_per_face;
+			// cout << "Face line("<< i <<"): " << line << " v_per_face: "<< v_per_face << endl;
+			for(int j=0; j<v_per_face; j++) {
+				str1 >> vertex_index;
+				face.vertex_indices[j] = vertex_index;
+
+				if(vertices[vertex_index].face_size >= vertices[vertex_index].log_face_size) {
+					vertices[vertex_index].log_face_size += 8;
+					face_indices = new int[vertices[vertex_index].log_face_size];
+					std::memcpy(face_indices, vertices[vertex_index].face_indices, sizeof(int) * vertices[vertex_index].face_size);
+					delete[] vertices[vertex_index].face_indices;
+					vertices[vertex_index].face_indices = face_indices;
+				}
+				vertices[vertex_index].face_indices[vertices[vertex_index].face_size++] = i;
+			}
+			faces.push_back(face);
 		}
 	} else {
+		//Reading vertices data
 		for(int i=0; i<vertex_count; i++) {
+		}
+
+		//Reading face data
+		for(int i=0; i<face_count; i++) {
 		}
 	}
 }

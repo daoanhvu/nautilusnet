@@ -92,7 +92,72 @@ enum FILE_TYPE {
 	TYPE_OBJ
 };
 
+
+void ply_cast(void * dest, const char * src, bool be) {
+	*(static_cast<unsigned char *>(dest)) = *(reinterpret_cast<const unsigned char *>(src));
+}
+
 int main() {
+	ifstream file("/home/davu/Downloads/09620.ply", std::ios::binary);
+	std::string line;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	std::getline(file, line);
+	cout << line << endl;
+
+	int offs = file.tellg();
+	cout << "Vertex data offset: " << offs << endl;
+
+	char vertex_count;
+	float buff[3];
+	int tmp;
+	for(int i=0; i<260199; i++) {
+		file.read((char*)buff, sizeof(float) * 3);
+		
+		cout << "x: " << buff[0] << ", y: " << buff[1] << ", z: " << buff[2] << endl;
+
+		// file.read((char*)buff, sizeof(int) * vertex_count);
+	}
+
+	int v[16];
+	//Read face
+	//for(int i=0; i<510532; i++) {
+	for(int i=0; i<5; i++) {
+		file.read((char*)&vertex_count, sizeof(unsigned char));
+		cout << "Number of vertex per face: " << +vertex_count << endl;
+
+		file.read((char*)v, sizeof(int) * static_cast<int>(vertex_count));
+	}	
+	
+	
+
+	file.close();
 	return 0;
 }
 
