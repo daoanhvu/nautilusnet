@@ -42,33 +42,6 @@ void PLYModel3D::scale(float scale) {
 	}
 }
 
-void PLYModel3D::scaleToFit(float value) {
-	float maxx = -9999999.0f;
-	int i;
-	int vertex_count = vertices.size();
-
-	for(i=0; i<vertex_count; i++) {
-		if(vertices[i].v[0] > maxx) {
-			maxx = vertices[i].v[0];
-		}
-
-		if(vertices[i].v[1] > maxx) {
-			maxx = vertices[i].v[1];
-		}
-
-		if(vertices[i].v[2] > maxx) {
-			maxx = vertices[i].v[2];
-		}
-	}
-	float factor = value / maxx;
-	cout << "Scale factor: " << factor << endl;
-	for(i=0; i<vertex_count; i++) {
-		vertices[i].v[0] *= factor;
-		vertices[i].v[1] *= factor;
-		vertices[i].v[2] *= factor;
-	}
-}
-
 /*
 	Calculate normal vector for faces
 */
@@ -82,6 +55,8 @@ int PLYModel3D::add_normal_vectors() {
 	float v1a, v1b, v1c;
 	float v2a, v2b, v2c;
 	int face_count = faces.size();
+
+	cout << "[DEBUG] Number of face: " << face_count << endl;
 
 	//short-circuit
 	if(face_count <= 0)
@@ -114,6 +89,8 @@ int PLYModel3D::add_normal_vectors() {
 		//cout << "Normal vector: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
 	}
 
+	cout << "[DEBUG] GOT HERE 1 " << endl;
+
 	/**
 		We are going to add 3 components to vertex, so float_stride need to be increase 3
 	*/
@@ -143,7 +120,7 @@ int PLYModel3D::add_normal_vectors() {
 	VertexAttrib normal_att;
 	normal_att.code = NORMAL;
 	normal_att.offset = old_float_stride;
-	// cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
+	cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
 	vertex_attribs.push_back(normal_att);
 	return 0;
 }

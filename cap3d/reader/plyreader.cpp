@@ -115,7 +115,9 @@ void PLYReader::readProperty(const vector<Token>& tokens, int element_type, PLYM
 		float_stride++;
 
 		pf.code = getCodeByValue(tokens[2].code);
-		readPointField(pf, tokens[1].code);
+		cout << "CODE: " << tokens[1].code << endl;
+		int size = readPointField(pf, tokens[1].code);
+		pf.size = size;
 		fields.push_back(pf);
 	} else if(element_type == CODE_FACE) {
 		if(tokens[1].code == CODE_LIST) {
@@ -173,12 +175,19 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 		}
 	}
 	cout << "[DEBUG] float_stride: " << float_stride << endl;
+	for(int l=0; l<fields.size(); l++) {
+		cout << "[DEBUG] Attribute " << l << endl;
+		cout << "[DEBUG] Code: " << fields[l].code << endl;
+		cout << "[DEBUG] Type: " << fields[l].type << endl;
+		cout << "[DEBUG] Size: " << fields[l].size << endl;
+	}
 
 	fillModelAttributes(result);
 
 	vertices.reserve(vertex_count);
 	faces.reserve(face_count);
 	readpoints(file, 0, format_type, vertex_count, vertices, faces, face_count, float_stride);
+
 
 	file.close();
 	result->setAll(vertices, faces, float_stride);
@@ -195,6 +204,7 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 	}
 
 	//DEBUG
+	cout << "[DEBUG] GOT HERE!!! "<< endl;
 	// result->print(cout);
 
 	return result;
@@ -406,6 +416,7 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
 		delete[] vertex_src;
 		char v_indices[32];
 		//Reading face data
+		//TODO: A problem existed here, please resolve it
 		for(int i=0; i<face_count; i++) {
 			if(vertex_per_face_type == CODE_UCHAR) {
 				//Firstly, read the number of vertex in face i

@@ -27,7 +27,6 @@ class PLYModel3D: public Model3D {
 	void translate(float vx, float vy, float vz);
 	void rotate(float rad, float vx, float vy, float vz);
 	void scale(float scale);
-	void scaleToFit(float value);
 	int add_normal_vectors();
 
     void setFloatStride(int fs) {

@@ -97,19 +97,19 @@ void ply_cast(void * dest, const char * src, bool be) {
 	*(static_cast<unsigned char *>(dest)) = *(reinterpret_cast<const unsigned char *>(src));
 }
 
-// int main() {
-// 	Reader *reader = new PLYReader();
-// 	Model3D *model;
-// 	if((model = reader->load("data/teddy1.ply", 2))== NULL) {
-// 		cout << "Could not load input file!" << endl;
-// 		delete reader;
-// 		return 1;
-// 	}
-// 	delete reader;
-// 	return 0;
-// }
+int main() {
+	Reader *reader = new PLYReader();
+	Model3D *model;
+	if((model = reader->load("data/00037.ply", 2))== NULL) {
+		cout << "Could not load input file!" << endl;
+		delete reader;
+		return 1;
+	}
+	delete reader;
+	return 0;
+}
 
-int main(int argc, char* args[]) {
+int main1(int argc, char* args[]) {
 	Reader *reader;
 	Model3D *model;
 	unsigned int buflen;

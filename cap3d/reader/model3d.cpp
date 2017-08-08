@@ -80,6 +80,7 @@ void Model3D::scaleToFit(float value) {
 		}
 	}
 	float factor = value / maxx;
+	cout << "Scale factor: " << factor << endl;
 	for(i=0; i<vertex_count; i++) {
 		vertices[i].v[0] *= factor;
 		vertices[i].v[1] *= factor;
