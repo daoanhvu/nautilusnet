@@ -2,7 +2,7 @@ PLATFORM = LINUX
 CXX = g++
 SOURCE = cap3d.cpp
 #For Linux
-CPFLAGS =-std=c++11 -I. -I./include -I/usr/include \
+CPFLAGS =-std=c++11 -g -I. -I./include -I/usr/include \
 								-I/home/davu/projects/glm-0.9.8.4
 
 #For MacOS
@@ -72,6 +72,9 @@ test: ./build/cap3d
 
 pcd: ./build/cap3d
 	./build/cap3d data/apple_1_4_1.pcd
+
+# pcd: ./build/cap3d
+# 	./build/cap3d data/NP1_0.pcd
 
 teddy: ./build/cap3d
 	./build/cap3d data/teddy1.ply teddy 0
