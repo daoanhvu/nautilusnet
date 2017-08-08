@@ -3,34 +3,6 @@
 #include "utils.h"
 #include <cstring>
 
-type::FieldType getFieldType(int type) {
-	type::FieldType t;
-	switch(type) {
-		case CODE_UNIT8:
-		case CODE_UCHAR:
-			t = type::UINT8;
-		break;
-
-		// case CODE_UNIT16:
-		// 	t = type::UINT16;
-		// break;
-
-		case CODE_INT32:
-			t = type::INT32;
-		break;
-
-		case CODE_FLOAT32:
-			t = type::FLOAT32;
-		break;
-
-		default:
-			t = type::FLOAT32;
-		break;
-	}
-
-	return t;
-}
-
 int PLYReader::parse_line2(string line, vector<Token> &v) {
 	int error = 0;
 	istringstream str(line);
@@ -55,20 +27,23 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 			Token t(CODE_BINARY);
 			v.push_back(t);
 		} else if(tk == "binary_little_endian") {
-			Token t(CODE_BINARY);
+			Token t(CODE_BINARY_LITTLE_ENDIAN);
 			v.push_back(t);
 		} else if(tk == "binary_big_endian") {
 			isBigEndian = true;
-			Token t(CODE_BINARY);
+			Token t(CODE_BINARY_BIG_ENDIAN);
 			v.push_back(t);
 		} else if(tk == "property") {
 			Token t(CODE_PROPERTY);
 			v.push_back(t);
 		} else if(tk == "uint8") {
-			Token t(CODE_UNIT8);
+			Token t(CODE_UINT8);
 			v.push_back(t);
-		}	else if(tk == "uint32") {
-			Token t(CODE_UNIT32);
+		} else if(tk == "uint16") {
+			Token t(CODE_UINT16);
+			v.push_back(t);
+		} else if(tk == "uint32") {
+			Token t(CODE_UINT32);
 			v.push_back(t);
 		} else if(tk == "float32") {
 			Token t(CODE_FLOAT32);
@@ -125,24 +100,48 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 	return error;
 }
 
+/**
+	property <data_type> <component>
+	Note: <component> is one of X, Y, Z, RED, GREEN, BLUE, NORMAL_X, NORMAL_Y, NORMAL_Z
+*/
+void PLYReader::readProperty(const vector<Token>& tokens, int element_type, PLYModel3D *model, int &float_stride) {
+	PointField pf;
+
+	if(element_type == CODE_VERTEX) {
+		/**
+			TODO: We use OpenGL as the main graphics library of this project, so I cast every components to 
+			floats in order to put them into the OpenGL pipeline
+		*/
+		float_stride++;
+
+		pf.code = getCodeByValue(tokens[2].code);
+		cout << "CODE: " << tokens[1].code << endl;
+		int size = readPointField(pf, tokens[1].code);
+		pf.size = size;
+		fields.push_back(pf);
+	} else if(element_type == CODE_FACE) {
+		if(tokens[1].code == CODE_LIST) {
+			vertex_per_face_type = tokens[2].code;
+			vertex_index_type = tokens[3].code;
+		}
+	} else if(element_type == CODE_CAMERA) {
+
+	}
+}
+
 //TODO: Not implemented yet
 int PLYReader::load(const char *filename, float scale, Model3D &model) {
 	return -1;
 }
 
-Model3D* PLYReader::load(const char *filename, float scale) {
+Model3D* PLYReader::load(const char *filename, float scale, bool should_add_normal, bool should_add_color) {
 	ifstream file(filename, std::ios::binary);
 	string line;
 	vector<Token> tokens(0);
-	bool read_vertex;
-	int size, v_per_face;
-	bool got_color = false;
-	bool start_reading_vertex_properties = false;
-	bool start_reading_camera_properties = false;
-	bool start_reading_face_properties = false;
-	int offset = 0;
+	bool read_header = true;
+	int element_type;
 	int format_type;
-	int vertex_index, vertex_count, face_count;
+	int vertex_count, face_count;
 
 	if(file.fail()) {
 		cout << "Failed to open this file " << filename << endl;
@@ -151,134 +150,66 @@ Model3D* PLYReader::load(const char *filename, float scale) {
 
 	PLYModel3D *result = new PLYModel3D();
 
-	int *face_indices;
 	int float_stride = 0;
 	vector<Vertex> vertices;
 	vector<Face> faces;
-	type::FieldType type;
 
-	while(!file.eof()) {
+	while(read_header) {
 		std::getline(file, line);
 		tokens.clear();
 		parse_line2(line, tokens);
-		size = tokens.size();
-		if(size == 1 && tokens[0].code == CODE_END_HEADER) {
-			read_vertex = true;
+		// size = tokens.size();
+		if(tokens[0].code == CODE_END_HEADER) {
+			read_header = false;
 		} else if(tokens[0].code == CODE_PROPERTY) {
-			PointField f;
-			VertexAttrib att;
-
-			f.type = getFieldType(tokens[1].code);
-			f.index = fields.size();
-			switch(tokens[2].code) {
-				case CODE_COORD_X:
-					f.code = X;		
-					fields.push_back(f);
-
-					att.code = POSITION;
-					att.offset = offset;
-					// cout << "[DEBUG] Position offset: " << offset;
-					result->addAttrib(att);
-					offset += 3;
-					float_stride++;
-				break;
-
-				case CODE_COORD_Y:
-					f.code = Y;
-					fields.push_back(f);
-
-					float_stride++;
-				break;
-
-				case CODE_COORD_Z:
-					f.code = Z;
-					fields.push_back(f);
-
-					float_stride++;
-				break;
-
-				case CODE_RED:
-					f.code = RED;
-					fields.push_back(f);
-
-					if(!got_color) {
-						att.code = COLOR3;
-						att.offset = offset;
-						result->addAttrib(att);
-						offset += 3;
-						got_color = true;
-					}
-					float_stride++;
-				break;
-
-				case CODE_GREEN:
-					f.code = GREEN;
-					fields.push_back(f);
-
-					if(!got_color) {
-						att.code = COLOR3;
-						att.offset = offset;
-						result->addAttrib(att);
-						offset += 3;
-						got_color = true;
-					}
-					float_stride++;
-				break;
-
-				case CODE_BLUE:
-					f.code = GREEN;
-					fields.push_back(f);
-
-					if(!got_color) {
-						att.code = COLOR3;
-						att.offset = offset;
-						result->addAttrib(att);
-						offset += 3;
-						got_color = true;
-					}
-					float_stride++;
-				break;
-
-			}
+			readProperty(tokens, element_type, result, float_stride);
 		} else if(tokens[0].code == CODE_FORMAT) {
 			format_type = tokens[1].code;
 		} else if(tokens[0].code == CODE_ELEMENT) {
+			element_type = tokens[1].code;
 			if(tokens[1].code == CODE_VERTEX) {
 				vertex_count = (int)(tokens[2].value);
-				start_reading_vertex_properties = true;
-				start_reading_face_properties = false;
-				start_reading_camera_properties = false;
 			} else if(tokens[1].code == CODE_FACE) {
 				face_count = (int)(tokens[2].value);
-				start_reading_face_properties = true;
-				start_reading_vertex_properties = false;
-				start_reading_camera_properties = false;
-			} else if(tokens[1].code == CODE_CAMERA) {
-				start_reading_face_properties = false;
-				start_reading_vertex_properties = false;
-				start_reading_camera_properties = true;
 			}
 		}
 	}
+	cout << "[DEBUG] float_stride: " << float_stride << endl;
+	for(int l=0; l<fields.size(); l++) {
+		cout << "[DEBUG] Attribute " << l << endl;
+		cout << "[DEBUG] Code: " << fields[l].code << endl;
+		cout << "[DEBUG] Type: " << fields[l].type << endl;
+		cout << "[DEBUG] Size: " << fields[l].size << endl;
+	}
+
+	fillModelAttributes(result);
 
 	vertices.reserve(vertex_count);
 	faces.reserve(face_count);
-	readpoints(file, 0, format_type, vertex_count, vertices, float_stride);
+	readpoints(file, 0, format_type, vertex_count, vertices, faces, face_count, float_stride);
+
 
 	file.close();
 	result->setAll(vertices, faces, float_stride);
 
 	//Need safe type-casting???? NO
 	result->scaleToFit(scale);
-	((PLYModel3D*)result)->add_normal_vectors();
 
-	if(result->getColorOffset() == -1) {
+	if(should_add_normal) {
+		//((PLYModel3D*)result)->add_normal_vectors();
+		dynamic_cast<PLYModel3D*>(result)->add_normal_vectors();	
+	}
+	
+
+	if( (result->getColorOffset() == -1) && should_add_color) {
 		//Add default color
-		((PLYModel3D*)result)->addDefaultColor(0.3f, 0.5f, 0.6f);
+		// ((PLYModel3D*)result)->addDefaultColor(0.3f, 0.5f, 0.6f);
+		dynamic_cast<PLYModel3D*>(result)->addDefaultColor(0.3f, 0.5f, 0.6f);
 	}
 
 	//DEBUG
-	result->print(cout);
+	// cout << "[DEBUG] GOT HERE!!! "<< endl;
+	// result->print(cout);
 
 	return result;
 }
@@ -289,200 +220,252 @@ void PLYReader::load(const char *filename, Model3D &model) {
 }
 
 Model3D* PLYReader::load(const char *filename) {
-	ifstream f(filename, std::ios::binary);
+	ifstream file(filename, std::ios::binary);
 	string line;
 	vector<Token> tokens(0);
-	bool read_vertex;
-	bool start_reading_vertex_properties = false;
-	bool start_reading_camera_properties = false;
-	bool start_reading_face_properties = false;
-	bool got_color = false;
-	int offset = 0;
-	int size, v_per_face;
-	float tmp;
-	int vertex_index, vertex_count, face_count;
+	bool read_header = true;
+	int element_type;
+	int format_type;
+	int vertex_count, face_count;
 	
-	if(f.fail()) {
+	if(file.fail()) {
 		cout << "Failed to open this file " << filename << endl;
 		return NULL;
 	}
 
 	PLYModel3D *result = new PLYModel3D();
 
-	int *face_indices;
 	int float_stride = 0;
 	vector<Vertex> vertices;
 	vector<Face> faces;
 
-	while(!f.eof()) {
-		std::getline(f, line);
+	while(read_header) {
+		std::getline(file, line);
 		tokens.clear();
 		parse_line2(line, tokens);
-		size = tokens.size();
-		if(size == 1 && tokens[0].code == CODE_END_HEADER) {
+		// size = tokens.size();
+		if(tokens[0].code == CODE_END_HEADER) {
 			//start read vertices
-			read_vertex = true;
-
-			vertices.reserve(vertex_count);
-			for(int i=0; i<vertex_count; i++) {
-				std::getline(f, line);
-				istringstream str(line);
-				Vertex vt;
-				vt.v = new float[float_stride];
-				vt.face_size = 0;
-				for(int j=0; j<float_stride; j++) {
-					str >> tmp;
-					vt.v[j] = tmp;
-				}
-				vertices.push_back(vt);
-			}
-			// cout << "Number of face: " << face_count << endl;
-			faces.reserve(face_count);
-			//Now read face
-			for(int i=0; i<face_count; i++) {
-				std::getline(f, line);
-				istringstream str1(line);
-				Face face;
-				str1 >> v_per_face;
-				face.vertex_count = v_per_face;
-				// cout << "Face line("<< i <<"): " << line << " v_per_face: "<< v_per_face << endl;
-				for(int j=0; j<v_per_face; j++) {
-					str1 >> vertex_index;
-					face.vertex_indices[j] = vertex_index;
-
-					if(vertices[vertex_index].face_size >= vertices[vertex_index].log_face_size) {
-						vertices[vertex_index].log_face_size += 8;
-						face_indices = new int[vertices[vertex_index].log_face_size];
-						std::memcpy(face_indices, vertices[vertex_index].face_indices, sizeof(int) * vertices[vertex_index].face_size);
-						delete[] vertices[vertex_index].face_indices;
-						vertices[vertex_index].face_indices = face_indices;
-					}
-					vertices[vertex_index].face_indices[vertices[vertex_index].face_size++] = i;
-				}
-				faces.push_back(face);
-			}
+			read_header = false;
 		} else if(tokens[0].code == CODE_PROPERTY) {
-			VertexAttrib att;
-			switch(tokens[2].code) {
-				case CODE_COORD_X:
-					att.code = POSITION;
-					att.offset = offset;
-					result->addAttrib(att);
-					offset += 3;
-					float_stride++;
-				break;
-
-				case CODE_COORD_Y:
-					float_stride++;
-				break;
-
-				case CODE_COORD_Z:
-					float_stride++;
-				break;
-
-				case CODE_RED:
-					if(!got_color) {
-						att.code = COLOR3;
-						att.offset = offset;
-						result->addAttrib(att);
-						offset += 3;
-						got_color = true;
-					}
-					float_stride++;
-				break;
-
-				case CODE_GREEN:
-					if(!got_color) {
-						att.code = COLOR3;
-						att.offset = offset;
-						result->addAttrib(att);
-						offset += 3;
-						got_color = true;
-					}
-					float_stride++;
-				break;
-
-				case CODE_BLUE:
-					if(!got_color) {
-						att.code = COLOR3;
-						att.offset = offset;
-						result->addAttrib(att);
-						offset += 3;
-						got_color = true;
-					}
-					float_stride++;
-				break;
-
-			}
+			readProperty(tokens, element_type, result, float_stride);
+		} else if(tokens[0].code == CODE_FORMAT) {
+			format_type = tokens[1].code;
 		} else if(tokens[0].code == CODE_ELEMENT) {
+			element_type = tokens[1].code;
 			if(tokens[1].code == CODE_VERTEX) {
 				vertex_count = (int)(tokens[2].value);
-				start_reading_vertex_properties = true;
-				start_reading_face_properties = false;
-				start_reading_camera_properties = false;
 			} else if(tokens[1].code == CODE_FACE) {
 				face_count = (int)(tokens[2].value);
-				start_reading_face_properties = true;
-				start_reading_vertex_properties = false;
-				start_reading_camera_properties = false;
-			} else if(tokens[1].code == CODE_CAMERA) {
-				start_reading_face_properties = false;
-				start_reading_vertex_properties = false;
-				start_reading_camera_properties = true;
 			}
 		}
 	}
 
-	if(read_vertex) {
+	cout << "[DEBUG] float_stride: " << float_stride << endl;
 
-	}
+	fillModelAttributes(result);
+	vertices.reserve(vertex_count);
+	faces.reserve(face_count);
+	readpoints(file, 0, format_type, vertex_count, vertices, faces, face_count, float_stride);
 
-	f.close();
+	file.close();
 
 	result->setAll(vertices, faces, float_stride);
 
 	return result;
 }
 
-int PLYReader::save(const Model3D *model, const char *filename) {
+int PLYReader::save(const Model3D *model1, const char *filename, int format) {
+	ofstream file(filename, std::ios::binary);
+	std::ostringstream oss;
+	VertexAttrib att;
+
+
+	const PLYModel3D *model = dynamic_cast<const PLYModel3D*>(model1);
+
+	int face_count = model->getFaceCount();
+	int vertex_count = model->getVertexCount();
+	int attrib_count = model->getAttribCount();
+
+
+	//Header
+	oss << "ply";
+		
+	if(format == CODE_BINARY || format == CODE_BINARY_LITTLE_ENDIAN) {
+
+		oss << "\nformat binary_little_endian 1.0";
+		oss << "\nelement vertex " << vertex_count;
+
+		for(int i=0; i<attrib_count; i++) {
+			att = model->getAttrib(i);
+			switch(att.code) {
+				case POSITION:
+					oss << "\nproperty float x";
+					oss << "\nproperty float y";
+					oss << "\nproperty float z";
+				break;
+
+				case COLOR3:
+					oss << "\nproperty float red";
+					oss << "\nproperty float green";
+					oss << "\nproperty float blue";
+				break;
+
+				case COLOR4:
+					oss << "\nproperty float red";
+					oss << "\nproperty float green";
+					oss << "\nproperty float blue";
+					oss << "\nproperty float alpha";
+				break;
+
+				case NORMAL:
+					oss << "\nproperty float nx";
+					oss << "\nproperty float ny";
+					oss << "\nproperty float nz";
+				break;
+
+				case TEXTURE:
+					oss << "\nproperty float imx";
+					oss << "\nproperty float imy";
+				break;
+			}
+
+		}
+
+		if(face_count>0) {
+			oss << "\nelement face " << face_count;
+			oss << "\nproperty list uchar int vertex_index";
+		}
+
+		// End header
+  		oss << "\nend_header\n";
+  		//flush header
+		file << oss.str();
+		int stride = model->getFloatStride();
+		std::cout << "[DEBUG] float_stride in save(): " << stride << std::endl;
+		char tmp[4];
+		Vertex vt;
+
+		for(int i=0; i<vertex_count; i++) {
+			vt = model->getVertex(i);
+			for(int k=0; k<stride; k++) {
+				file.write(reinterpret_cast<const char *>(vt.v + k), sizeof(float));
+			}
+		}
+
+		Face face;
+		for(int i=0; i<face_count; i++) {
+			face = model->getFace(i);
+			file.write(reinterpret_cast<const char *>(&face.vertex_count), sizeof(unsigned char));
+			for(int k=0; k<face.vertex_count; k++) {
+				file.write(reinterpret_cast<const char *>(face.vertex_indices + k), sizeof(int));
+			}
+		}
+		
+	} else if(format == CODE_ASCII) {
+		oss << "\nformat ascii 1.0";
+		oss << "\nelement vertex " << vertex_count;
+
+		for(int i=0; i<attrib_count; i++) {
+			att = model->getAttrib(i);
+			switch(att.code) {
+				case POSITION:
+					oss << "\nproperty float x";
+					oss << "\nproperty float y";
+					oss << "\nproperty float z";
+				break;
+
+				case COLOR3:
+					oss << "\nproperty float red";
+					oss << "\nproperty float green";
+					oss << "\nproperty float blue";
+				break;
+
+				case COLOR4:
+					oss << "\nproperty float red";
+					oss << "\nproperty float green";
+					oss << "\nproperty float blue";
+					oss << "\nproperty float alpha";
+				break;
+
+				case NORMAL:
+					oss << "\nproperty float nx";
+					oss << "\nproperty float ny";
+					oss << "\nproperty float nz";
+				break;
+
+				case TEXTURE:
+					oss << "\nproperty float imx";
+					oss << "\nproperty float imy";
+				break;
+			}
+
+		}
+
+		if(face_count>0) {
+			oss << "\nelement face " << face_count;
+			oss << "\nproperty list uchar int vertex_index";
+		}
+
+		// End header
+  		oss << "\nend_header\n";
+  		//flush header
+		file << oss.str();
+	}
+
+
+	file.close();
 	return 0;
 }
 
 
-void PLYReader::readpoints(std::ifstream& file, unsigned int offs, int format_type, int vertex_count, vector<Vertex>& vertices, int float_stride) {
+void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
+				int format_type, int vertex_count, 
+				vector<Vertex>& vertices, vector<Face>& faces, int face_count, int float_stride) {
+
+	std::string line;
+
+	float tmp_float;
+	short temp_short;
+	int temp_int;
+	unsigned char temp_uchar;
+	char temp_char;
+
+	char buff[4];
+	int v_per_face, vertex_index;
+	int *face_indices;
+	int field_size = fields.size();
+	int offset;
+	Vertex vt;
+	Face face;
+
 	if(format_type == CODE_ASCII) {
 		//Reading vertices data
 		for(int i=0; i<vertex_count; i++) {
 			std::getline(file, line);
 			istringstream str(line);
-			Vertex vt;
 			vt.v = new float[float_stride];
 			vt.face_size = 0;
-			for(int j=0; j<float_stride; j++) {
+			for(int j=0; j<field_size; j++) {
 				if(fields[j].code == RED || fields[j].code == GREEN || 
 						fields[j].code == BLUE || fields[j].code == ALPHA) {
 					switch(fields[j].type) {
 						case type::UINT8:
-							str >> tmp;
-							vt.v[j] = tmp/255.0f;
+							str >> tmp_float;
+							vt.v[j] = tmp_float/255.0f;
 						break;
+
 						case type::FLOAT32:
-							// str >> tmp;
-							// vt.v[j] = tmp;
-							file.read((char*)buff, sizeof(float));
-							ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
-							vt.v[j] = tmp;
+							str >> tmp_float;
+							vt.v[j] = tmp_float;
 						break;
 
 						default:
 						break;
 					}
 				} else {
-					// str >> tmp;
-					// vt.v[j] = tmp;
-					file.read((char*)buff, sizeof(float));
-					ply_cast_float<float>((void*)&tmp, buff, isBigEndian);
-					vt.v[j] = tmp;
+					str >> tmp_float;
+					vt.v[j] = tmp_float;
 				}
 			}
 			vertices.push_back(vt);
@@ -491,7 +474,6 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs, int format_ty
 		for(int i=0; i<face_count; i++) {
 			std::getline(file, line);
 			istringstream str1(line);
-			Face face;
 			str1 >> v_per_face;
 			face.vertex_count = v_per_face;
 			// cout << "Face line("<< i <<"): " << line << " v_per_face: "<< v_per_face << endl;
@@ -511,12 +493,99 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs, int format_ty
 			faces.push_back(face);
 		}
 	} else {
+		int vertex_size = getVertexSize();
+		char *vertex_src = new char[vertex_size];
+
 		//Reading vertices data
 		for(int i=0; i<vertex_count; i++) {
-		}
+			//read all data about vertext i to vertex_src
+			file.read(vertex_src, vertex_size);
 
+			//
+			vt.v = new float[float_stride];
+
+			offset = 0;
+			for(int j=0; j<field_size; j++) {
+				if(fields[j].code == RED || fields[j].code == GREEN || 
+							fields[j].code == BLUE || fields[j].code == ALPHA) {
+					switch(fields[j].type) {	
+						case type::INT8:
+						case type::UINT8:
+							type_cast<unsigned char>(&temp_uchar, vertex_src+offset, isBigEndian);
+							vt.v[j] = temp_uchar/255.0f;
+						break;
+
+						case type::FLOAT32:
+							type_cast_float<float>(&tmp_float, vertex_src+offset, isBigEndian);
+							vt.v[j] = tmp_float;
+						break;
+
+						default:
+						break;
+					}
+				} else {
+					switch(fields[j].type) {	
+						case type::INT8:
+						case type::UINT8:
+							type_cast<unsigned char>(&temp_uchar, vertex_src+offset, isBigEndian);
+							vt.v[j] = static_cast<float>(temp_uchar);
+						break;
+
+						case type::INT16:
+						case type::UINT16:
+							type_cast<short>(&temp_short, vertex_src+offset, isBigEndian);
+							vt.v[j] = static_cast<float>(temp_short);
+						break;
+
+						case type::INT32:
+						case type::UINT32:
+							type_cast<int>(&temp_int, vertex_src+offset, isBigEndian);
+							vt.v[j] = static_cast<float>(temp_int);
+						break;
+
+						case type::FLOAT32:
+							type_cast_float<float>(&tmp_float, vertex_src+offset, isBigEndian);
+							vt.v[j] = tmp_float;
+						break;
+
+						default:
+						break;
+					}
+				}
+
+				offset += fields[j].size;
+			}
+		}
+		delete[] vertex_src;
+		char v_indices[32];
 		//Reading face data
+		//TODO: A problem existed here, please resolve it
 		for(int i=0; i<face_count; i++) {
+			if(vertex_per_face_type == CODE_UCHAR) {
+				//Firstly, read the number of vertex in face i
+				file.read((char*)&temp_char, sizeof(unsigned char));
+				v_per_face = static_cast<int>(temp_char);
+
+				//then, read vertex indices into v_indices, this is an array of chars
+				file.read(v_indices, sizeof(int) * v_per_face);
+
+				//Now, we set the face properties
+				face.vertex_count = v_per_face;
+				for(int j=0; j<v_per_face; j++) {
+					type_cast<int>(&vertex_index, v_indices+(j * sizeof(int)), isBigEndian);
+					face.vertex_indices[j] = vertex_index;
+
+					if(vertices[vertex_index].face_size >= vertices[vertex_index].log_face_size) {
+						vertices[vertex_index].log_face_size += 8;
+						face_indices = new int[vertices[vertex_index].log_face_size];
+						std::memcpy(face_indices, vertices[vertex_index].face_indices, sizeof(int) * vertices[vertex_index].face_size);
+						delete[] vertices[vertex_index].face_indices;
+						vertices[vertex_index].face_indices = face_indices;
+					}
+					vertices[vertex_index].face_indices[vertices[vertex_index].face_size++] = i;
+				}
+				faces.push_back(face);
+			}
 		}
 	}
 }
