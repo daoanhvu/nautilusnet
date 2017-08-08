@@ -6,8 +6,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "../common/defines.h"
 #include "model3d.h"
-#include "../lexer_parser.h"
 
 using namespace std;
 
@@ -17,52 +18,46 @@ struct OpenFileException : public exception {
    }
 };
 
-namespace type {
-	enum FieldType {
-		INT8,
-		UINT8,
-		INT16,
-		UINT16,
-		INT32,
-		UINT32,
-		FLOAT32,
-		FLOAT64
-	};
+template<typename T> T endian_swap(const T & v) { return v; }
+template<> inline uint16_t endian_swap(const uint16_t & v) { return (v << 8) | (v >> 8); }
+template<> inline uint32_t endian_swap(const uint32_t & v) { return (v << 24) | ((v << 8) & 0x00ff0000) | ((v >> 8) & 0x0000ff00) | (v >> 24); }
+template<> inline uint64_t endian_swap(const uint64_t & v) {
+		return (((v & 0x00000000000000ffLL) << 56) |
+			((v & 0x000000000000ff00LL) << 40) |
+			((v & 0x0000000000ff0000LL) << 24) |
+			((v & 0x00000000ff000000LL) << 8) |
+			((v & 0x000000ff00000000LL) >> 8) |
+			((v & 0x0000ff0000000000LL) >> 24) |
+			((v & 0x00ff000000000000LL) >> 40) |
+			((v & 0xff00000000000000LL) >> 56));
 }
 
-enum FieldCode {
-		X,
-		Y,
-		Z,
-		NORMAL_X,
-		NORMAL_Y,
-		NORMAL_Z,
-		RGB,
-		RGBA,
-		RED,
-		GREEN,
-		BLUE,
-		ALPHA,
-		IMX,
-		IMY
-};
+template<> inline int16_t endian_swap(const int16_t & v) { uint16_t r = endian_swap(*(uint16_t*)&v); return *(int16_t*)&r; }
+template<> inline int32_t endian_swap(const int32_t & v) { uint32_t r = endian_swap(*(uint32_t*)&v); return *(int32_t*)&r; }
+template<> inline int64_t endian_swap(const int64_t & v) { uint64_t r = endian_swap(*(uint64_t*)&v); return *(int64_t*)&r; }
+inline float endian_swap_float(const uint32_t & v) { uint32_t r = endian_swap(v); return *(float*)&r; }
+inline double endian_swap_double(const uint64_t & v) { uint64_t r = endian_swap(v); return *(double*)&r; }
 
-typedef struct tagPointField {
-	FieldCode code;
-	type::FieldType type;
-	short index;
+template<typename T>
+void type_cast(void * dest, const char * src, bool be) {
+	*(static_cast<T *>(dest)) = (be) ? endian_swap(*(reinterpret_cast<const T *>(src))) : *(reinterpret_cast<const T *>(src));
+}
 
-	public:
-		tagPointField(){}
-		tagPointField(FieldCode c, type::FieldType t){
-			code = c;
-			type = t;
-		}
-} PointField;
+template<typename T>
+void type_cast_float(void * dest, const char * src, bool be)	{
+	*(static_cast<T *>(dest)) = (be) ? endian_swap_float(*(reinterpret_cast<const uint32_t *>(src))) : *(reinterpret_cast<const T *>(src));
+}
+
+template<typename T>
+void type_cast_double(void * dest, const char * src, bool be) {
+	*(static_cast<T *>(dest)) = (be) ? endian_swap_double(*(reinterpret_cast<const uint64_t *>(src))) : *(reinterpret_cast<const T *>(src));
+}
 
 class Reader {
 	protected:
 		vector<PointField> fields;
+
+		void fillModelAttributes(Model3D *);
 	public:
 		virtual ~Reader() {}
 
@@ -83,6 +78,8 @@ class Reader {
 			return -1;
 		};
 		virtual int parse_line2(string line, vector<Token> &v) = 0;
+
+		int getVertexSize();
 };
 
 #endif

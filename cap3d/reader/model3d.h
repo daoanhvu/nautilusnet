@@ -79,14 +79,13 @@ typedef struct tagVertexAttrib {
 class Model3D {
   protected:
     vector<Vertex> vertices;
-    //Number of float per vertex
+    //Number of float per each vertex
     int float_stride;
 	vector<VertexAttrib> vertex_attribs;
 
   public:
     Model3D(): float_stride(0) {    }
-    Model3D(vector<Vertex> vs, int floatStride): float_stride(floatStride) {
-    	vertices = vs;
+    Model3D(vector<Vertex>& vs, int floatStride): float_stride(floatStride), vertices(vs) {
     }
 
     virtual ~Model3D() {
@@ -96,6 +95,19 @@ class Model3D {
 		for(i=0; i<size; i++) {
 			delete[] vertices[i].v;
 		}
+	}
+
+	int getAttributeIndex(VertexAttribute code) {
+		int i;
+		for(i=0; i<vertex_attribs.size(); i++) {
+			if(vertex_attribs[i].code == code)
+				return i;
+		}
+		return -1;
+	}
+	
+	void setAttributeByIndex(int idx, VertexAttribute code) {
+		vertex_attribs[idx].code = code;
 	}
 
 	void translate(float vx, float vy, float vz);
@@ -147,7 +159,7 @@ class Model3D {
       this->float_stride = fs;
     }
 
-    int copyVerticesFrom(vector<Vertex> srcV) {
+    int copyVerticesFrom(vector<Vertex>& srcV) {
       vertices = srcV;
       return vertices.size();
     }

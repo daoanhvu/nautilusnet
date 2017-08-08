@@ -13,8 +13,7 @@ class PLYModel3D: public Model3D {
 
   public:
     PLYModel3D():Model3D() {};
-    PLYModel3D(vector<Vertex> vs, vector<Face> f, int floatStride): Model3D(vs, floatStride) {\
-      faces = f;
+    PLYModel3D(vector<Vertex>& vs, vector<Face>& f, int floatStride): Model3D(vs, floatStride), faces(f) {
     }
 
     virtual ~PLYModel3D() {
@@ -35,7 +34,7 @@ class PLYModel3D: public Model3D {
       this->float_stride = fs;
     }
 
-    int copyVerticesFrom(vector<Vertex> srcV) {
+    int copyVerticesFrom(vector<Vertex>& srcV) {
       vertices = srcV;
       return vertices.size();
     }
@@ -44,7 +43,7 @@ class PLYModel3D: public Model3D {
       vertices.reserve(vertex_count);
     }
 
-    void pushVertex(Vertex v) {
+    void pushVertex(Vertex& v) {
       vertices.push_back(v);
     }
 
@@ -56,11 +55,11 @@ class PLYModel3D: public Model3D {
       return faces.size();
     }
 
-    void pushFace(Face f) {
+    void pushFace(Face& f) {
       faces.push_back(f);
     }
 
-    void setAll(vector<Vertex> vs, vector<Face> f, int floatStride) {
+    void setAll(vector<Vertex>& vs, vector<Face>& f, int floatStride) {
       vertices = vs;
       faces = f;
       float_stride = floatStride;
@@ -87,7 +86,6 @@ class PLYModel3D: public Model3D {
 	*/
 	unsigned short *getElementIndices(unsigned int &nc) {
 		unsigned int face_count = faces.size();
-		unsigned int i;
 		int j, k, c;
 		unsigned short *indices = NULL;
 
@@ -97,7 +95,7 @@ class PLYModel3D: public Model3D {
 			k = faces[0].vertex_count;
 			nc = face_count * k;
 			indices = new unsigned short[nc];
-			for(i=0; i<face_count; i++) {
+			for(int i=0; i<face_count; i++) {
 				for(j=0; j<k; j++) {
 					indices[c++] = faces[i].vertex_indices[j];
 				}

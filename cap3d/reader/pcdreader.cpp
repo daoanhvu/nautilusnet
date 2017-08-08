@@ -52,46 +52,46 @@ int PCDReader::parse_line2(string line, vector<Token> &v) {
 			Token t(CODE_NUMBER, val);
 			v.push_back(t);
 		} else if(tk == "rgb") {
-			Token t(CODE_PCD_RGB);
+			Token t(CODE_RGB);
 			v.push_back(t);
 		} else if(tk == "x") {
-			Token t(CODE_PCD_X);
+			Token t(CODE_COORD_X);
 			v.push_back(t);
 		} else if(tk == "y") {
-			Token t(CODE_PCD_Y);
+			Token t(CODE_COORD_Y);
 			v.push_back(t);
 		} else if(tk == "z") {
-			Token t(CODE_PCD_Z);
+			Token t(CODE_COORD_Z);
 			v.push_back(t);
 		} else if(tk == "normal_x") {
-			Token t(CODE_PCD_NORM_X);
+			Token t(CODE_NORMAL_X);
 			v.push_back(t);
 		} else if(tk == "normal_y") {
-			Token t(CODE_PCD_NORM_Y);
+			Token t(CODE_NORMAL_Y);
 			v.push_back(t);
 		} else if(tk == "normal_z") {
-			Token t(CODE_PCD_NORM_Z);
+			Token t(CODE_NORMAL_Z);
 			v.push_back(t);
 		} else if(tk == "imX") {
-			Token t(CODE_PCD_IMX);
+			Token t(CODE_IMX);
 			v.push_back(t);
 		} else if(tk == "imY") {
-			Token t(CODE_PCD_IMY);
+			Token t(CODE_IMY);
 			v.push_back(t);
 		} else if(tk == "ascii") {
-			Token t(CODE_PCD_ASCII);
+			Token t(CODE_ASCII);
 			v.push_back(t);
 		} else if(tk == "binary") {
-			Token t(CODE_PCD_BINARY);
+			Token t(CODE_BINARY);
 			v.push_back(t);
 		} else if(tk == "F") {
-			Token t(CODE_PCD_FLOAT);
+			Token t(CODE_FLOAT32);
 			v.push_back(t);
 		} else if(tk == "U") {
-			Token t(CODE_PCD_UNSIGNED);
+			Token t(CODE_UINT32);
 			v.push_back(t);
 		} else if(tk == "I") {
-			Token t(CODE_PCD_SIGNED);
+			Token t(CODE_INT32);
 			v.push_back(t);
 		} else if(tk == "comment" || tk == "converted" || tk == "from" || tk == "OBJ" ) {
 
@@ -141,7 +141,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 			VertexAttrib att;
 			for(int i=1; i<tokens.size(); i++) {
 				switch(tokens[i].code) {
-					case CODE_PCD_X:
+					case CODE_COORD_X:
 						cout << "[DEBUG] X located at " << fields.size() << endl;
 						f.code = X;
 						f.index = i-1;
@@ -153,21 +153,21 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 						offset += 3;
 					break;
 
-					case CODE_PCD_Y:
+					case CODE_COORD_Y:
 						cout << "[DEBUG] Y located at " << fields.size() << endl;
 						f.code = Y;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
-					case CODE_PCD_Z:
+					case CODE_COORD_Z:
 						cout << "[DEBUG] Y located at " << fields.size() << endl;
 						f.code = Z;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
-					case CODE_PCD_NORM_X:
+					case CODE_NORMAL_X:
 						f.code = NORMAL_X;
 						f.index = i-1;
 						fields.push_back(f);
@@ -178,19 +178,19 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 						offset += 3;
 					break;
 
-					case CODE_PCD_NORM_Y:
+					case CODE_NORMAL_Y:
 						f.code = NORMAL_Y;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
-					case CODE_PCD_NORM_Z:
+					case CODE_NORMAL_Z:
 						f.code = NORMAL_Z;
 						f.index = i-1;
 						fields.push_back(f);
 					break;
 
-					case CODE_PCD_RGB:
+					case CODE_RGB:
 						cout << "[DEBUG] grb located at " << fields.size() << endl;
 						f.code = RGB;
 						f.index = i-1;
@@ -204,7 +204,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 						offset += 3;
 					break;
 
-					case CODE_PCD_RGBA:
+					case CODE_RGBA:
 						f.code = RGBA;
 						f.index = i-1;
 						fields.push_back(f);
@@ -217,7 +217,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 						offset += 4;
 					break;
 
-					case CODE_PCD_IMX:
+					case CODE_IMX:
 						cout << "[DEBUG] imX located at " << fields.size() << endl;
 						f.code = IMX;
 						f.index = i-1;
@@ -229,7 +229,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 						offset += 2;
 					break;
 
-					case CODE_PCD_IMY:
+					case CODE_IMY:
 						cout << "[DEBUG] imY located at " << fields.size() << endl;
 						f.code = IMY;
 						f.index = i-1;
@@ -240,17 +240,26 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 		} else if(tokens[0].code == CODE_PCD_TYPE) {
 			for(int i=1; i<tokens.size(); i++) {
 				switch(tokens[i].code) {
-					case CODE_PCD_FLOAT:
-						fields[i].type = type::FLOAT32;
+					case CODE_INT8:
+						fields[i].type = type::INT8;
 					break;
 
-					case CODE_PCD_SIGNED:
+					case CODE_UINT8:
+						fields[i].type = type::UINT8;
+					break;
+
+					case CODE_INT32:
 						fields[i].type = type::INT32;
 					break;
 
-					case CODE_PCD_UNSIGNED:
+					case CODE_UINT32:
 						fields[i].type = type::UINT32;
 					break;
+
+					case CODE_FLOAT32:
+						fields[i].type = type::FLOAT32;
+					break;
+
 				}
 			}
 		} else if(tokens[0].code == CODE_PCD_POINTS) {
@@ -258,7 +267,7 @@ Model3D* PCDReader::load(const char *filename, float scale) {
 		} else if(tokens[0].code == CODE_PCD_DATA) {
 			cout << "[DEBUG-PCDREADER] Going to read data!!!!" << endl;
 			vertex_data_type = tokens[1].code;
-			if(tokens[1].code == CODE_PCD_BINARY) {
+			if(tokens[1].code == CODE_BINARY) {
 				file_offset = file.tellg();
 				cout << "[DEBUG-PCDREADER] start vertex data offset: " << file_offset << endl;
 			}
@@ -302,7 +311,7 @@ void PCDReader::readpoints(std::ifstream& file, unsigned int offs, int format_ty
 	unsigned int field_size = fields.size();
 	Vertex vt;
 	vertices.reserve(vertex_count);
-	if(format_type == CODE_PCD_ASCII) {
+	if(format_type == CODE_ASCII) {
 		for(int i=0; i<vertex_count; i++) {
 			std::getline(file, line);
 			istringstream str(line);
@@ -336,6 +345,9 @@ void PCDReader::readpoints(std::ifstream& file, unsigned int offs, int format_ty
 							vt.v[offset++] = b/255.0f;
 						break;
 						case type::FLOAT64:
+						break;
+
+						default:
 						break;
 					}
 				} else if(fields[j].code == RGBA) {
@@ -383,6 +395,9 @@ void PCDReader::readpoints(std::ifstream& file, unsigned int offs, int format_ty
 							vt.v[offset++] = b/255.0f;
 						break;
 						case type::FLOAT64:
+						break;
+
+						default:
 						break;
 					}
 				} else if(fields[j].code == RGBA) {
