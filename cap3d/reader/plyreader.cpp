@@ -36,7 +36,7 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 		} else if(tk == "property") {
 			Token t(CODE_PROPERTY);
 			v.push_back(t);
-		} else if(tk == "uint8") {
+		} else if(tk == "uint8" || (tk == "uchar") ) {
 			Token t(CODE_UINT8);
 			v.push_back(t);
 		} else if(tk == "uint16") {
@@ -45,11 +45,8 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 		} else if(tk == "uint32") {
 			Token t(CODE_UINT32);
 			v.push_back(t);
-		} else if(tk == "float32") {
+		} else if( (tk == "float32") || (tk == "float") ) {
 			Token t(CODE_FLOAT32);
-			v.push_back(t);
-		} else if(tk == "uchar") {
-			Token t(CODE_UCHAR);
 			v.push_back(t);
 		} else if(tk == "list") {
 			Token t(CODE_LIST);
@@ -70,7 +67,7 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 			//cout << line << " NUmber: " << val << endl;
 			Token t(CODE_NUMBER, val);
 			v.push_back(t);
-		} else if(tk == "vertex_indices") {
+		} else if( (tk == "vertex_indices") || (tk == "vertex_index") ) {
 			Token t(CODE_VERTEX_INDICES);
 			v.push_back(t);
 		} else if(tk == "x") {
@@ -107,6 +104,8 @@ int PLYReader::parse_line2(string line, vector<Token> &v) {
 void PLYReader::readProperty(const vector<Token>& tokens, int element_type, PLYModel3D *model, int &float_stride) {
 	PointField pf;
 
+	// cout << "[DEBUG] Reading property line: " << tokens[0].code << " " << tokens[1].code << " " << tokens[2].code << endl;
+
 	if(element_type == CODE_VERTEX) {
 		/**
 			TODO: We use OpenGL as the main graphics library of this project, so I cast every components to 
@@ -115,7 +114,7 @@ void PLYReader::readProperty(const vector<Token>& tokens, int element_type, PLYM
 		float_stride++;
 
 		pf.code = getCodeByValue(tokens[2].code);
-		cout << "CODE: " << tokens[1].code << endl;
+		// cout << "CODE: " << tokens[1].code << endl;
 		int size = readPointField(pf, tokens[1].code);
 		pf.size = size;
 		fields.push_back(pf);
@@ -174,13 +173,13 @@ Model3D* PLYReader::load(const char *filename, float scale, bool should_add_norm
 			}
 		}
 	}
-	cout << "[DEBUG] float_stride: " << float_stride << endl;
-	for(int l=0; l<fields.size(); l++) {
-		cout << "[DEBUG] Attribute " << l << endl;
-		cout << "[DEBUG] Code: " << fields[l].code << endl;
-		cout << "[DEBUG] Type: " << fields[l].type << endl;
-		cout << "[DEBUG] Size: " << fields[l].size << endl;
-	}
+	// cout << "[DEBUG] float_stride: " << float_stride << endl;
+	// for(int l=0; l<fields.size(); l++) {
+	// 	cout << "[DEBUG] Attribute " << l << endl;
+	// 	cout << "[DEBUG] Code: " << fields[l].code << endl;
+	// 	cout << "[DEBUG] Type: " << fields[l].type << endl;
+	// 	cout << "[DEBUG] Size: " << fields[l].size << endl;
+	// }
 
 	fillModelAttributes(result);
 
@@ -287,7 +286,6 @@ int PLYReader::save(const Model3D *model1, const char *filename, int format) {
 	int vertex_count = model->getVertexCount();
 	int attrib_count = model->getAttribCount();
 
-
 	//Header
 	oss << "ply";
 		
@@ -334,7 +332,7 @@ int PLYReader::save(const Model3D *model1, const char *filename, int format) {
 
 		if(face_count>0) {
 			oss << "\nelement face " << face_count;
-			oss << "\nproperty list uchar int vertex_index";
+			oss << "\nproperty list uchar int vertex_indices";
 		}
 
 		// End header
@@ -342,7 +340,7 @@ int PLYReader::save(const Model3D *model1, const char *filename, int format) {
   		//flush header
 		file << oss.str();
 		int stride = model->getFloatStride();
-		std::cout << "[DEBUG] float_stride in save(): " << stride << std::endl;
+		// std::cout << "[DEBUG] float_stride in save(): " << stride << std::endl;
 		char tmp[4];
 		Vertex vt;
 
@@ -357,6 +355,7 @@ int PLYReader::save(const Model3D *model1, const char *filename, int format) {
 		for(int i=0; i<face_count; i++) {
 			face = model->getFace(i);
 			file.write(reinterpret_cast<const char *>(&face.vertex_count), sizeof(unsigned char));
+			// std::cout << "[DEBUG] Write: " << +face.vertex_count << " to file " << std::endl;
 			for(int k=0; k<face.vertex_count; k++) {
 				file.write(reinterpret_cast<const char *>(face.vertex_indices + k), sizeof(int));
 			}
@@ -413,7 +412,6 @@ int PLYReader::save(const Model3D *model1, const char *filename, int format) {
 		file << oss.str();
 	}
 
-
 	file.close();
 	return 0;
 }
@@ -428,6 +426,7 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
 	float tmp_float;
 	short temp_short;
 	int temp_int;
+	long temp_long;
 	unsigned char temp_uchar;
 	char temp_char;
 
@@ -500,12 +499,15 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
 		for(int i=0; i<vertex_count; i++) {
 			//read all data about vertext i to vertex_src
 			file.read(vertex_src, vertex_size);
-
-			//
 			vt.v = new float[float_stride];
+
+			// cout << "[DEBUG] Reading vertex " << i << endl;
 
 			offset = 0;
 			for(int j=0; j<field_size; j++) {
+
+				// cout << "[DEBUG] Field " << j << ", type = " << fields[j].type << endl;
+
 				if(fields[j].code == RED || fields[j].code == GREEN || 
 							fields[j].code == BLUE || fields[j].code == ALPHA) {
 					switch(fields[j].type) {	
@@ -543,23 +545,35 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
 							vt.v[j] = static_cast<float>(temp_int);
 						break;
 
+						case type::INT64:
+						case type::UINT64:
+							type_cast<long>(&temp_long, vertex_src+offset, isBigEndian);
+							vt.v[j] = static_cast<float>(temp_int);
+						break;
+
 						case type::FLOAT32:
 							type_cast_float<float>(&tmp_float, vertex_src+offset, isBigEndian);
+							// cout << "[DEBUG] " << tmp_float << endl;
 							vt.v[j] = tmp_float;
 						break;
 
 						default:
+							// cout << "[DEBUG] Something WRONG!!!!!! " << fields[j].type << endl;
 						break;
 					}
 				}
 
 				offset += fields[j].size;
 			}
+
+			vertices.push_back(vt);
+
 		}
 		delete[] vertex_src;
 		char v_indices[32];
 		//Reading face data
 		//TODO: A problem existed here, please resolve it
+		// cout << "[DEBUG] Number of face: "<< face_count << endl;
 		for(int i=0; i<face_count; i++) {
 			if(vertex_per_face_type == CODE_UCHAR) {
 				//Firstly, read the number of vertex in face i
@@ -570,10 +584,13 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
 				file.read(v_indices, sizeof(int) * v_per_face);
 
 				//Now, we set the face properties
+				// cout << "[DEBUG] Face(" << i << "): [" << v_per_face << "] ";
 				face.vertex_count = v_per_face;
 				for(int j=0; j<v_per_face; j++) {
 					type_cast<int>(&vertex_index, v_indices+(j * sizeof(int)), isBigEndian);
 					face.vertex_indices[j] = vertex_index;
+
+					// cout << vertex_index << ", ";
 
 					if(vertices[vertex_index].face_size >= vertices[vertex_index].log_face_size) {
 						vertices[vertex_index].log_face_size += 8;
@@ -584,6 +601,7 @@ void PLYReader::readpoints(std::ifstream& file, unsigned int offs,
 					}
 					vertices[vertex_index].face_indices[vertices[vertex_index].face_size++] = i;
 				}
+				// cout << endl;
 				faces.push_back(face);
 			}
 		}

@@ -97,24 +97,35 @@ void ply_cast(void * dest, const char * src, bool be) {
 	*(static_cast<unsigned char *>(dest)) = *(reinterpret_cast<const unsigned char *>(src));
 }
 
-int main() {
-	Reader *reader = new PLYReader();
-	Model3D *model;
-	//if((model = reader->load("data/00037.ply", 2))== NULL) {
-	// if((model = reader->load("data/simple_model_1.ply", 2, false, false))== NULL) {
-	if((model = reader->load("data/simple_binary.ply", 2, false, false))== NULL) {
-		cout << "Could not load input file!" << endl;
-		delete reader;
-		return 1;
-	}
+// int main(int argc, char* args[]) {
+// 	Reader *reader = new PLYReader();
+// 	Model3D *model;
 
-	// reader->save(model, "data/simple_binary.ply", 32);
+// 	if( argc < 2) {
+// 		//if((model = reader->load("data/00037.ply", 2))== NULL) {
+// 		if((model = reader->load("data/simple_model_1.ply", 2, false, false))== NULL) {
+// 			cout << "Could not load input file!" << endl;
+// 			delete reader;
+// 			return 1;
+// 		}
+// 		reader->save(model, "data/simple_binary.ply", 32);
+// 		cout << "Model saved to data/simple_binary.ply." << endl;
+// 	} else {
+// 		int cmd = std::stoi(args[1]);
+// 		if((model = reader->load("data/00037.ply", 2, true, true))== NULL) {
+// 		// if((model = reader->load("data/simple_model_1.ply", 2, false, false))== NULL) {
+// 		// if((model = reader->load("data/simple_binary.ply", 2, false, false))== NULL) {
+// 			cout << "Could not load input file!" << endl;
+// 			delete reader;
+// 			return 1;
+// 		}
+// 	}
 
-	delete reader;
-	return 0;
-}
+// 	delete reader;
+// 	return 0;
+// }
 
-int main1(int argc, char* args[]) {
+int main(int argc, char* args[]) {
 	Reader *reader;
 	Model3D *model;
 	unsigned int buflen;
@@ -180,6 +191,8 @@ int main1(int argc, char* args[]) {
 		delete reader;
 		return 1;
 	}
+
+	cout << "[DEBUG-CAP3D] GOT HERE!!" << endl;
 
 	//We don't need the reader anymore so delete here!
 	delete reader;

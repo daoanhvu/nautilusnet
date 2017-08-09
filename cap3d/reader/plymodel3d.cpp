@@ -56,7 +56,7 @@ int PLYModel3D::add_normal_vectors() {
 	float v2a, v2b, v2c;
 	int face_count = faces.size();
 
-	cout << "[DEBUG] Number of face: " << face_count << endl;
+	cout << "[DEBUG] Number of face: " << face_count << "; Number of vertex: " << vertices.size() << endl;
 
 	//short-circuit
 	if(face_count <= 0)
@@ -65,6 +65,8 @@ int PLYModel3D::add_normal_vectors() {
 	for(i=0; i<face_count; i++) {
 		vxcount = faces[i].vertex_count;
 		v = faces[i].vertex_indices;
+
+		// cout << "[DEBUG] face [" << i << "] vertice: " << v[0] << " " << v[1] << " " << v[2] << endl;
 
 		v0a = vertices[v[0]].v[0];
 		v0b = vertices[v[0]].v[1];
@@ -89,7 +91,7 @@ int PLYModel3D::add_normal_vectors() {
 		//cout << "Normal vector: " << normal[0] << ", " << normal[1] << ", " << normal[2] << endl;
 	}
 
-	cout << "[DEBUG] GOT HERE 1 " << endl;
+	// cout << "[DEBUG] GOT HERE 1 " << endl;
 
 	/**
 		We are going to add 3 components to vertex, so float_stride need to be increase 3
@@ -120,7 +122,8 @@ int PLYModel3D::add_normal_vectors() {
 	VertexAttrib normal_att;
 	normal_att.code = NORMAL;
 	normal_att.offset = old_float_stride;
-	cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
+	// cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
 	vertex_attribs.push_back(normal_att);
+
 	return 0;
 }

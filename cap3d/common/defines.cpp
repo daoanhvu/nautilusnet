@@ -1,5 +1,7 @@
 #include "defines.h"
 
+#include <iostream>
+
 type::FieldType getTypeByCode(int code) {
 	type::FieldType t;
 	switch(code) {
@@ -118,54 +120,67 @@ FieldCode getCodeByValue(int code) {
 // return the stride according to data_type
 int readPointField(PointField &pf, int data_type) {
 	int stride;
+	// std::cout << "[DEBUG] data_type " << data_type << std::endl;
 	switch(data_type) {
 		case type::UINT8:
 			stride = 1;
+			pf.type = type::UINT8;
 		break;
 
 		case type::INT8:
 			stride = 1;
+			pf.type = type::INT8;
 		break;
 
 		case type::UINT16:
 			stride = 2;
+			pf.type = type::UINT16;
 		break;
 
 		case type::INT16:
 			stride = 2;
+			pf.type = type::INT16;
 		break;
 
 		case type::INT32:
 			stride = 4;
+			pf.type = type::INT32;
 		break;
 
 		case type::UINT32:
 			stride = 4;
+			pf.type = type::UINT32;
 		break;
 
 		case type::INT64:
 			stride = 8;
+			pf.type = type::INT64;
 		break;
 
 		case type::UINT64:
 			stride = 8;
+			pf.type = type::UINT64;
 		break;
 
-		case type::FLOAT32:
+		// case type::FLOAT32:
+		case CODE_FLOAT32:
 			stride = 4;
+			pf.type = type::FLOAT32;
 		break;
 
-		case type::FLOAT64:
+		// case type::FLOAT64:
+		case CODE_FLOAT64:
 			stride = 8;
+			pf.type = type::FLOAT64;
 		break;
 
 		default:
 			stride = 0;
+			pf.type = type::TYPE_UNKNOWN;
 		break;
 	}
 
 	pf.size = stride;
-	pf.type = getTypeByCode(data_type);
 
 	return stride;
 }

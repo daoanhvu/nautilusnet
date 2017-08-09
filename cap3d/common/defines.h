@@ -68,7 +68,7 @@
 
 namespace type {
 	enum FieldType {
-		UINT8,
+		UINT8 = CODE_UINT8,
 		INT8,
 		INT16,
 		UINT16,

@@ -62,7 +62,7 @@ class PLYModel3D: public Model3D {
       faces.push_back(f);
     }
 
-    void setAll(vector<Vertex>& vs, vector<Face>& f, int floatStride) {
+    void setAll(vector<Vertex> vs, vector<Face> f, int floatStride) {
       vertices = vs;
       faces = f;
       float_stride = floatStride;
