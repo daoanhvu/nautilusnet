@@ -209,7 +209,7 @@ int main(int argc, char* args[]) {
 	// cout << "Center of object: " << object_center << endl;
 
 	//TODO: Do we need to do this???
-	//model->translate(-object_center.x, -object_center.y, -object_center.z);
+	model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	VBO vbo(model, primitive, GL_STATIC_DRAW);

@@ -240,7 +240,7 @@ class Model3D {
 			PARAMS:
 				[OUT] nc: total number of vertex
 		*/
-    virtual unsigned short *getElementIndices(unsigned int &nc) = 0;
+    virtual unsigned int *getElementIndices(unsigned int &nc) = 0;
 
 
     //For Debuging

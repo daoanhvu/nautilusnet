@@ -11,13 +11,6 @@ float* Model3D::getVertexBuffer(unsigned int &nc) {
 
 		std::memcpy(buf + offs, vertices[i].v, v_size_in_byte);
 		offs += float_stride;
-
-		//DEBUG
-		if(i==65864 || i==65866) {
-			std::cout << "Vertex["<< i <<"] " << vertices[i].v[0] << " " << vertices[i].v[1] << " " << vertices[i].v[2] << std::endl;
-			std::cout << "Copied Vertex["<< i <<"] " << buf[i*float_stride] << " " << buf[i*float_stride+1] << " " << buf[i*float_stride+2] << std::endl;
-		}
-		//END DEBUG
 	}
 	return buf;
 }
@@ -85,7 +78,7 @@ void Model3D::scaleToFit(float value) {
 		}
 	}
 	float factor = value / maxx;
-	cout << "Scale factor: " << factor << endl;
+	// cout << "Scale factor: " << factor << endl;
 	for(i=0; i<vertex_count; i++) {
 		vertices[i].v[0] *= factor;
 		vertices[i].v[1] *= factor;

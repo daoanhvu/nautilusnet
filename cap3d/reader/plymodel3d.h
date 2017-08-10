@@ -80,9 +80,9 @@ class PLYModel3D: public Model3D {
 		PARAMS:
 			[OUT] nc: total number of index
 	*/
-	unsigned short *getElementIndices(unsigned int &nc) {
+	unsigned int *getElementIndices(unsigned int &nc) {
 		unsigned int face_count = faces.size();
-		unsigned short *indices = NULL;
+		unsigned int *indices = NULL;
 
 		nc = 0;
 		if(face_count > 0) {
@@ -90,8 +90,8 @@ class PLYModel3D: public Model3D {
 			int num_vertex_per_face;
 			num_vertex_per_face = faces[0].vertex_count;
 			nc = face_count * num_vertex_per_face;
-			std::cout << "[DEBUG] Number of index: " << nc << endl;
-			indices = new unsigned short[nc];
+			// std::cout << "[DEBUG] Number of index: " << nc << endl;
+			indices = new unsigned int[nc];
 			for(int i=0; i<face_count; i++) {
 
 				// std::cout << "[DEBUG] Face["<< i <<"] " << faces[i].vertex_indices[0] << " " << faces[i].vertex_indices[1] << " " << faces[i].vertex_indices[2] << endl;
@@ -123,7 +123,7 @@ class PLYModel3D: public Model3D {
 		VertexAttrib color_att;
 		color_att.code = COLOR3;
 		color_att.offset = old_float_stride;
-		cout << "[DEBUG] Color offset: " << old_float_stride << endl;
+		// cout << "[DEBUG] Color offset: " << old_float_stride << endl;
 		vertex_attribs.push_back(color_att);
 	}
 

@@ -59,7 +59,7 @@ class PCDModel3D: public Model3D {
 			PARAMS:
 				[OUT] nc: total number of vertex
 		*/
-    virtual unsigned short *getElementIndices(unsigned int &nc) {
+    virtual unsigned int *getElementIndices(unsigned int &nc) {
     	nc = 0;
     	return NULL;
     }

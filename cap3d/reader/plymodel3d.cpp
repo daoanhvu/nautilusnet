@@ -31,7 +31,7 @@ int PLYModel3D::add_normal_vectors() {
 	float v2a, v2b, v2c;
 	int face_count = faces.size();
 
-	cout << "[DEBUG] Number of face: " << face_count << "; Number of vertex: " << vertices.size() << endl;
+	// cout << "[DEBUG] Number of face: " << face_count << "; Number of vertex: " << vertices.size() << endl;
 
 	//short-circuit
 	if(face_count <= 0)
@@ -98,7 +98,7 @@ int PLYModel3D::add_normal_vectors() {
 	VertexAttrib normal_att;
 	normal_att.code = NORMAL;
 	normal_att.offset = old_float_stride;
-	cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
+	// cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
 	vertex_attribs.push_back(normal_att);
 
 	return 0;

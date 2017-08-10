@@ -209,19 +209,19 @@ Model3D* PLYReader::load(const char *filename, float scale, bool should_add_norm
 	result->setAll(vertices, faces, float_stride);
 
 	//Need safe type-casting???? NO
-	// result->scaleToFit(scale);
+	result->scaleToFit(scale);
 
 	if(should_add_normal) {
 		//((PLYModel3D*)result)->add_normal_vectors();
 		dynamic_cast<PLYModel3D*>(result)->add_normal_vectors();	
 	}
 
-	/*------ START DEBUG ------ */
-	int idx = 65864;
-	cout << "Vertex["<< idx <<"] " << result->getVertex(idx).v[0] << " " << result->getVertex(idx).v[1] << " " << result->getVertex(idx).v[2] << endl;
-	idx = 65866;
-	cout << "Vertex["<< idx <<"] " << result->getVertex(idx).v[0] << " " << result->getVertex(idx).v[1] << " " << result->getVertex(idx).v[2] << endl;
-	/*------ END DEBUG ------ */
+	// /*------ START DEBUG ------ */
+	// int idx = 65864;
+	// cout << "Vertex["<< idx <<"] " << result->getVertex(idx).v[0] << " " << result->getVertex(idx).v[1] << " " << result->getVertex(idx).v[2] << endl;
+	// idx = 65866;
+	// cout << "Vertex["<< idx <<"] " << result->getVertex(idx).v[0] << " " << result->getVertex(idx).v[1] << " " << result->getVertex(idx).v[2] << endl;
+	// /*------ END DEBUG ------ */
 	
 
 	if( (result->getColorOffset() == -1) && should_add_color) {
@@ -229,13 +229,6 @@ Model3D* PLYReader::load(const char *filename, float scale, bool should_add_norm
 		// ((PLYModel3D*)result)->addDefaultColor(0.3f, 0.5f, 0.6f);
 		dynamic_cast<PLYModel3D*>(result)->addDefaultColor(0.3f, 0.5f, 0.6f);
 	}
-	/*------ START DEBUG ------ */
-	cout << "After adding COLOR3" << endl;
-	idx = 65864;
-	cout << "Vertex["<< idx <<"] " << result->getVertex(idx).v[0] << " " << result->getVertex(idx).v[1] << " " << result->getVertex(idx).v[2] << endl;
-	idx = 65866;
-	cout << "Vertex["<< idx <<"] " << result->getVertex(idx).v[0] << " " << result->getVertex(idx).v[1] << " " << result->getVertex(idx).v[2] << endl;
-	/*------ END DEBUG ------ */
 
 	//DEBUG
 	// cout << "[DEBUG] GOT HERE!!! "<< endl;
@@ -291,7 +284,7 @@ Model3D* PLYReader::load(const char *filename) {
 		}
 	}
 
-	cout << "[DEBUG] float_stride: " << float_stride << endl;
+	// cout << "[DEBUG] float_stride: " << float_stride << endl;
 
 	fillModelAttributes(result);
 	vertices.reserve(vertex_count);
