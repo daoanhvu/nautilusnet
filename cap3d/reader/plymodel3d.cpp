@@ -1,31 +1,6 @@
 #include "plymodel3d.h"
 #include <glm/glm.hpp>
 
-float* PLYModel3D::getVertexBuffer(unsigned int &nc) {
-	int i, j;
-	nc = vertices.size();
-	unsigned int n = nc * float_stride;
-	float *buf = new float[n];
-	int offs = 0;
-	unsigned int normal_size_in_byte = sizeof(float) * float_stride;
-	for(i=0; i<nc; i++) {
-		std::memcpy(buf + offs, vertices[i].v, normal_size_in_byte);
-		offs += float_stride;
-	}
-	return buf;
-}
-
-void PLYModel3D::translate(float vx, float vy, float vz) {
-	unsigned int nc = vertices.size();
-	unsigned int i;
-
-	for(i=0; i<nc; i++) {
-		vertices[i].v[0] += vx;
-		vertices[i].v[1] += vy;
-		vertices[i].v[2] += vz;
-	}
-}
-
 //TODO: Not implemented yet
 void PLYModel3D::rotate(float rad, float vx, float vy, float vz) {
 
@@ -118,11 +93,12 @@ int PLYModel3D::add_normal_vectors() {
 		new_v[old_float_stride + 2] = normal[2];
 
 		vertices[i].v = new_v;
+		delete[] temp_p;
 	}
 	VertexAttrib normal_att;
 	normal_att.code = NORMAL;
 	normal_att.offset = old_float_stride;
-	// cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
+	cout << "[DEBUG] Normal offset: " << old_float_stride << endl;
 	vertex_attribs.push_back(normal_att);
 
 	return 0;

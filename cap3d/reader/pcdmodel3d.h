@@ -70,7 +70,7 @@ class PCDModel3D: public Model3D {
 	 	For testing
 	*/
 	void print(ostream &out) {
-		int i, j, k;
+		int i, j;
 		int vertex_count = vertices.size();
 		out << "Number of vertex: " << vertex_count << endl;
 		out << "Number of float per vertex: " << float_stride << endl;

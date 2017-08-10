@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include "reader/model3d.h"
+#include "common/defines.h"
 
 using namespace std;
 
@@ -65,10 +66,10 @@ class VBO {
 			config[1] = 0.0f;
 
 			if(hasNormal)
-				config[0] = 1;
+				config[0] = 1.0f;
 
 			if(hasColor)
-				config[1] = 1;
+				config[1] = 1.0f;
 		}
 
 		void setDrawPrimitive(GLuint dp) {

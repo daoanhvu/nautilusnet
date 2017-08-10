@@ -103,13 +103,14 @@ void ply_cast(void * dest, const char * src, bool be) {
 
 // 	if( argc < 2) {
 // 		//if((model = reader->load("data/00037.ply", 2))== NULL) {
-// 		if((model = reader->load("data/simple_model_1.ply", 2, false, false))== NULL) {
+// 		if((model = reader->load("data/09620.ply", 5, false, false))== NULL) {
 // 			cout << "Could not load input file!" << endl;
 // 			delete reader;
 // 			return 1;
 // 		}
-// 		reader->save(model, "data/simple_binary.ply", 32);
-// 		cout << "Model saved to data/simple_binary.ply." << endl;
+// 		// reader->save(model, "data/09620_ascii.ply", 32);
+// 		reader->save(model, "data/09620_ascii.ply", 30);
+// 		cout << "Model saved to data/09620_ascii.ply." << endl;
 // 	} else {
 // 		int cmd = std::stoi(args[1]);
 // 		if((model = reader->load("data/00037.ply", 2, true, true))== NULL) {
@@ -121,6 +122,7 @@ void ply_cast(void * dest, const char * src, bool be) {
 // 		}
 // 	}
 
+// 	delete model;
 // 	delete reader;
 // 	return 0;
 // }
@@ -128,7 +130,6 @@ void ply_cast(void * dest, const char * src, bool be) {
 int main(int argc, char* args[]) {
 	Reader *reader;
 	Model3D *model;
-	unsigned int buflen;
 	Configuration config;
 	int needLighting = 1;
 	GLfloat pointSize = 3.0f;
@@ -150,7 +151,7 @@ int main(int argc, char* args[]) {
 		strcpy(class_name, args[2]);
 		class_index = std::stoi(args[3]);
 	}
-	GLint primitive = GL_TRIANGLES;
+	GLint primitive = GL_UNKNOWN_PRIMITIVE;
 
 	FILE_TYPE input_type;
 	//Determine the input file type
@@ -192,7 +193,7 @@ int main(int argc, char* args[]) {
 		return 1;
 	}
 
-	cout << "[DEBUG-CAP3D] GOT HERE!!" << endl;
+	// cout << "[DEBUG-CAP3D] GOT HERE!!" << endl;
 
 	//We don't need the reader anymore so delete here!
 	delete reader;
@@ -208,7 +209,7 @@ int main(int argc, char* args[]) {
 	// cout << "Center of object: " << object_center << endl;
 
 	//TODO: Do we need to do this???
-	model->translate(-object_center.x, -object_center.y, -object_center.z);
+	//model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 
 	VBO vbo(model, primitive, GL_STATIC_DRAW);
@@ -278,10 +279,10 @@ int main(int argc, char* args[]) {
 	//turn on GL_PROGRAM_POINT_SIZE 
 	glEnable(GL_PROGRAM_POINT_SIZE);
 
-	unsigned int num_of_vertex, index_size;
-	float *vertices_buf_data = model->getVertexBuffer(buflen);
-	float *normal_buf_data = model->getNormalBuffer(num_of_vertex);
-	unsigned short *indices = model->getElementIndices(index_size);
+	// unsigned int num_of_vertex, index_size;
+	// float *vertices_buf_data = model->getVertexBuffer(buflen);
+	// float *normal_buf_data = model->getNormalBuffer(num_of_vertex);
+	// unsigned short *indices = model->getElementIndices(index_size);
 
 	//testing
 	// int k;
@@ -411,19 +412,6 @@ int main(int argc, char* args[]) {
 			object_center,
 			glm::vec3(0, 1, 0)
 		);
-		/////////////////////Start Drawing//////////////////////////////
-
-		//Draw Coordinator
-		// glEnableVertexAttribArray(0);
-		// glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-		// glVertexAttribPointer(0, //Attribute index
-		// 	3,  //Number of component per vertex
-		// 	GL_FLOAT,
-		// 	GL_FALSE,
-		// 	0,
-		// 	(void*)0);
-
-		// GLES20.glDrawArrays(GLES20.GL_LINES, 0, 6);
 
 		/////////////////////Start Drawing//////////////////////////////	
 
@@ -549,9 +537,9 @@ int main(int argc, char* args[]) {
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
-	delete[] vertices_buf_data;
-	delete[] normal_buf_data;
-	delete[] indices;
+	// delete[] vertices_buf_data;
+	// delete[] normal_buf_data;
+	// delete[] indices;
 	delete model;
 	return 0;
 }
@@ -634,8 +622,6 @@ void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
 		int wh [IN] windows height
 */
 void storeFramebuffer(const Configuration &config, const char* filename, int clsIdx, int ww, int wh) {
-	int i, j;
-	int k;
 	cv::Mat img(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
 	cv::Mat flipped(wh, ww, CV_8UC3, cv::Scalar(0, 0, 0));
 

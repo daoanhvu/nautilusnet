@@ -24,7 +24,6 @@ class PLYModel3D: public Model3D {
 		}
 	}
 
-	void translate(float vx, float vy, float vz);
 	void rotate(float rad, float vx, float vy, float vz);
 	void scale(float scale);
 	int add_normal_vectors();
@@ -76,30 +75,28 @@ class PLYModel3D: public Model3D {
 		return vertices[idx];
 	}
 
-    /*
-			Params:
-				n [OUT] number of float returned
-		*/
-	float* getVertexBuffer(unsigned int &);
-
 	/*
 		TODO: This function will fail if the number of vertex per face is not a constant
 		PARAMS:
-			[OUT] nc: total number of vertex
+			[OUT] nc: total number of index
 	*/
 	unsigned short *getElementIndices(unsigned int &nc) {
 		unsigned int face_count = faces.size();
-		int j, k, c;
 		unsigned short *indices = NULL;
 
 		nc = 0;
 		if(face_count > 0) {
-			c = 0;
-			k = faces[0].vertex_count;
-			nc = face_count * k;
+			int c = 0;
+			int num_vertex_per_face;
+			num_vertex_per_face = faces[0].vertex_count;
+			nc = face_count * num_vertex_per_face;
+			std::cout << "[DEBUG] Number of index: " << nc << endl;
 			indices = new unsigned short[nc];
 			for(int i=0; i<face_count; i++) {
-				for(j=0; j<k; j++) {
+
+				// std::cout << "[DEBUG] Face["<< i <<"] " << faces[i].vertex_indices[0] << " " << faces[i].vertex_indices[1] << " " << faces[i].vertex_indices[2] << endl;
+
+				for(int j=0; j<num_vertex_per_face; j++) {
 					indices[c++] = faces[i].vertex_indices[j];
 				}
 			}
@@ -121,11 +118,12 @@ class PLYModel3D: public Model3D {
 			new_v[old_float_stride + 1] = g;
 			new_v[old_float_stride + 2] = b;
 			vertices[i].v = new_v;
+			delete[] temp_p;
 		}
 		VertexAttrib color_att;
 		color_att.code = COLOR3;
 		color_att.offset = old_float_stride;
-		// cout << "[DEBUG] Color offset: " << old_float_stride << endl;
+		cout << "[DEBUG] Color offset: " << old_float_stride << endl;
 		vertex_attribs.push_back(color_att);
 	}
 

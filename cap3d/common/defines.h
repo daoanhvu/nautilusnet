@@ -66,6 +66,10 @@
 #define CODE_FLOAT32 	      108
 #define CODE_FLOAT64 	      109
 
+
+//
+#define GL_UNKNOWN_PRIMITIVE    0x0007
+
 namespace type {
 	enum FieldType {
 		UINT8 = CODE_UINT8,

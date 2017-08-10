@@ -101,6 +101,33 @@ class Model3D {
 		return vertex_attribs.size();
 	}
 
+	// int getComponentSize() {
+	// 	int size = 0;
+	// 	int attr_count = vertex_attribs.size();
+	// 	VertexAttribute attr_code;
+
+	// 	for(int i=0; i<attr_count; i++) {
+	// 		attr_code = vertex_attribs[i].code;
+	// 		switch(attr_code) {
+	// 			case POSITION:
+	// 			case NORMAL:
+	// 			case COLOR3:
+	// 				size += 3;
+	// 			break;
+
+	// 			case COLOR4:
+	// 				size += 4;
+	// 			break;
+
+	// 			case TEXTURE:
+	// 				size += 2;
+	// 			break;
+	// 		}
+	// 	}
+
+	// 	return size;
+	// }
+
 	VertexAttrib getAttrib(int idx) const{
 		return vertex_attribs[idx];
 	}
@@ -190,7 +217,7 @@ class Model3D {
     }
 
     /*
-		This will make the performance down
+		This will make the performance down, use this for DEBUG only!!!
 		Need const ???
 	*/
 	Vertex getVertex(int idx) const {

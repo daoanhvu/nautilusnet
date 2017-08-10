@@ -15,29 +15,84 @@ VBO::VBO(Model3D *model, GLuint primitive_, GLuint drawType_): mModel(model), pr
 	normalIdx = offs * sizeof(float);
 	hasNormal = offs>=0?true:false;
 
-	std::cout << "[DEBUG - VBO] hasColor: " << hasColor << ", hasNormal: " << hasNormal << std::endl;
+	std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
+	std::cout << "[DEBUG - VBO] float_stride: " << mModel->getFloatStride() << std::endl;
+	std::cout << "[DEBUG - VBO] hasColor: " << hasColor << " at offset " << colorIdx << ", hasNormal: " << hasNormal << " at offset " << normalIdx << std::endl;
 }
 
 void VBO::setup() {
 
 	unsigned short *indices;
+	unsigned int buff_len;
 	float_stride = mModel->getFloatStride();
-	float *vertices_buf_data = mModel->getVertexBuffer(vertex_count);
+	vertex_count = mModel->getVertexCount();
+	float *vertices_buf_data = mModel->getVertexBuffer(buff_len);
 
+	//Bind position, normal and color
 	float_stride_in_byte = float_stride * sizeof(float);
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, vertex_count * float_stride_in_byte, vertices_buf_data, drawType);
+	glBufferData(GL_ARRAY_BUFFER, buff_len * sizeof(float), vertices_buf_data, drawType);
+
+	/*------ START DEBUG ------ */
+	int idx = 65864;
+	int offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65866;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65867;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65868;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65869;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65870;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65871;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65872;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65873;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65874;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65875;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65876;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	idx = 65877;
+	offs = idx * float_stride;
+	std::cout << "[DEBUG] vertex["<< idx <<"] " << vertices_buf_data[offs] << " " << vertices_buf_data[offs+1] << " " << vertices_buf_data[offs+2] << endl;
+	/*------ END DEBUG ------ */
 
 	indices = mModel->getElementIndices(index_size);
 	useElementBuffer = false;
 	if(indices != NULL) {
 		useElementBuffer = true;
+		std::cout << "[DEBUG] useElementBuffer: " << useElementBuffer << std::endl;
+		std::cout << "[DEBUG] Number of index: " << index_size << endl;
 		glGenBuffers(1, &element_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned short), indices , drawType);
-
 		delete[] indices;
+
+		if(primitive == GL_UNKNOWN_PRIMITIVE) {
+			primitive = GL_TRIANGLES;
+		}
+
+	} else if(primitive == GL_UNKNOWN_PRIMITIVE) {
+		primitive = GL_POINTS;
 	}
 
 	//Now we can release buffer data 
@@ -68,11 +123,12 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 	glEnableVertexAttribArray(positionHandlerIndex);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glVertexAttribPointer(positionHandlerIndex, //Attribute index
-				3,  //Number of component per vertex
+				3,  //Number of component per this attribute of vertex
 				GL_FLOAT,
 				GL_FALSE,
 				float_stride_in_byte,
-				(void*)(uintptr_t)0); //TODO:Hard code here!!!!!
+				//(void*)(uintptr_t)0); //TODO:Hard code here!!!!!
+				reinterpret_cast<void*>(0));
 
 	if(hasColor) {
 		glEnableVertexAttribArray(colorHandlerIndex);
@@ -81,7 +137,8 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 			GL_FLOAT,
 			GL_FALSE,
 			float_stride_in_byte,
-					(void*)(uintptr_t)colorIdx);
+			// (void*)(uintptr_t)colorIdx);
+			reinterpret_cast<void*>(colorIdx));
 	}
 
 	if(hasNormal) {
@@ -91,7 +148,8 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 					GL_FLOAT,
 					GL_FALSE,
 					float_stride_in_byte,
-					(void*)(uintptr_t)normalIdx);
+					// (void*)(uintptr_t)normalIdx);
+					reinterpret_cast<void*>(normalIdx));
 	}
 
 	if(hasTexture) {
@@ -104,7 +162,7 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 				primitive,      // mode
 				index_size,    // count
 				GL_UNSIGNED_SHORT,   // type
-				(void*)0           // element array buffer offset
+				reinterpret_cast<void*>(0)
 			);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

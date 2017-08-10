@@ -2,15 +2,22 @@
 #include <glm/glm.hpp>
 
 float* Model3D::getVertexBuffer(unsigned int &nc) {
-	int i, j;
-	nc = vertices.size();
-	unsigned int n = nc * float_stride;
-	float *buf = new float[n];
-	int offs = 0;
-	unsigned int normal_size_in_byte = sizeof(float) * float_stride;
-	for(i=0; i<nc; i++) {
-		std::memcpy(buf + offs, vertices[i].v, normal_size_in_byte);
+	int num_of_vertex = vertices.size();
+	nc = num_of_vertex * float_stride;
+	float *buf = new float[nc];
+	unsigned int offs = 0;
+	unsigned int v_size_in_byte = sizeof(float) * float_stride;
+	for(int i=0; i<num_of_vertex; i++) {
+
+		std::memcpy(buf + offs, vertices[i].v, v_size_in_byte);
 		offs += float_stride;
+
+		//DEBUG
+		if(i==65864 || i==65866) {
+			std::cout << "Vertex["<< i <<"] " << vertices[i].v[0] << " " << vertices[i].v[1] << " " << vertices[i].v[2] << std::endl;
+			std::cout << "Copied Vertex["<< i <<"] " << buf[i*float_stride] << " " << buf[i*float_stride+1] << " " << buf[i*float_stride+2] << std::endl;
+		}
+		//END DEBUG
 	}
 	return buf;
 }
@@ -35,10 +42,8 @@ float* Model3D::getNormalBuffer(unsigned int &nc) {
 }
 
 void Model3D::translate(float vx, float vy, float vz) {
-	unsigned int nc = vertices.size();
-	unsigned int i;
-
-	for(i=0; i<nc; i++) {
+	int nc = vertices.size();
+	for(int i=0; i<nc; i++) {
 		vertices[i].v[0] += vx;
 		vertices[i].v[1] += vy;
 		vertices[i].v[2] += vz;
