@@ -351,6 +351,7 @@ layer {
   bottom: "label"
   name: "loss"
   type: "RotationNetSoftmaxLoss"
+  top: "loss"
   rotationnet_softmax_loss_param {
     stride: 41
     using_upright: true

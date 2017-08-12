@@ -1,7 +1,7 @@
 name: "CaffeNet"
 layer {
   name: "data"
-  type: "ImageNet"
+  type: "RotationNetImageData"
   top: "data"
   top: "label"
   rotationnet_image_data_param {
@@ -15,7 +15,7 @@ layer {
   transform_param {
 		mirror: false
 		crop_size: 227
-		mean_file: "./caffe-rotationnet/data/ilsvrc12/imagenet_mean.binaryproto"
+		mean_file: "data/ilsvrc12/imagenet_mean.binaryproto"
 	}
 }
 layer {
@@ -66,7 +66,7 @@ layer {
   bottom: "pool1"
   top: "norm1"
   name: "norm1"
-  type: LRN
+  type: "LRN"
   lrn_param {
     local_size: 5
     alpha: 0.0001
@@ -122,7 +122,7 @@ layer {
   bottom: "pool2"
   top: "norm2"
   name: "norm2"
-  type: LRN
+  type: "LRN"
   lrn_param {
     local_size: 5
     alpha: 0.0001
@@ -350,6 +350,7 @@ layer {
   bottom: "fc8_modelnet40v1"
   bottom: "label"
   name: "loss"
+  top: "loss"
   type: "RotationNetSoftmaxLoss"
   rotationnet_softmax_loss_param {
     stride: 41

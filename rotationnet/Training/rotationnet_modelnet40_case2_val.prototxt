@@ -1,7 +1,7 @@
 name: "CaffeNet"
 layer {
   name: "data"
-  type: "ImageData"
+  type: "RotationNetImageData"
   top: "data"
   top: "label"
   rotationnet_image_data_param {
@@ -15,7 +15,7 @@ layer {
   transform_param {
 		mirror: false
 		crop_size: 227
-		mean_file: "./caffe-rotationnet/data/ilsvrc12/imagenet_mean.binaryproto"
+		mean_file: "data/ilsvrc12/imagenet_mean.binaryproto"
 	}
 }
 layer {
