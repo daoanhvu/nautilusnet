@@ -73,26 +73,26 @@ layer {
   }
 }
 
-layer {
-  name: "output"
-  bottom: "fc7"
-  top: "output"
-  type: "Sigmoid"
-  include {
-    phase: TEST
-  }
-}
+# layer {
+#   name: "output"
+#   bottom: "fc7"
+#   top: "output"
+#   type: "Sigmoid"
+#   include {
+#     phase: TEST
+#   }
+# }
+
+# layer {
+#   name: "loss"
+#   type: "SigmoidCrossEntropyLoss"
+#   bottom: "fc7"
+#   bottom: "fakelabel"
+#   top: "loss"
+# }
 
 layer {
-  name: "loss"
-  type: "SigmoidCrossEntropyLoss"
   bottom: "fc7"
-  bottom: "fakelabel"
-  top: "loss"
-}
-
-layer {
-  bottom: "fc8_modelnet40v1"
   top: "prob"
   name: "prob"
   type: "RotationNetSoftmax"

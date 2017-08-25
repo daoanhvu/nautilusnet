@@ -1,9 +1,9 @@
-net: "/Volumes/data/projects/nautilusnet/rotationnet/train_nautilusnet.prototxt"
+net: "/Volumes/data/projects/nautilusnet/rotationnet/train_nautilusnet_3.prototxt"
 base_lr: 0.001
 gamma: 0.1
 lr_policy: "step"
-stepsize: 2
-max_iter: 20
+stepsize: 4
+max_iter: 40
 snapshot: 10
 snapshot_prefix: "models/nautilus"
 display: 5

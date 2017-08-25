@@ -1,23 +1,8 @@
-name: "ResNet32"
-layer {
-  name: "data"
-  type: "RotationNetImageData"
-  top: "data"
-  top: "label"
-  rotationnet_image_data_param {
-    source: "./Training/test_modelnet40_case1.txt"
-    batch_size: 240
-    new_height: 256
-    new_width: 256
-    shuffle: false
-    num_rotation: 12
-  }
-  transform_param {
-    mirror: false
-    crop_size: 227
-    mean_file: "data/ilsvrc12/imagenet_mean.binaryproto"
-  }
-}
+input: "data"                                                                                
+input_dim: 60                                                                                
+input_dim: 3
+input_dim: 227
+input_dim: 227
 layer {
   name: "first_conv"
   type: "Convolution"
@@ -1816,24 +1801,13 @@ layer {
     }
   }
 }
+
 layer {
+  bottom: "fc"
+  top: "prob"
   name: "prob"
   type: "RotationNetSoftmax"
-  bottom: "fc"
-  top: "softmax"
   rotationnet_softmax_param {
     stride: 41
   }
 }
-layer {
-  bottom: "softmax"
-  bottom: "label"
-  top: "my_accuracy"
-  name: "my_accuracy"
-  type: "RotationNetAccuracy"
-  rotationnet_accuracy_param {
-    stride: 41
-    using_upright: true
-  }
-}
-

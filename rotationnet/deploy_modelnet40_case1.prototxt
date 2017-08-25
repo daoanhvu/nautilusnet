@@ -331,19 +331,12 @@ layer {
     }
   }
 }
-#layer {
-#  bottom: "fc8_modelnet40v1"
-#  top: "prob"
-#  name: "prob"
-#  type: "RotationNetSoftmax"
-#  rotationnet_softmax_param {
-#    stride: 41
-#  }
-#}
-
 layer {
   bottom: "fc8_modelnet40v1"
   top: "prob"
   name: "prob"
-  type: "Softmax"
+  type: "RotationNetSoftmax"
+  rotationnet_softmax_param {
+    stride: 41
+  }
 }

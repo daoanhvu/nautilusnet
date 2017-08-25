@@ -331,7 +331,7 @@ layer {
   	decay_mult: 0
   }
   inner_product_param {
-    num_output: 820
+    num_output: 44
     weight_filler {
       type: "gaussian"
       std: 0.01
@@ -346,6 +346,6 @@ layer {
   bottom: "fc8_modelnet40v1"
   top: "prob"
   name: "prob"
-  type: "SoftmaxWithLoss"
+  type: "Softmax"
 }
 
