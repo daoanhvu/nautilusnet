@@ -301,28 +301,29 @@ int main(int argc, char* args[]) {
 	// cout << endl;
 
 	glm::mat4 ModelMatrix, MVP;
-
-	//Setup data for rendering
-	GLuint vertexArrayId;
-	glGenVertexArrays(1, &vertexArrayId);
-	glBindVertexArray(vertexArrayId);
-
-	vbo.setup();
+	ShaderVarLocation shaderVarLocation;
 
 	GLuint programID = loadShaders( "vertex.shader", "fragment.shader");
-	GLuint mvpMatrixId = glGetUniformLocation(programID, "MVP");
-	GLuint viewMatrixId = glGetUniformLocation(programID, "V");
-	GLuint modelMatrixId = glGetUniformLocation(programID, "M");
-	GLint useNormal = glGetUniformLocation(programID, "useNormal");
-	GLint useLighting = glGetUniformLocation(programID, "useLighting");
-	GLfloat pointSizeLocation = glGetUniformLocation(programID, "pointSize");
-
-	// Get handles for our "lightPos" uniforms, we're going to use two lights
 	glUseProgram(programID);
-	GLuint lightPos1ID = glGetUniformLocation(programID, "lightPos1_worldspace");
-	GLuint lightPos2ID = glGetUniformLocation(programID, "lightPos2_worldspace");
-	GLuint lightColor1ID = glGetUniformLocation(programID, "lightColor1");
-	GLuint lightColor2ID = glGetUniformLocation(programID, "lightColor2");
+
+	shaderVarLocation.positionLocation = POSITION_LOCATION;
+	shaderVarLocation.colorLocation = COLOR_LOCATION;
+	shaderVarLocation.normalLocation = NORMAL_LOCATION;
+
+	shaderVarLocation.mvpMatrixId = glGetUniformLocation(programID, "MVP");
+	shaderVarLocation.viewMatrixId = glGetUniformLocation(programID, "V");
+	shaderVarLocation.modelMatrixId = glGetUniformLocation(programID, "M");
+	shaderVarLocation.useNormalLocation = glGetUniformLocation(programID, "useNormal");
+	shaderVarLocation.useLightingLocation = glGetUniformLocation(programID, "useLighting");
+	//TODO: pointSizeLocation is a float??????
+	shaderVarLocation.pointSizeLocation = glGetUniformLocation(programID, "pointSize");
+	// Get handles for our "lightPos" uniforms, we're going to use two lights
+	shaderVarLocation.lightPos1ID = glGetUniformLocation(programID, "lightPos1_worldspace");
+	shaderVarLocation.lightPos2ID = glGetUniformLocation(programID, "lightPos2_worldspace");
+	shaderVarLocation.lightColor1ID = glGetUniformLocation(programID, "lightColor1");
+	shaderVarLocation.lightColor2ID = glGetUniformLocation(programID, "lightColor2");
+
+	vbo.setup(shaderVarLocation);
 
 	//glm::vec3 lightPos = glm::vec3(7,7,7);
 	glm::vec3 lightPos1 = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
@@ -439,14 +440,14 @@ int main(int argc, char* args[]) {
 			}
 		}	
 
-		glUniform3f(lightPos1ID, lightPos1.x, lightPos1.y, lightPos1.z);
-		glUniform3f(lightPos2ID, lightPos2.x, lightPos2.y, lightPos2.z);
-		glUniform3f(lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
-		glUniform3f(lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
+		glUniform3f(shaderVarLocation.lightPos1ID, lightPos1.x, lightPos1.y, lightPos1.z);
+		glUniform3f(shaderVarLocation.lightPos2ID, lightPos2.x, lightPos2.y, lightPos2.z);
+		glUniform3f(shaderVarLocation.lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
+		glUniform3f(shaderVarLocation.lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
-		glUniform1i(useNormal, vbo.gotNormal());
-		glUniform1i(useLighting, needLighting);
-		glUniform1f(pointSizeLocation, pointSize);
+		glUniform1i(shaderVarLocation.useNormalLocation, vbo.gotNormal());
+		glUniform1i(shaderVarLocation.useLightingLocation, needLighting);
+		glUniform1f(shaderVarLocation.pointSizeLocation, pointSize);
 
 		glfwGetCursorPos(window, &xpos, &ypos);
 		button_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -504,11 +505,11 @@ int main(int argc, char* args[]) {
 
 		// Send our transformation to the currently bound shader,
 		// in the "MVP" uniform
-		glUniformMatrix4fv(mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
-		glUniformMatrix4fv(viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
+		glUniformMatrix4fv(shaderVarLocation.mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
+		glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
 
-		vbo.draw(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION);
+		vbo.draw();
 
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
@@ -518,9 +519,9 @@ int main(int argc, char* args[]) {
 				should_store_frame_buffer = false;
 		}
 
-		glDisableVertexAttribArray(POSITION_LOCATION);
-		glDisableVertexAttribArray(COLOR_LOCATION);
-		glDisableVertexAttribArray(NORMAL_LOCATION);
+		// glDisableVertexAttribArray(POSITION_LOCATION);
+		// glDisableVertexAttribArray(COLOR_LOCATION);
+		// glDisableVertexAttribArray(NORMAL_LOCATION);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -532,8 +533,7 @@ int main(int argc, char* args[]) {
 
 	vbo.releaseBuffer();
 	glDeleteProgram(programID);
-	glDeleteVertexArrays(1, &vertexArrayId);
-
+	
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 

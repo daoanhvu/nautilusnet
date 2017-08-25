@@ -16,10 +16,7 @@ typedef struct tagVBOModel {
 
 class Viewer {
 	protected:
-		int positionLocation;
-		int colorLocation;
-		int normalLocation;
-		int textureLocation;
+		ShaderVarLocation shaderVarLocation;
 
 		int width;
 		int height;
@@ -49,10 +46,10 @@ class Viewer {
 		}
 
 		void setLocations(int pl, int cl, int nl, int tl) {
-			positionLocation = pl;
-			colorLocation = cl;
-			normalLocation = nl;
-			textureLocation = tl;
+			shaderVarLocation.positionLocation = pl;
+			shaderVarLocation.colorLocation = cl;
+			shaderVarLocation.normalLocation = nl;
+			shaderVarLocation.textureLocation = tl;
 		}
 
 		void setViewCoordinator(bool viewcoord) {

@@ -19,12 +19,12 @@ void Viewer::setupCoordinator() {
 	int float_stride = 6;
 
 	coordinatorVBO.setDrawPrimitive(GL_LINES);
-	coordinatorVBO.setup(v, vc, float_stride, NULL, 0);
+	coordinatorVBO.setup(v, vc, float_stride, NULL, 0, this->shaderVarLocation);
 }
 
 void Viewer::drawCoordinator() {
 	//TODO: Turn off all lights
-	coordinatorVBO.draw(positionLocation, colorLocation, normalLocation);
+	coordinatorVBO.draw();
 	//TODO: Turn on all lights
 }
 
@@ -35,7 +35,7 @@ void Viewer::drawScene() {
 	}
 
 	for(i=0; i<models.size(); i++) {
-		models[i].vbo->draw(positionLocation, colorLocation, normalLocation);
+		models[i].vbo->draw();
 	}
 
 }

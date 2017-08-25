@@ -20,7 +20,7 @@ VBO::VBO(Model3D *model, GLuint primitive_, GLuint drawType_): mModel(model), pr
 	std::cout << "[DEBUG - VBO] hasColor: " << hasColor << " at offset " << colorIdx << ", hasNormal: " << hasNormal << " at offset " << normalIdx << std::endl;
 }
 
-void VBO::setup() {
+void VBO::setup(const ShaderVarLocation & location) {
 
 	unsigned int *indices;
 	unsigned int buff_len;
@@ -30,9 +30,48 @@ void VBO::setup() {
 
 	//Bind position, normal and color
 	float_stride_in_byte = float_stride * sizeof(float);
+
+	glGenVertexArrays(1, &vertexArrayId);
+	glBindVertexArray(vertexArrayId);
+
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, buff_len * sizeof(float), vertices_buf_data, drawType);
+
+	glEnableVertexAttribArray(location.positionLocation);
+	glVertexAttribPointer(location.positionLocation, //Attribute index
+				3,  //Number of component per this attribute of vertex
+				GL_FLOAT,
+				GL_FALSE,
+				float_stride_in_byte,
+				//(void*)(uintptr_t)0); //TODO:Hard code here!!!!!
+				reinterpret_cast<void*>(0));
+
+	if(hasColor) {
+		glEnableVertexAttribArray(location.colorLocation);
+		glVertexAttribPointer(location.colorLocation, //Attribute index
+			3,  //Number of component per vertex
+			GL_FLOAT,
+			GL_FALSE,
+			float_stride_in_byte,
+			// (void*)(uintptr_t)colorIdx);
+			reinterpret_cast<void*>(colorIdx));
+	}
+
+	if(hasNormal) {
+		glEnableVertexAttribArray(location.normalLocation);
+		glVertexAttribPointer(location.normalLocation, //Attribute index
+					3,  //Number of component per vertex
+					GL_FLOAT,
+					GL_FALSE,
+					float_stride_in_byte,
+					// (void*)(uintptr_t)normalIdx);
+					reinterpret_cast<void*>(normalIdx));
+	}
+
+	if(hasTexture) {
+		glEnableVertexAttribArray(location.textureLocation);
+	}
 
 	indices = mModel->getElementIndices(index_size);
 	useElementBuffer = false;
@@ -57,30 +96,21 @@ void VBO::setup() {
 	delete[] vertices_buf_data;
 }
 
-void VBO::setup(const float *vertices, int vc, int fstride, const unsigned short *indices, int idx_size) {
+void VBO::setup(const float *vertices, int vc, int fstride, 
+	const unsigned int *indices, int idx_size, const ShaderVarLocation &location) {
 	float_stride = fstride;
 	vertex_count = vc;
 	float_stride_in_byte = float_stride * sizeof(float);
+
+	glGenVertexArrays(1, &vertexArrayId);
+	glBindVertexArray(vertexArrayId);
 
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, vertex_count * float_stride_in_byte, vertices, drawType);
 
-	index_size = idx_size;
-	useElementBuffer = false;
-	if(indices != NULL) {
-		useElementBuffer = true;
-		glGenBuffers(1, &element_buffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned short), indices , drawType);
-	}
-}
-
-void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint normalHandlerIndex) {
-	// int stride;
-	glEnableVertexAttribArray(positionHandlerIndex);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glVertexAttribPointer(positionHandlerIndex, //Attribute index
+	glEnableVertexAttribArray(location.positionLocation);
+	glVertexAttribPointer(location.positionLocation, //Attribute index
 				3,  //Number of component per this attribute of vertex
 				GL_FLOAT,
 				GL_FALSE,
@@ -89,8 +119,8 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 				reinterpret_cast<void*>(0));
 
 	if(hasColor) {
-		glEnableVertexAttribArray(colorHandlerIndex);
-		glVertexAttribPointer(colorHandlerIndex, //Attribute index
+		glEnableVertexAttribArray(location.colorLocation);
+		glVertexAttribPointer(location.colorLocation, //Attribute index
 			3,  //Number of component per vertex
 			GL_FLOAT,
 			GL_FALSE,
@@ -100,8 +130,8 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 	}
 
 	if(hasNormal) {
-		glEnableVertexAttribArray(normalHandlerIndex);
-		glVertexAttribPointer(normalHandlerIndex, //Attribute index
+		glEnableVertexAttribArray(location.normalLocation);
+		glVertexAttribPointer(location.normalLocation, //Attribute index
 					3,  //Number of component per vertex
 					GL_FLOAT,
 					GL_FALSE,
@@ -111,8 +141,22 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 	}
 
 	if(hasTexture) {
+		glEnableVertexAttribArray(location.textureLocation);
 	}
 
+	index_size = idx_size;
+	useElementBuffer = false;
+	if(indices != NULL) {
+		useElementBuffer = true;
+		glGenBuffers(1, &element_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned int), indices , drawType);
+	}
+}
+
+void VBO::draw() {
+	glBindVertexArray(vertexArrayId);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	if(useElementBuffer) {
 		// Index buffer
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
@@ -129,9 +173,9 @@ void VBO::draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint nor
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glDisableVertexAttribArray(positionHandlerIndex);
-	glDisableVertexAttribArray(colorHandlerIndex);
-	glDisableVertexAttribArray(normalHandlerIndex);
+	// glDisableVertexAttribArray(positionHandlerIndex);
+	// glDisableVertexAttribArray(colorHandlerIndex);
+	// glDisableVertexAttribArray(normalHandlerIndex);
 
 }
 

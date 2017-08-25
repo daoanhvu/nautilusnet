@@ -3,7 +3,9 @@
 
 #include <vector>
 #include <GL/glew.h>
+// #include "util/glUtil.h"
 #include <glm/glm.hpp>
+#include "shader.h"
 #include "reader/model3d.h"
 #include "common/defines.h"
 
@@ -12,6 +14,8 @@ using namespace std;
 class VBO {
 	protected:
 		GLuint drawType;
+
+		GLuint vertexArrayId;
 		GLuint buffer;
 		GLuint element_buffer;
 
@@ -47,6 +51,8 @@ class VBO {
 			if(useElementBuffer) {
 				glDeleteBuffers(1, &element_buffer);
 			}
+
+			glDeleteVertexArrays(1, &vertexArrayId);
 		}
 
 		void releaseBuffer() {
@@ -55,6 +61,8 @@ class VBO {
 			if(useElementBuffer) {
 				glDeleteBuffers(1, &element_buffer);
 			}	
+
+			glDeleteVertexArrays(1, &vertexArrayId);
 		}
 
 		GLint gotNormal() {
@@ -76,10 +84,11 @@ class VBO {
 			primitive = dp;
 		}
 
-		void setup();
-		void setup(const float *vertices, int vc, int fstride, const unsigned short *indices, int idx_size);
+		void setup(const ShaderVarLocation &);
+		void setup(const float *vertices, int vc, int fstride, 
+			const unsigned int *indices, int idx_size, const ShaderVarLocation &);
 
-		void draw(GLuint positionHandlerIndex, GLuint colorHandlerIndex, GLuint normalHandlerIndex);
+		void draw();
 };
 
 #endif
