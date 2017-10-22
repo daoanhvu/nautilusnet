@@ -1,7 +1,7 @@
 #include "model3d.h"
 #include <glm/glm.hpp>
 
-float* Model3D::getVertexBuffer(unsigned int &nc) {
+float* Model3D::getVertexBuffer(unsigned int &nc) const {
 	int num_of_vertex = vertices.size();
 	nc = num_of_vertex * float_stride;
 	float *buf = new float[nc];

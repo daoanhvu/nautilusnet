@@ -154,7 +154,7 @@ class Model3D {
 		vertex_attribs.push_back(att);
 	}
 
-	virtual short getPositionOffset() {
+	virtual short getPositionOffset() const {
 		for(int i=0; i<vertex_attribs.size(); i++) {
 			if(vertex_attribs[i].code == POSITION) {
 				return vertex_attribs[i].offset;
@@ -163,7 +163,7 @@ class Model3D {
 		return -1;
 	}
 
-	virtual short getColorOffset() {
+	virtual short getColorOffset() const {
 		for(int i=0; i<vertex_attribs.size(); i++) {
 			if(vertex_attribs[i].code == COLOR3 || vertex_attribs[i].code == COLOR4) {
 				return vertex_attribs[i].offset;
@@ -172,7 +172,7 @@ class Model3D {
 		return -1;
 	}
 
-	virtual int getNormalOffset() {
+	virtual int getNormalOffset() const {
 		for(int i=0; i<vertex_attribs.size(); i++) {
 			if(vertex_attribs[i].code == NORMAL) {
 				return vertex_attribs[i].offset;
@@ -181,7 +181,7 @@ class Model3D {
 		return -1;
 	}
 
-	virtual int getTextureOffset() {
+	virtual int getTextureOffset() const {
 		for(int i=0; i<vertex_attribs.size(); i++) {
 			if(vertex_attribs[i].code == TEXTURE) {
 				return vertex_attribs[i].offset;
@@ -230,7 +230,7 @@ class Model3D {
 		Params:
 		n [OUT] number of float returned
 	*/
-	float* getVertexBuffer(unsigned int &);
+	float* getVertexBuffer(unsigned int &) const;
 	virtual float* getNormalBuffer(unsigned int &);
 
     virtual void getBBox(BBox3d &bbox);
@@ -240,7 +240,7 @@ class Model3D {
 			PARAMS:
 				[OUT] nc: total number of vertex
 		*/
-    virtual unsigned int *getElementIndices(unsigned int &nc) = 0;
+    virtual unsigned int *getElementIndices(unsigned int &nc) const = 0;
 
 
     //For Debuging

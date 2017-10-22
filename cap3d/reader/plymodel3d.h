@@ -80,7 +80,7 @@ class PLYModel3D: public Model3D {
 		PARAMS:
 			[OUT] nc: total number of index
 	*/
-	unsigned int *getElementIndices(unsigned int &nc) {
+	unsigned int *getElementIndices(unsigned int &nc) const {
 		unsigned int face_count = faces.size();
 		unsigned int *indices = NULL;
 
