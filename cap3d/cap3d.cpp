@@ -212,7 +212,7 @@ int main(int argc, char* args[]) {
 	model->translate(-object_center.x, -object_center.y, -object_center.z);
 	object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	VBO vbo(model, primitive, GL_STATIC_DRAW);
+	// VBO vbo(model, primitive, GL_STATIC_DRAW);
 	// VBO vbo(model, GL_TRIANGLES, GL_STATIC_DRAW);
 
 	if(config.camera_positions.size() < 1) {
@@ -323,7 +323,7 @@ int main(int argc, char* args[]) {
 	shaderVarLocation.lightColor1ID = glGetUniformLocation(programID, "lightColor1");
 	shaderVarLocation.lightColor2ID = glGetUniformLocation(programID, "lightColor2");
 
-	vbo.setup(shaderVarLocation);
+	// vbo.setup(shaderVarLocation);
 
 	//glm::vec3 lightPos = glm::vec3(7,7,7);
 	glm::vec3 lightPos1 = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
@@ -364,7 +364,8 @@ int main(int argc, char* args[]) {
 	last_ypos = ypos;
 
 	//Set locations to viewer
-	//viewer.setLocations(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION, 0);
+	viewer.setLocations(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION, 0);
+	viewer.addModel(model);
 
 	do {
 		currentTime = glfwGetTime();
@@ -406,14 +407,6 @@ int main(int argc, char* args[]) {
 			}
 		}
 
-		//computeMatrices(window, object_center);
-		projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-		viewMatrix = glm::lookAt(
-			cam_pos,
-			object_center,
-			glm::vec3(0, 1, 0)
-		);
-
 		/////////////////////Start Drawing//////////////////////////////	
 
 		if(glfwGetKey( window, GLFW_MOD_SHIFT ) == GLFW_PRESS) {
@@ -445,7 +438,7 @@ int main(int argc, char* args[]) {
 		glUniform3f(shaderVarLocation.lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
 		glUniform3f(shaderVarLocation.lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
-		glUniform1i(shaderVarLocation.useNormalLocation, vbo.gotNormal());
+		glUniform1i(shaderVarLocation.useNormalLocation, viewer.gotNormal(0));
 		glUniform1i(shaderVarLocation.useLightingLocation, needLighting);
 		glUniform1f(shaderVarLocation.pointSizeLocation, pointSize);
 
@@ -503,13 +496,7 @@ int main(int argc, char* args[]) {
 		modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
 		MVP = projectionMatrix * viewMatrix * modelMatrix;
 
-		// Send our transformation to the currently bound shader,
-		// in the "MVP" uniform
-		glUniformMatrix4fv(shaderVarLocation.mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
-		glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
-
-		vbo.draw();
+		viewer.drawScene();
 
 		//TODO: Call glReadPixels to capture framebuffer data here
 		if(should_store_frame_buffer) {
@@ -519,10 +506,6 @@ int main(int argc, char* args[]) {
 				should_store_frame_buffer = false;
 		}
 
-		// glDisableVertexAttribArray(POSITION_LOCATION);
-		// glDisableVertexAttribArray(COLOR_LOCATION);
-		// glDisableVertexAttribArray(NORMAL_LOCATION);
-
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -531,7 +514,6 @@ int main(int argc, char* args[]) {
 	} while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 			 glfwWindowShouldClose(window) == 0 );
 
-	vbo.releaseBuffer();
 	glDeleteProgram(programID);
 	
 	// Close OpenGL window and terminate GLFW
@@ -542,78 +524,6 @@ int main(int argc, char* args[]) {
 	// delete[] indices;
 	delete model;
 	return 0;
-}
-
-/*
-	(mx, my) mouse position
-*/
-void computeMatrices(GLFWwindow* window, glm::vec3 lookat) {
-	// glfwGetTime is called only once, the first time this function is called
-	static double lastTime = glfwGetTime();
-
-	// Compute time difference between current and last frame
-	double currentTime = glfwGetTime();
-	float deltaTime = float(currentTime - lastTime);
-
-	// Get mouse position
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-
-	// Reset mouse position for next frame
-	glfwSetCursorPos(window, 1024/2, 768/2);
-
-	// Compute new orientation
-	horizontalAngle += mouseSpeed * float(1024/2 - xpos );
-	verticalAngle   += mouseSpeed * float( 768/2 - ypos );
-
-	// Direction : Spherical coordinates to Cartesian coordinates conversion
-	glm::vec3 direction(
-		cos(verticalAngle) * sin(horizontalAngle),
-		sin(verticalAngle),
-		cos(verticalAngle) * cos(horizontalAngle)
-	);
-
-	// Right vector
-	float PIDIV2 = PI / 2.0f;
-	glm::vec3 right = glm::vec3(
-		sin(horizontalAngle - PIDIV2),
-		0,
-		cos(horizontalAngle - PIDIV2)
-	);
-
-	// Up vector
-	glm::vec3 up = glm::cross( right, direction );
-
-	// Move forward
-	if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
-		position += direction * deltaTime * speed;
-	}
-	// Move backward
-	if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
-		position -= direction * deltaTime * speed;
-	}
-	// Strafe right
-	if (glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS){
-		position += right * deltaTime * speed;
-	}
-	// Strafe left
-	if (glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS){
-		position -= right * deltaTime * speed;
-	}
-
-	float FoV = initialFoV;// - 5 * glfwGetMouseWheel(); // Now GLFW 3 requires setting up a callback for this. It's a bit too complicated for this beginner's tutorial, so it's disabled instead.
-
-	// Projection matrix : 45� Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	projectionMatrix = glm::perspective(glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f);
-	// Camera matrix
-	viewMatrix       = glm::lookAt(
-								position,           // Camera is here
-								lookat, // and looks here : at the same position, plus "direction"
-								up                  // Head is up (set to 0,-1,0 to look upside-down)
-							 );
-
-	// For the next frame, the "last time" will be "now"
-	lastTime = currentTime;
 }
 
 /**

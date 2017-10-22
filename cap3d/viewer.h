@@ -9,11 +9,6 @@
 
 using namespace std;
 
-typedef struct tagVBOModel {
-	Model3D *model;
-	VBO *vbo;
-} VBOModel;
-
 class Viewer {
 	protected:
 		ShaderVarLocation shaderVarLocation;
@@ -28,8 +23,12 @@ class Viewer {
 		float bgColor[3];
 		Camera camera;
 
+		//Camera setup
+		glm::mat4 projectionMatrix;
+		glm::mat4 viewMatrix;
+
 		VBO coordinatorVBO;
-		vector<VBOModel> models;
+		vector<VBO*> models;
 
 		void setupCoordinator();
 
@@ -38,13 +37,16 @@ class Viewer {
 		virtual ~Viewer() {
 			int s = models.size();
 			for(int i=0; i<s; i++) {
-				if(models[i].model != NULL)
-					delete models[i].model;
-				if(models[i].vbo != NULL)
-					delete models[i].vbo;
+				if(models[i] != NULL)
+					delete models[i];
 			}
 		}
 
+		void setupCamera(glm::vec3 cam_pos, glm::vec3 eye_center);
+
+		/**
+			Bind locations from shader to this viewer
+		*/
 		void setLocations(int pl, int cl, int nl, int tl) {
 			shaderVarLocation.positionLocation = pl;
 			shaderVarLocation.colorLocation = cl;
@@ -56,9 +58,14 @@ class Viewer {
 			viewCoordinator = viewcoord;
 		}
 
-		void setup();
+		void setup(std::vector<Model3D*> m);
+		void addModel(const Model3D *model);
 		void drawCoordinator();
 		void drawScene();
+
+		GLint gotNormal(int index) {
+			return models[index]->gotNormal();
+		}
 };
 
 #endif

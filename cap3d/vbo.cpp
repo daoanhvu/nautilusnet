@@ -1,8 +1,10 @@
 #include "vbo.h"
 #include <iostream>
 
-VBO::VBO(Model3D *model, GLuint primitive_, GLuint drawType_): mModel(model), primitive(primitive_),
-	drawType(drawType_)	  {
+VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(drawType_)  {
+}
+
+void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 
 	int offs = model->getPositionOffset();
 	positionIdx = offs * sizeof(float);
@@ -16,17 +18,14 @@ VBO::VBO(Model3D *model, GLuint primitive_, GLuint drawType_): mModel(model), pr
 	hasNormal = offs>=0?true:false;
 
 	std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
-	std::cout << "[DEBUG - VBO] float_stride: " << mModel->getFloatStride() << std::endl;
+	std::cout << "[DEBUG - VBO] float_stride: " << model->getFloatStride() << std::endl;
 	std::cout << "[DEBUG - VBO] hasColor: " << hasColor << " at offset " << colorIdx << ", hasNormal: " << hasNormal << " at offset " << normalIdx << std::endl;
-}
-
-void VBO::setup(const ShaderVarLocation & location) {
 
 	unsigned int *indices;
 	unsigned int buff_len;
-	float_stride = mModel->getFloatStride();
-	vertex_count = mModel->getVertexCount();
-	float *vertices_buf_data = mModel->getVertexBuffer(buff_len);
+	float_stride = model->getFloatStride();
+	vertex_count = model->getVertexCount();
+	float *vertices_buf_data = model->getVertexBuffer(buff_len);
 
 	//Bind position, normal and color
 	float_stride_in_byte = float_stride * sizeof(float);
@@ -73,7 +72,7 @@ void VBO::setup(const ShaderVarLocation & location) {
 		glEnableVertexAttribArray(location.textureLocation);
 	}
 
-	indices = mModel->getElementIndices(index_size);
+	indices = model->getElementIndices(index_size);
 	useElementBuffer = false;
 	if(indices != NULL) {
 		useElementBuffer = true;
@@ -154,7 +153,27 @@ void VBO::setup(const float *vertices, int vc, int fstride,
 	}
 }
 
-void VBO::draw() {
+void VBO::draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+	// glm::mat4 translationMatrix = glm::translate(glm::mat4(), object_center);
+	// glm::mat4 invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
+	glm::mat4 translationMatrix = glm::mat4();
+	glm::mat4 invertTranslationMatrix = glm::mat4();
+	glm::mat4 rotationMatrix = glm::mat4();
+	glm::mat4 scalingMatrix = glm::mat4();
+	// scalingMatrix = glm::scale(glm::mat4(), glm::vec3(.5f, .5f, .5f));
+	// modelMatrix = translationMatrix * rotationMatrix * scalingMatrix;
+	modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
+	glm::mat4 MVP = projectionMatrix * viewMatrix * modelMatrix;
+
+
+	glUniform1i(shaderVarLocation.useNormalLocation, hasNormal);
+
+	// Send our transformation to the currently bound shader,
+	// in the "MVP" uniform
+	glUniformMatrix4fv(shaderVarLocation.mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
+	glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
+	glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
+
 	glBindVertexArray(vertexArrayId);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	if(useElementBuffer) {
@@ -173,9 +192,5 @@ void VBO::draw() {
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// glDisableVertexAttribArray(positionHandlerIndex);
-	// glDisableVertexAttribArray(colorHandlerIndex);
-	// glDisableVertexAttribArray(normalHandlerIndex);
-
 }
 

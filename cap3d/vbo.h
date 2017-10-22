@@ -39,12 +39,11 @@ class VBO {
 		bool hasNormal;
 		bool hasTexture;
 
-		Model3D *mModel;
 		glm::mat4 modelMatrix;
 
 	public:
-		VBO():mModel(NULL){}
-		VBO(Model3D *model, GLuint primitive_, GLuint drawType_);
+		VBO(){}
+		VBO(GLuint primitive_, GLuint drawType_);
 		virtual ~VBO() {
 			glDeleteBuffers(1, &buffer);
 
@@ -84,11 +83,11 @@ class VBO {
 			primitive = dp;
 		}
 
-		void setup(const ShaderVarLocation &);
+		void setup(const Model3D *model, const ShaderVarLocation & location);
 		void setup(const float *vertices, int vc, int fstride, 
 			const unsigned int *indices, int idx_size, const ShaderVarLocation &);
 
-		void draw();
+		void draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
 };
 
 #endif
