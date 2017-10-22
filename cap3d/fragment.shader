@@ -34,8 +34,11 @@ LightSource lights[numLights];
 void main(){
 	// Light emission properties
 	// You probably want to put them as uniforms
+	//float LightPower = 20.0f;
+	//float specularPower = 5.0f;
+
 	float LightPower = 20.0f;
-	float specularPower = 5.0f;
+	float specularPower = 10.0f;
 
 	//Need lighting????
 	if(oUseNormal[1] > 0.5f) {
@@ -47,8 +50,8 @@ void main(){
 		// light 1
 		lights[0].position_world = lightPos1_worldspace;
 		lights[0].direction_camera = LightDirection1_cameraspace;
-		lights[0].specularColor = vec3(0.3,0.3,0.3);
-	  	lights[0].ambientColor = vec3(0.1,0.1,0.1) * MaterialDiffuseColor;
+		lights[0].specularColor = vec3(0.9,0.9,0.9);
+	  	lights[0].ambientColor = vec3(0.4,0.4,0.4) * MaterialDiffuseColor;
 		lights[0].lightColor = lightColor1;
 
 		// light 2
@@ -73,8 +76,8 @@ void main(){
 				vec3 R = reflect(-l,n);
 				float cosAlpha = clamp( dot( E,R ), 0,1 );
 				vec3 diffuseReflection = MaterialDiffuseColor * lights[i].lightColor * LightPower * cosTheta / distance2;
-				vec3 specularReflection = lights[i].specularColor * lights[i].lightColor * specularPower * pow(cosAlpha,5) / distance2;
-				totalLighting = totalLighting + lights[i].ambientColor * 5.0f + diffuseReflection + specularReflection;
+				vec3 specularReflection = lights[i].specularColor * lights[i].lightColor * 3 * specularPower * pow(cosAlpha,5) / distance2;
+				totalLighting = totalLighting + lights[i].ambientColor * 3.5f + diffuseReflection + specularReflection;
 			}
 		} else {
 			for(int i=0; i<numLights; i++) {
