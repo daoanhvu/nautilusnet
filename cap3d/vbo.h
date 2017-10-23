@@ -30,19 +30,15 @@ class VBO {
 
 		int float_stride;
 		GLsizei float_stride_in_byte;
-		int colorIdx;
-		int positionIdx;
-		int normalIdx;
-		int textureIdx;
-
-		bool hasColor;
-		bool hasNormal;
-		bool hasTexture;
+		int colorOffset;
+		int positionOffset;
+		int normalOffset;
+		int textureOffset;
 
 		glm::mat4 modelMatrix;
 
 	public:
-		VBO(){}
+		VBO():drawType(GL_STATIC_DRAW), positionOffset(-1), colorOffset(-1), normalOffset(-1), textureOffset(-1){}
 		VBO(GLuint primitive_, GLuint drawType_);
 		virtual ~VBO() {
 			glDeleteBuffers(1, &buffer);
@@ -65,17 +61,17 @@ class VBO {
 		}
 
 		GLint gotNormal() {
-			return hasNormal?1:0;
+			return (normalOffset>=0)?1:0;
 		}
 
 		void getComponentConfig(float *config) {
 			config[0] = 0.0f;
 			config[1] = 0.0f;
 
-			if(hasNormal)
+			if(normalOffset>=0)
 				config[0] = 1.0f;
 
-			if(hasColor)
+			if(colorOffset>=0)
 				config[1] = 1.0f;
 		}
 
@@ -84,8 +80,16 @@ class VBO {
 		}
 
 		void setup(const Model3D *model, const ShaderVarLocation & location);
-		void setup(const float *vertices, int vc, int fstride, 
-			const unsigned int *indices, int idx_size, const ShaderVarLocation &);
+		void setup(const float *vertices, 
+			int vc, 
+			int fstride, 
+			int posOffs, 
+			int colorOffs, 
+			int normalOffs, 
+			int textureOffs,
+			const unsigned int *indices, 
+			int idx_size, 
+			const ShaderVarLocation &location);
 
 		void draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
 };

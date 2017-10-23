@@ -83,7 +83,6 @@ float mouseSpeed = 0.005f;
 //const std::string gOutFolder = "/Volumes/data/projects/nautilusnet/data/";
 std::string gTextDatasetFile; //= gOutFolder + "textdata.txt";
 
-void computeMatrices(GLFWwindow* window, glm::vec3 lookat);
 void storeFramebuffer(const Configuration &config, const char* filename, int clsIdx, int ww, int wh);
 
 enum FILE_TYPE {
@@ -323,8 +322,6 @@ int main(int argc, char* args[]) {
 	shaderVarLocation.lightColor1ID = glGetUniformLocation(programID, "lightColor1");
 	shaderVarLocation.lightColor2ID = glGetUniformLocation(programID, "lightColor2");
 
-	// vbo.setup(shaderVarLocation);
-
 	//glm::vec3 lightPos = glm::vec3(7,7,7);
 	glm::vec3 lightPos1 = glm::vec3(config.lightpos1[0], config.lightpos1[1], config.lightpos1[2]);
 	glm::vec3 lightColor1 = glm::vec3(0.5f, 0.5f, 0.1f);
@@ -338,12 +335,12 @@ int main(int argc, char* args[]) {
 	unsigned int frameCount = 0;
 
 	glm::vec3 orientation1;
-	glm::mat4 rotationMatrix = glm::mat4(1.0f);
+	
 	glm::mat4 inverRotMatrix;
 	glm::mat4 modelMatrix;
 	glm::mat4 translationMatrix;
 	glm::mat4 invertTranslationMatrix;
-	glm::mat4 scalingMatrix;
+	glm::mat4 scalingMatrix, rotationMatrix;
 	// glm::vec3 position1(-1.5f, 0.0f, 0.0f);
 	int button_state;
 	bool should_store_frame_buffer = false;
@@ -364,7 +361,9 @@ int main(int argc, char* args[]) {
 	last_ypos = ypos;
 
 	//Set locations to viewer
-	viewer.setLocations(POSITION_LOCATION, COLOR_LOCATION, NORMAL_LOCATION, 0);
+	viewer.setLocations(shaderVarLocation);
+	viewer.setupCamera(config.window_width, config.window_height, cam_pos, object_center);
+	viewer.setupCoordinator();
 	viewer.addModel(model);
 
 	do {
@@ -438,7 +437,7 @@ int main(int argc, char* args[]) {
 		glUniform3f(shaderVarLocation.lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
 		glUniform3f(shaderVarLocation.lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
-		glUniform1i(shaderVarLocation.useNormalLocation, viewer.gotNormal(0));
+		// glUniform1i(shaderVarLocation.useNormalLocation, viewer.gotNormal(0));
 		glUniform1i(shaderVarLocation.useLightingLocation, needLighting);
 		glUniform1f(shaderVarLocation.pointSizeLocation, pointSize);
 
@@ -489,13 +488,13 @@ int main(int argc, char* args[]) {
 		}
 
 		// translationMatrix = glm::translate(glm::mat4(), position1);
-		translationMatrix = glm::translate(glm::mat4(), object_center);
-		invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
+		//translationMatrix = glm::translate(glm::mat4(), object_center);
+		//invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
 		// scalingMatrix = glm::scale(glm::mat4(), glm::vec3(.5f, .5f, .5f));
 		// modelMatrix = translationMatrix * rotationMatrix * scalingMatrix;
-		modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
-		MVP = projectionMatrix * viewMatrix * modelMatrix;
-
+		//modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
+		//MVP = projectionMatrix * viewMatrix * modelMatrix;
+		
 		viewer.drawScene();
 
 		//TODO: Call glReadPixels to capture framebuffer data here

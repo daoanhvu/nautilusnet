@@ -23,14 +23,16 @@ class Viewer {
 		float bgColor[3];
 		Camera camera;
 
+		glm::mat4 rotationMatrix;
+
 		//Camera setup
+		glm::vec3 eye_center;
+		glm::vec3 cam_pos;
 		glm::mat4 projectionMatrix;
 		glm::mat4 viewMatrix;
 
 		VBO coordinatorVBO;
 		vector<VBO*> models;
-
-		void setupCoordinator();
 
 	public:
 		Viewer();
@@ -42,7 +44,8 @@ class Viewer {
 			}
 		}
 
-		void setupCamera(glm::vec3 cam_pos, glm::vec3 eye_center);
+		void setupCoordinator();
+		void setupCamera(int viewWidth, int viewHeight, glm::vec3 campos, glm::vec3 ec);
 
 		/**
 			Bind locations from shader to this viewer
@@ -52,6 +55,10 @@ class Viewer {
 			shaderVarLocation.colorLocation = cl;
 			shaderVarLocation.normalLocation = nl;
 			shaderVarLocation.textureLocation = tl;
+		}
+
+		void setLocations(ShaderVarLocation loc) {
+			shaderVarLocation = loc;
 		}
 
 		void setViewCoordinator(bool viewcoord) {

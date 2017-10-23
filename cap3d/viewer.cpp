@@ -6,11 +6,13 @@ Viewer::Viewer():viewCoordinator(true) {
 
 }
 
-void Viewer::setupCamera(glm::vec3 cam_pos, glm::vec3 eye_center) {
-	this->projectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+void Viewer::setupCamera(int viewWidth, int viewHeight, glm::vec3 campos, glm::vec3 ec) {
+	this->eye_center = ec;
+	this->cam_pos = campos;
+	this->projectionMatrix = glm::perspective(glm::radians(45.0f), (viewWidth * 1.0f) / viewHeight, 0.1f, 1000.0f);
 	this->viewMatrix = glm::lookAt(
-			cam_pos,
-			eye_center,
+			this->cam_pos,
+			this->eye_center,
 			glm::vec3(0, 1, 0)
 		);
 }
@@ -40,9 +42,9 @@ void Viewer::setupCoordinator() {
 	};
 	int vc = 6;
 	int float_stride = 6;
-
 	coordinatorVBO.setDrawPrimitive(GL_LINES);
-	coordinatorVBO.setup(v, vc, float_stride, NULL, 0, this->shaderVarLocation);
+	coordinatorVBO.setup(v, vc, float_stride, 0, 12 /* 3*sizeof(float)*/, -1, -1,
+		NULL, 0, this->shaderVarLocation);
 }
 
 void Viewer::drawCoordinator() {
@@ -54,7 +56,7 @@ void Viewer::drawCoordinator() {
 void Viewer::drawScene() {
 	int i;
 	if(viewCoordinator) {
-		drawCoordinator();
+		coordinatorVBO.draw(this->shaderVarLocation, this->projectionMatrix, this->viewMatrix);
 	}
 
 	for(i=0; i<models.size(); i++) {
