@@ -437,8 +437,8 @@ int main(int argc, char* args[]) {
 		glUniform3f(shaderVarLocation.lightColor1ID, lightColor1.x, lightColor1.y, lightColor1.z);
 		glUniform3f(shaderVarLocation.lightColor2ID, lightColor2.x, lightColor2.y, lightColor2.z);
 
-		// glUniform1i(shaderVarLocation.useNormalLocation, viewer.gotNormal(0));
-		glUniform1i(shaderVarLocation.useLightingLocation, needLighting);
+		// glUniform1i(shaderVarLocation.useNormalLocation, 10);
+		// glUniform1i(shaderVarLocation.useLightingLocation, 10);
 		glUniform1f(shaderVarLocation.pointSizeLocation, pointSize);
 
 		glfwGetCursorPos(window, &xpos, &ypos);

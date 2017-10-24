@@ -29,7 +29,7 @@ class VBO {
 		unsigned int index_size;
 
 		int float_stride;
-		GLsizei float_stride_in_byte;
+		GLsizei stride_in_byte;
 		int colorOffset;
 		int positionOffset;
 		int normalOffset;
@@ -38,7 +38,7 @@ class VBO {
 		glm::mat4 modelMatrix;
 
 	public:
-		VBO():drawType(GL_STATIC_DRAW), positionOffset(-1), colorOffset(-1), normalOffset(-1), textureOffset(-1){}
+		VBO();
 		VBO(GLuint primitive_, GLuint drawType_);
 		virtual ~VBO() {
 			glDeleteBuffers(1, &buffer);

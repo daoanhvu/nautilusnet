@@ -3,10 +3,24 @@
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 
+VBO::VBO():drawType(GL_STATIC_DRAW), 
+			positionOffset(-1), 
+			colorOffset(-1), 
+			normalOffset(-1), 
+			textureOffset(-1) {
+
+	float_stride = 0;
+	stride_in_byte = 0;
+
+}
+
 VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(drawType_)  {
 	positionOffset = -1;
 	colorOffset = -1;
 	normalOffset = -1;
+	textureOffset = -1;
+	float_stride = 0;
+	stride_in_byte = 0;
 }
 
 void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
@@ -15,11 +29,7 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 
 	colorOffset = model->getColorOffset() * sizeof(float);
 
-	normalOffset = model->getNormalOffset() * sizeof(float);
-
-	// std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
-	// std::cout << "[DEBUG - VBO] float_stride: " << model->getFloatStride() << std::endl;
-	// std::cout << "[DEBUG - VBO] Color offset: " << colorOffset << ", hasNormal: " << normalOffset << std::endl;
+	normalOffset = model->getNormalOffset() * sizeof(float);	
 
 	unsigned int *indices;
 	unsigned int buff_len;
@@ -28,21 +38,27 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 	float *vertices_buf_data = model->getVertexBuffer(buff_len);
 
 	//Bind position, normal and color
-	float_stride_in_byte = float_stride * sizeof(float);
+	stride_in_byte = float_stride * sizeof(float);
 
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
 
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, buff_len * sizeof(float), vertices_buf_data, drawType);
+	glBufferData(GL_ARRAY_BUFFER, vertex_count * stride_in_byte, vertices_buf_data, drawType);
+
+	// std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
+	std::cout << "[DEBUG - VBO] float_stride: " << model->getFloatStride() << std::endl;
+	std::cout << "[DEBUG - VBO] float stride in byte: " << stride_in_byte << std::endl;
+	std::cout << "[DEBUG - VBO] Position offset: " << positionOffset << std::endl;
+	std::cout << "[DEBUG - VBO] Color offset: " << colorOffset << ", Normal Offset: " << normalOffset << std::endl;
 
 	glEnableVertexAttribArray(location.positionLocation);
 	glVertexAttribPointer(location.positionLocation, //Attribute index
 				3,  //Number of component per this attribute of vertex
 				GL_FLOAT,
 				GL_FALSE,
-				float_stride_in_byte,
+				stride_in_byte,
 				//(void*)(uintptr_t)0); //TODO:Hard code here!!!!!
 				reinterpret_cast<void*>(positionOffset));
 
@@ -52,7 +68,7 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 			3,  //Number of component per vertex
 			GL_FLOAT,
 			GL_FALSE,
-			float_stride_in_byte,
+			stride_in_byte,
 			// (void*)(uintptr_t)colorOffset);
 			reinterpret_cast<void*>(colorOffset));
 	}
@@ -63,7 +79,7 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 					3,  //Number of component per vertex
 					GL_FLOAT,
 					GL_FALSE,
-					float_stride_in_byte,
+					stride_in_byte,
 					// (void*)(uintptr_t)normalOffset);
 					reinterpret_cast<void*>(normalOffset));
 	}
@@ -74,7 +90,7 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 					2,  //Number of component per vertex
 					GL_FLOAT,
 					GL_FALSE,
-					float_stride_in_byte,
+					stride_in_byte,
 					// (void*)(uintptr_t)normalOffset);
 					reinterpret_cast<void*>(textureOffset));
 	}
@@ -83,8 +99,8 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 	useElementBuffer = false;
 	if(indices != NULL) {
 		useElementBuffer = true;
-		// std::cout << "[DEBUG] useElementBuffer: " << useElementBuffer << std::endl;
-		// std::cout << "[DEBUG] Number of index: " << index_size << endl;
+		std::cout << "[DEBUG] useElementBuffer: " << useElementBuffer << std::endl;
+		std::cout << "[DEBUG] Number of index: " << index_size << endl;
 		glGenBuffers(1, &element_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned int), indices , drawType);
@@ -102,13 +118,15 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 	delete[] vertices_buf_data;
 }
 
-void VBO::setup(const float *vertices, int vc, int fstride, int posOffs, int colorOffs, int normalOffs, int textureOffs,
+void VBO::setup(const float *vertices, int vc, int fstride, 
+			int posOffs, int colorOffs, int normalOffs, int textureOffs,
 			const unsigned int *indices, 
 			int idx_size, 
 			const ShaderVarLocation &location) {
-	float_stride = fstride;
-	vertex_count = vc;
-	float_stride_in_byte = float_stride * sizeof(float);
+
+	this->float_stride = fstride;
+	this->vertex_count = vc;
+	this->stride_in_byte = float_stride * sizeof(float);
 
 	// std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
 	// std::cout << "[DEBUG - VBO] float_stride: " << float_stride << std::endl;
@@ -120,59 +138,60 @@ void VBO::setup(const float *vertices, int vc, int fstride, int posOffs, int col
 
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, vertex_count * float_stride_in_byte, vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertex_count * stride_in_byte, vertices, drawType);
 
+	this->positionOffset = posOffs;
 	glEnableVertexAttribArray(location.positionLocation);
 	glVertexAttribPointer(location.positionLocation, //Attribute index
 				3,  //Number of component per this attribute of vertex
 				GL_FLOAT,
 				GL_FALSE,
-				float_stride_in_byte,
-				reinterpret_cast<void*>(0));
+				stride_in_byte,
+				reinterpret_cast<void*>(this->positionOffset));
 
 	if(colorOffs >= 0) {
-	 	colorOffset = colorOffs;
+	 	this->colorOffset = colorOffs;
 		glEnableVertexAttribArray(location.colorLocation);
 		glVertexAttribPointer(location.colorLocation, //Attribute index
 			3,  //Number of component per vertex
 			GL_FLOAT,
 			GL_FALSE,
-			float_stride_in_byte,
+			stride_in_byte,
 			// (void*)(uintptr_t)colorOffset);
 			reinterpret_cast<void*>(colorOffset));
 	}
 
 	if(normalOffs >= 0) {
-		normalOffset = normalOffs;
+		this->normalOffset = normalOffs;
 		glEnableVertexAttribArray(location.normalLocation);
 		glVertexAttribPointer(location.normalLocation, //Attribute index
 					3,  //Number of component per vertex
 					GL_FLOAT,
 					GL_FALSE,
-					float_stride_in_byte,
-					// (void*)(uintptr_t)normalOffs);
-					reinterpret_cast<void*>(normalOffs));
+					stride_in_byte,
+					// (void*)(uintptr_t)normalOffset);
+					reinterpret_cast<void*>(normalOffset));
 	}
 
 	if(textureOffs >= 0) {
-		textureOffset = textureOffs;
+		this->textureOffset = textureOffs;
 		glEnableVertexAttribArray(location.textureLocation);
 		glVertexAttribPointer(location.textureLocation, //Attribute index
 					2,  //Number of component per vertex
 					GL_FLOAT,
 					GL_FALSE,
-					float_stride_in_byte,
+					stride_in_byte,
 					// (void*)(uintptr_t)normalOffset);
 					reinterpret_cast<void*>(textureOffset));
 	}
 
-	index_size = idx_size;
-	useElementBuffer = false;
+	this->index_size = idx_size;
+	this->useElementBuffer = false;
 	if(indices != NULL) {
-		useElementBuffer = true;
+		this->useElementBuffer = true;
 		glGenBuffers(1, &element_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_size * sizeof(unsigned int), indices , drawType);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->index_size * sizeof(unsigned int), indices , drawType);
 	}
 }
 
@@ -212,7 +231,7 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &proj
 	} else {
 		glDrawArrays(primitive, 0, vertex_count);
 	}
-
+	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
