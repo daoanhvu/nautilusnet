@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include "camera.h"
 #include "vbo.h"
 #include "reader/model3d.h"
@@ -34,6 +35,8 @@ class Viewer {
 		VBO coordinatorVBO;
 		vector<VBO*> models;
 
+		GLFWwindow *window;
+
 	public:
 		Viewer();
 		virtual ~Viewer() {
@@ -46,16 +49,6 @@ class Viewer {
 
 		void setupCoordinator();
 		void setupCamera(int viewWidth, int viewHeight, glm::vec3 campos, glm::vec3 ec);
-
-		/**
-			Bind locations from shader to this viewer
-		*/
-		void setLocations(int pl, int cl, int nl, int tl) {
-			shaderVarLocation.positionLocation = pl;
-			shaderVarLocation.colorLocation = cl;
-			shaderVarLocation.normalLocation = nl;
-			shaderVarLocation.textureLocation = tl;
-		}
 
 		void setLocations(ShaderVarLocation loc) {
 			shaderVarLocation = loc;
@@ -73,6 +66,8 @@ class Viewer {
 		GLint gotNormal(int index) {
 			return models[index]->gotNormal();
 		}
+
+		void setupViewpointsArroundObject();
 };
 
 #endif

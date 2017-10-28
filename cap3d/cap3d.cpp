@@ -32,7 +32,7 @@
 #include "utils.h"
 
 #define PI 3.14159f
-#define RAD(x) ( x * 3.14159f / 180.0f )
+#define RAD(x) ( x * 3.14159265f / 180.0f )
 #define BYTES_PER_PROP 4
 
 #define OK 0
@@ -273,7 +273,7 @@ int main(int argc, char* args[]) {
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	// Cull triangles which normal is not towards the camera
-	glEnable(GL_CULL_FACE);
+	// glEnable(GL_CULL_FACE);
 
 	//turn on GL_PROGRAM_POINT_SIZE 
 	glEnable(GL_PROGRAM_POINT_SIZE);

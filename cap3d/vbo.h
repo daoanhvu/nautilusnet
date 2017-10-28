@@ -36,6 +36,8 @@ class VBO {
 		int textureOffset;
 
 		glm::mat4 modelMatrix;
+		glm::mat4 translationMatrix;
+		glm::mat4 rotationMatrix;
 
 	public:
 		VBO();
@@ -63,6 +65,8 @@ class VBO {
 		GLint gotNormal() {
 			return (normalOffset>=0)?1:0;
 		}
+
+		void rotate(float alpha, glm::vec3 rotAxis);
 
 		void getComponentConfig(float *config) {
 			config[0] = 0.0f;
