@@ -36,6 +36,17 @@ class Viewer {
 		vector<VBO*> models;
 
 		GLFWwindow *window;
+		//Control variables
+		double xpos, ypos;
+		double last_xpos, last_ypos;
+		int button_state;
+		// Initial horizontal angle : toward -Z
+		float horizontalAngle;
+		// Initial vertical angle : none
+		float verticalAngle;
+		float speed; // 3 units / second
+		float mouseSpeed;
+
 
 	public:
 		Viewer();
@@ -56,6 +67,10 @@ class Viewer {
 
 		void setViewCoordinator(bool viewcoord) {
 			viewCoordinator = viewcoord;
+		}
+
+		void setFW3Window(GLFWwindow *w) {
+			this->window = w;
 		}
 
 		void setup(std::vector<Model3D*> m);

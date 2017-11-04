@@ -95,7 +95,10 @@ class VBO {
 			int idx_size, 
 			const ShaderVarLocation &location);
 
-		void draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
+		void draw(	const ShaderVarLocation &shaderVarLocation, 
+					const glm::mat4 &global_rotation_matrix,
+					const glm::mat4 &projectionMatrix, 
+					const glm::mat4 &viewMatrix);
 };
 
 #endif

@@ -4,6 +4,13 @@
 
 Viewer::Viewer():viewCoordinator(true) {
 	rotationMatrix = glm::mat4(1.0f);
+	horizontalAngle = 3.14f;
+	// Initial vertical angle : none
+	verticalAngle = 0.0f;
+	speed = 3.0f; // 3 units / second
+	mouseSpeed = 0.005f;
+	last_xpos = 0;
+	last_ypos = 0;
 }
 
 void Viewer::setupCamera(int viewWidth, int viewHeight, glm::vec3 campos, glm::vec3 ec) {
@@ -52,18 +59,42 @@ void Viewer::setupCoordinator() {
 
 void Viewer::drawCoordinator() {
 	//TODO: Turn off all lights
-	coordinatorVBO.draw(this->shaderVarLocation, this->projectionMatrix, this->viewMatrix);
+	coordinatorVBO.draw(this->shaderVarLocation, 
+			this->rotationMatrix,
+			this->projectionMatrix, this->viewMatrix);
 	//TODO: Turn on all lights
 }
 
 void Viewer::drawScene() {
 	int i;
+
+	glfwGetCursorPos(window, &xpos, &ypos);
+	button_state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	if(button_state == GLFW_PRESS) {
+		// Compute new orientation
+		// verticalAngle = -1 * mouseSpeed * float(last_xpos - xpos)/2.0f;
+		// horizontalAngle = -1 * mouseSpeed * float(last_ypos - ypos)/2.0f;
+
+		verticalAngle = -1 * mouseSpeed * float(last_xpos - xpos)/2.0f;
+		horizontalAngle = -1 * mouseSpeed * float(last_ypos - ypos)/2.0f;
+
+		glm::vec4 xrotv = glm::inverse(rotationMatrix) * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		rotationMatrix = glm::rotate(rotationMatrix, horizontalAngle, glm::vec3(xrotv.x, xrotv.y, xrotv.z));
+		glm::vec4 yrotv = glm::inverse(rotationMatrix) * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		rotationMatrix = glm::rotate(rotationMatrix, verticalAngle, glm::vec3(yrotv.x, yrotv.y, yrotv.z));
+	}
+
+	last_xpos = xpos;
+	last_ypos = ypos;
+
 	if(viewCoordinator) {
-		coordinatorVBO.draw(this->shaderVarLocation, this->projectionMatrix, this->viewMatrix);
+		coordinatorVBO.draw(this->shaderVarLocation, 
+			this->rotationMatrix,
+			this->projectionMatrix, this->viewMatrix);
 	}
 
 	for(i=0; i<models.size(); i++) {
-		models[i]->draw(this->shaderVarLocation, this->projectionMatrix, this->viewMatrix);
+		models[i]->draw(this->shaderVarLocation, this->rotationMatrix, this->projectionMatrix, this->viewMatrix);
 	}
 }
 

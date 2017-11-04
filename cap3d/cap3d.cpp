@@ -360,6 +360,8 @@ int main(int argc, char* args[]) {
 	last_xpos = xpos;
 	last_ypos = ypos;
 
+	viewer.setFW3Window(window);
+
 	//Set locations to viewer
 	viewer.setLocations(shaderVarLocation);
 	viewer.setupCamera(config.window_width, config.window_height, cam_pos, object_center);

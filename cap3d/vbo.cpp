@@ -204,7 +204,10 @@ void VBO::rotate(float alpha, glm::vec3 rotAxis) {
 	rotationMatrix = glm::rotate(rotationMatrix, alpha, rotAxis);
 }
 
-void VBO::draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+void VBO::draw(const ShaderVarLocation &shaderVarLocation, 
+				const glm::mat4 &global_rotation_matrix,
+				const glm::mat4 &projectionMatrix, 
+				const glm::mat4 &viewMatrix) {
 	glm::vec3 object_center = glm::vec3(0.0f, 0.0f, 0.0f);
 	translationMatrix = glm::translate(glm::mat4(), object_center);
 	glm::mat4 invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
@@ -212,6 +215,11 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation, const glm::mat4 &proj
 	// scalingMatrix = glm::scale(glm::mat4(), glm::vec3(.5f, .5f, .5f));
 	// modelMatrix = translationMatrix * rotationMatrix * scalingMatrix;
 	modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
+
+
+	//Apply global rotation to this object
+	modelMatrix = modelMatrix * global_rotation_matrix;
+
 	glm::mat4 MVP = projectionMatrix * viewMatrix * modelMatrix;
 
 	glUniform1i(shaderVarLocation.useNormalLocation, (normalOffset>=0)?1:0);
