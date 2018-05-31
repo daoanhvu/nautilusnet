@@ -1,0 +1,1 @@
+cl /c /EHsc /std:c++14 graph.cpp
