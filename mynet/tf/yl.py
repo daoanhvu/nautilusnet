@@ -81,15 +81,15 @@ def intersectionTF(a,b):
     w2 = tf.slice(b,[2,],[1,])
     h2 = tf.slice(b,[3,],[1,])
 
-    topA=tf.add(y1,tf.div(h1,two) )
-    bottomA=tf.sub(y1,tf.div(h1,two) )
-    rightA=tf.add(x1,tf.div(w1,two) )
-    leftA=tf.sub(x1,tf.div(w1,two) )
+    topA    = tf.add(y1,tf.div(h1,two) )
+    bottomA = tf.sub(y1,tf.div(h1,two) )
+    rightA  = tf.add(x1,tf.div(w1,two) )
+    leftA   = tf.sub(x1,tf.div(w1,two) )
 
-    topB=tf.add(y2,tf.div(h2,two) )
-    bottomB=tf.sub(y2,tf.div(h2,two) )
-    rightB=tf.add(x2,tf.div(w2,two) )
-    leftB=tf.sub(x2,tf.div(w2,two) )
+    topB    = tf.add(y2,tf.div(h2,two) )
+    bottomB = tf.sub(y2,tf.div(h2,two) )
+    rightB  = tf.add(x2,tf.div(w2,two) )
+    leftB   = tf.sub(x2,tf.div(w2,two) )
 
     xOverlap=tf.maximum(zero,tf.minimum(rightA,rightB) - tf.maximum(leftA,leftB) )
     yOverlap=tf.maximum(zero,tf.minimum(topA,topB) - tf.maximum(bottomA,bottomB) )
