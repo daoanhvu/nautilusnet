@@ -1,6 +1,19 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
+#ifdef __ANDROID__
+	#include "EGL/egl.h"
+	#ifdef __GLES2__
+		#include "GLES2/gl2.h"
+		#include "GLES2/gl2ext.h"
+	#else
+		#include "GLES3/gl3.h"
+		#include "GLES3/gl3ext.h"
+	#endif
+#else
+    #include <GL/gl.h>
+#endif
+
 typedef struct tagLocation {
     GLuint positionLocation;
     GLuint normalLocation;

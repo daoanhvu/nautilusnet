@@ -2,12 +2,26 @@
 #define _VBO_H_
 
 #include <vector>
-#include <GL/glew.h>
-// #include "util/glUtil.h"
 #include <glm/glm.hpp>
 #include "shader.h"
-#include "reader/model3d.h"
-#include "common/defines.h"
+
+#if defined(__ANDROID__) || defined(__IOS__)
+	#include "EGL/egl.h"
+	#ifdef __GLES2__
+		#include "GLES2/gl2.h"
+		#include "GLES2/gl2ext.h"
+	#else
+		#include "GLES3/gl3.h"
+		#include "GLES3/gl3ext.h"
+	#endif
+#else
+	#include <GL/glew.h>
+	// #include "util/glUtil.h"
+	#include "reader/model3d.h"
+	#include "common/defines.h"
+#endif
+
+
 
 using namespace std;
 
@@ -42,48 +56,20 @@ class VBO {
 	public:
 		VBO();
 		VBO(GLuint primitive_, GLuint drawType_);
-		virtual ~VBO() {
-			glDeleteBuffers(1, &buffer);
+		virtual ~VBO();
 
-			if(useElementBuffer) {
-				glDeleteBuffers(1, &element_buffer);
-			}
+		void releaseBuffer();
 
-			glDeleteVertexArrays(1, &vertexArrayId);
-		}
-
-		void releaseBuffer() {
-			glDeleteBuffers(1, &buffer);
-
-			if(useElementBuffer) {
-				glDeleteBuffers(1, &element_buffer);
-			}	
-
-			glDeleteVertexArrays(1, &vertexArrayId);
-		}
-
-		GLint gotNormal() {
-			return (normalOffset>=0)?1:0;
-		}
+		GLint gotNormal();
 
 		void rotate(float alpha, glm::vec3 rotAxis);
 
-		void getComponentConfig(float *config) {
-			config[0] = 0.0f;
-			config[1] = 0.0f;
+		void getComponentConfig(float *config);
 
-			if(normalOffset>=0)
-				config[0] = 1.0f;
-
-			if(colorOffset>=0)
-				config[1] = 1.0f;
-		}
-
-		void setDrawPrimitive(GLuint dp) {
-			primitive = dp;
-		}
-
+		void setDrawPrimitive(GLuint dp);
+#ifdef _HAS_MODEL3D_
 		void setup(const Model3D *model, const ShaderVarLocation & location);
+#endif
 		void setup(const float *vertices, 
 			int vc, 
 			int fstride, 

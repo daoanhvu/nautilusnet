@@ -27,6 +27,21 @@ VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(d
 	rotationMatrix = glm::mat4(1.0f);
 }
 
+void VBO::getComponentConfig(float *config) {
+	config[0] = 0.0f;
+	config[1] = 0.0f;
+
+	if(normalOffset>=0)
+		config[0] = 1.0f;
+
+	if(colorOffset>=0)
+		config[1] = 1.0f;
+}
+
+void VBO::setDrawPrimitive(GLuint dp) {
+	primitive = dp;
+}
+#ifdef _HAS_MODEL3D_
 void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 
 	positionOffset = model->getPositionOffset() * sizeof(float);
@@ -121,6 +136,7 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 	//Now we can release buffer data 
 	delete[] vertices_buf_data;
 }
+#endif
 
 void VBO::setup(const float *vertices, int vc, int fstride, 
 			int posOffs, int colorOffs, int normalOffs, int textureOffs,
@@ -132,13 +148,17 @@ void VBO::setup(const float *vertices, int vc, int fstride,
 	this->vertex_count = vc;
 	this->stride_in_byte = float_stride * sizeof(float);
 
+#if defined(_LINUX_)|| defined(__WIN32)
 	std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
 	std::cout << "[DEBUG - VBO] float_stride: " << float_stride << std::endl;
 	std::cout << "[DEBUG - VBO] hasColor: " << colorOffs << ", hasNormal: " << normalOffs << std::endl;
 	std::cout << "[DEBUG - VBO] location.positionLocation: " << location.positionLocation << std::endl;
+#endif
 
+#ifndef __GLES__
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
+#endif
 
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -200,6 +220,17 @@ void VBO::setup(const float *vertices, int vc, int fstride,
 	}
 }
 
+void VBO::releaseBuffer() {
+	glDeleteBuffers(1, &buffer);
+
+	if(useElementBuffer) {
+		glDeleteBuffers(1, &element_buffer);
+	}
+#ifndef __GLES2__
+	glDeleteVertexArrays(1, &vertexArrayId);
+#endif
+}
+
 void VBO::rotate(float alpha, glm::vec3 rotAxis) {
 	rotationMatrix = glm::rotate(rotationMatrix, alpha, rotAxis);
 }
@@ -231,7 +262,9 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 	glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
 	glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
 
+#ifndef __GLES__
 	glBindVertexArray(vertexArrayId);
+#endif
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	if(useElementBuffer) {
 		// Index buffer
@@ -247,7 +280,23 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 	} else {
 		glDrawArrays(primitive, 0, vertex_count);
 	}
+#ifndef __GLES__
 	glBindVertexArray(0);
+#endif
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+GLint VBO::gotNormal() {
+	return (normalOffset>=0)?1:0;
+}
+
+VBO::~VBO() {
+	glDeleteBuffers(1, &buffer);
+
+	if(useElementBuffer) {
+		glDeleteBuffers(1, &element_buffer);
+	}
+#ifndef __GLES2__
+	glDeleteVertexArrays(1, &vertexArrayId);
+#endif
+}
