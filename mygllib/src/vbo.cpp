@@ -9,7 +9,7 @@ VBO::VBO():drawType(GL_STATIC_DRAW),
 			normalOffset(-1), 
 			textureOffset(-1) {
 
-	float_stride = 0;
+	floatStride = 0;
 	useElementBuffer = false;
 	rotationMatrix = glm::mat4(1.0f);
 }
@@ -19,9 +19,20 @@ VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(d
 	colorOffset = -1;
 	normalOffset = -1;
 	textureOffset = -1;
-	float_stride = 0;
+	floatStride = 0;
 	useElementBuffer = false;
 	rotationMatrix = glm::mat4(1.0f);
+}
+
+VBO::~VBO() {
+	glDeleteBuffers(1, &buffer);
+
+	if(useElementBuffer) {
+		glDeleteBuffers(1, &elementBuffer);
+	}
+#ifndef __GLES2__
+	glDeleteVertexArrays(1, &vertexArrayId);
+#endif
 }
 
 void VBO::getComponentConfig(float *config) {
@@ -48,7 +59,7 @@ GLuint VBO::getBuffer() {
 }
 
 GLuint VBO::getElementBuffer() {
-	return element_buffer;
+	return elementBuffer;
 }
 
 unsigned int VBO::getIndexSize() {
@@ -161,7 +172,9 @@ void VBO::setupColor(const float *data, unsigned int dataSize, int stride,
 	glBindVertexArray(colorVertexArrayId);
 #endif
 
-	glGenBuffers(1, &colorBuffer);
+	GLuint temp[1];
+	glGenBuffers(1, temp);
+	colorBuffer = temp[0];
 	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, dataSize * stride_in_byte, data, drawType);
 
@@ -174,19 +187,35 @@ void VBO::setupColor(const float *data, unsigned int dataSize, int stride,
 			0);
 }
 
-void VBO::setup(const float *vertices, unsigned int vc, int fstride,
-			int posOffs, int colorOffs, int normalOffs, int textureOffs,
+void VBO::setupIndexElements(
 #ifdef __GLES__
 			short *indices, 
 #else
 			const unsigned int *indices, 
 #endif
-			int idx_size, 
+			int idxSize) {
+
+	this->index_size = idxSize;
+	this->useElementBuffer = false;
+	
+#ifdef __GLES__
+	GLsizeiptr indexDataSize = this->index_size * sizeof(short);
+#else
+	GLsizeiptr indexDataSize = this->index_size * sizeof(unsigned int);
+#endif		
+	this->useElementBuffer = true;
+	glGenBuffers(1, &elementBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indices , drawType);
+}
+
+void VBO::setup(const float *vertices, unsigned int vc, int fstride,
+			int posOffs, int colorOffs, int normalOffs, int textureOffs,
 			const ShaderVarLocation &location) {
 
-	this->float_stride = fstride;
+	this->floatStride = fstride;
 	this->vertex_count = vc;
-	GLsizei stride_in_byte = float_stride * sizeof(float);
+	GLsizei stride_in_byte = floatStride * sizeof(float);
 
 #if defined(_LINUX_)|| defined(__WIN32)
 	std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
@@ -199,7 +228,6 @@ void VBO::setup(const float *vertices, unsigned int vc, int fstride,
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
 #endif
-
 	glGenBuffers(1, &buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	glBufferData(GL_ARRAY_BUFFER, vertex_count * stride_in_byte, vertices, drawType);
@@ -248,28 +276,13 @@ void VBO::setup(const float *vertices, unsigned int vc, int fstride,
 					// (void*)(uintptr_t)normalOffset);
 					reinterpret_cast<void*>(textureOffset));
 	}
-
-	this->index_size = idx_size;
-	std::cout << "[DEBUG - VBO] Index size: " << this->index_size << std::endl;
-	this->useElementBuffer = false;
-	if(indices != NULL) {
-#ifdef __GLES__
-	GLsizeiptr indexDataSize = this->index_size * sizeof(short);
-#else
-	GLsizeiptr indexDataSize = this->index_size * sizeof(unsigned int);
-#endif		
-		this->useElementBuffer = true;
-		glGenBuffers(1, &element_buffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indices , drawType);
-	}
 }
 
 void VBO::releaseBuffer() {
 	glDeleteBuffers(1, &buffer);
 
 	if(useElementBuffer) {
-		glDeleteBuffers(1, &element_buffer);
+		glDeleteBuffers(1, &elementBuffer);
 	}
 #ifndef __GLES2__
 	glDeleteVertexArrays(1, &vertexArrayId);
@@ -278,6 +291,68 @@ void VBO::releaseBuffer() {
 
 void VBO::rotate(float alpha, glm::vec3 rotAxis) {
 	rotationMatrix = glm::rotate(rotationMatrix, alpha, rotAxis);
+}
+
+// TODO: This is for GLES only, please update it
+void VBO::drawElements(const ShaderVarLocation &shaderVarLocation, 
+				const glm::mat4 &global_rotation_matrix,
+				const glm::mat4 &projectionMatrix, 
+				const glm::mat4 &viewMatrix) {
+
+	// glm::vec3 object_center = glm::vec3(0.0f, 0.0f, 0.0f);
+	// translationMatrix = glm::translate(glm::mat4(), object_center);
+	// glm::mat4 invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
+	// glm::mat4 scalingMatrix = glm::mat4();
+	// modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
+	// //Apply global rotation to this object
+	// modelMatrix = modelMatrix * global_rotation_matrix;
+	// glm::mat4 MVP = projectionMatrix * viewMatrix * modelMatrix;
+	// // Send our transformation to the currently bound shader,
+	// // in the "MVP" uniform
+	// glUniformMatrix4fv(shaderVarLocation.mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
+	// glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
+	// glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
+
+	auto stride_in_byte = 6 * sizeof(float);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glEnableVertexAttribArray(shaderVarLocation.positionLocation);
+	glVertexAttribPointer(shaderVarLocation.positionLocation, //Attribute index
+				3,  //Number of component per this attribute of vertex
+				GL_FLOAT,
+				GL_FALSE,
+				stride_in_byte,
+				reinterpret_cast<void*>(0));
+
+	glEnableVertexAttribArray(shaderVarLocation.normalLocation);
+	glVertexAttribPointer(shaderVarLocation.normalLocation, //Attribute index
+				3,  //Number of component per normal vector
+				GL_FLOAT,
+				GL_FALSE,
+				stride_in_byte,
+				reinterpret_cast<void*>(3));
+
+	stride_in_byte = 4 * sizeof(float);
+	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+	glEnableVertexAttribArray(shaderVarLocation.colorLocation);
+	glVertexAttribPointer(shaderVarLocation.colorLocation, //Attribute index
+			4,  //Number of component per color. We have red, green, blue and alpha
+			GL_FLOAT,
+			GL_FALSE,
+			stride_in_byte,
+			0);
+	// Bind buffer for indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
+	glDrawElements(
+			primitive,      // mode
+			index_size,    // count
+			GL_UNSIGNED_INT,   // type
+			NULL);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisableVertexAttribArray(shaderVarLocation.positionLocation);
+    glDisableVertexAttribArray(shaderVarLocation.normalLocation);
+    glDisableVertexAttribArray(shaderVarLocation.colorLocation);
 }
 
 void VBO::draw(const ShaderVarLocation &shaderVarLocation, 
@@ -313,7 +388,7 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
 	if(useElementBuffer) {
 		// Index buffer
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBuffer);
 		glDrawElements(
 				primitive,      // mode
 				index_size,    // count
@@ -333,15 +408,4 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 
 GLint VBO::gotNormal() {
 	return (normalOffset>=0)?1:0;
-}
-
-VBO::~VBO() {
-	glDeleteBuffers(1, &buffer);
-
-	if(useElementBuffer) {
-		glDeleteBuffers(1, &element_buffer);
-	}
-#ifndef __GLES2__
-	glDeleteVertexArrays(1, &vertexArrayId);
-#endif
 }
