@@ -10,10 +10,8 @@ VBO::VBO():drawType(GL_STATIC_DRAW),
 			textureOffset(-1) {
 
 	float_stride = 0;
-	stride_in_byte = 0;
 	useElementBuffer = false;
 	rotationMatrix = glm::mat4(1.0f);
-
 }
 
 VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(drawType_)  {
@@ -22,7 +20,6 @@ VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(d
 	normalOffset = -1;
 	textureOffset = -1;
 	float_stride = 0;
-	stride_in_byte = 0;
 	useElementBuffer = false;
 	rotationMatrix = glm::mat4(1.0f);
 }
@@ -38,9 +35,26 @@ void VBO::getComponentConfig(float *config) {
 		config[1] = 1.0f;
 }
 
-void VBO::setDrawPrimitive(GLuint dp) {
+GLuint VBO::getPrimitive() {
+	return primitive;
+}
+
+void VBO::setPrimitive(GLuint dp) {
 	primitive = dp;
 }
+
+GLuint VBO::getBuffer() {
+	return buffer;
+}
+
+GLuint VBO::getElementBuffer() {
+	return element_buffer;
+}
+
+unsigned int VBO::getIndexSize() {
+	return index_size;
+}
+
 #ifdef _HAS_MODEL3D_
 void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 
@@ -57,7 +71,7 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 	float *vertices_buf_data = model->getVertexBuffer(buff_len);
 
 	//Bind position, normal and color
-	stride_in_byte = float_stride * sizeof(float);
+	GLsizei stride_in_byte = float_stride * sizeof(float);
 
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
@@ -138,15 +152,41 @@ void VBO::setup(const Model3D *model, const ShaderVarLocation & location) {
 }
 #endif
 
-void VBO::setup(const float *vertices, int vc, int fstride, 
+void VBO::setupColor(const float *data, unsigned int dataSize, int stride,
+	int offset, int colorLocation) {
+
+	GLsizei stride_in_byte = stride * sizeof(float);
+#ifndef __GLES2__
+	glGenVertexArrays(1, &colorVertexArrayId);
+	glBindVertexArray(colorVertexArrayId);
+#endif
+
+	glGenBuffers(1, &colorBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, dataSize * stride_in_byte, data, drawType);
+
+	glEnableVertexAttribArray(colorLocation);
+	glVertexAttribPointer(colorLocation, //Attribute index
+			4,  //Number of component per vertex
+			GL_FLOAT,
+			GL_FALSE,
+			stride_in_byte,
+			0);
+}
+
+void VBO::setup(const float *vertices, unsigned int vc, int fstride,
 			int posOffs, int colorOffs, int normalOffs, int textureOffs,
+#ifdef __GLES__
+			short *indices, 
+#else
 			const unsigned int *indices, 
+#endif
 			int idx_size, 
 			const ShaderVarLocation &location) {
 
 	this->float_stride = fstride;
 	this->vertex_count = vc;
-	this->stride_in_byte = float_stride * sizeof(float);
+	GLsizei stride_in_byte = float_stride * sizeof(float);
 
 #if defined(_LINUX_)|| defined(__WIN32)
 	std::cout << "[DEBUG - VBO] primitive: " << primitive << std::endl;
@@ -155,7 +195,7 @@ void VBO::setup(const float *vertices, int vc, int fstride,
 	std::cout << "[DEBUG - VBO] location.positionLocation: " << location.positionLocation << std::endl;
 #endif
 
-#ifndef __GLES__
+#ifndef __GLES2__
 	glGenVertexArrays(1, &vertexArrayId);
 	glBindVertexArray(vertexArrayId);
 #endif
@@ -213,10 +253,15 @@ void VBO::setup(const float *vertices, int vc, int fstride,
 	std::cout << "[DEBUG - VBO] Index size: " << this->index_size << std::endl;
 	this->useElementBuffer = false;
 	if(indices != NULL) {
+#ifdef __GLES__
+	GLsizeiptr indexDataSize = this->index_size * sizeof(short);
+#else
+	GLsizeiptr indexDataSize = this->index_size * sizeof(unsigned int);
+#endif		
 		this->useElementBuffer = true;
 		glGenBuffers(1, &element_buffer);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->index_size * sizeof(unsigned int), indices , drawType);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexDataSize, indices , drawType);
 	}
 }
 
@@ -262,7 +307,7 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 	glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
 	glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
 
-#ifndef __GLES__
+#ifndef __GLES2__
 	glBindVertexArray(vertexArrayId);
 #endif
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -280,7 +325,7 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 	} else {
 		glDrawArrays(primitive, 0, vertex_count);
 	}
-#ifndef __GLES__
+#ifndef __GLES2__
 	glBindVertexArray(0);
 #endif
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

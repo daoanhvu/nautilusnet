@@ -28,9 +28,10 @@ using namespace std;
 class VBO {
 	protected:
 		GLuint drawType;
-
 		GLuint vertexArrayId;
+		GLuint colorVertexArrayId;
 		GLuint buffer;
+		GLuint colorBuffer;
 		GLuint element_buffer;
 
 		//GL_TRIANGLES
@@ -43,7 +44,6 @@ class VBO {
 		unsigned int index_size;
 
 		int float_stride;
-		GLsizei stride_in_byte;
 		int colorOffset;
 		int positionOffset;
 		int normalOffset;
@@ -62,22 +62,35 @@ class VBO {
 
 		GLint gotNormal();
 
+		GLuint getBuffer();
+
+		GLuint getElementBuffer();
+
 		void rotate(float alpha, glm::vec3 rotAxis);
 
 		void getComponentConfig(float *config);
 
-		void setDrawPrimitive(GLuint dp);
+		unsigned int getIndexSize();
+
+		GLuint getPrimitive();
+
+		void setPrimitive(GLuint dp);
+		void setupColor(const float *data, unsigned int dataSize, int stride, int offset, int colorLocation);
 #ifdef _HAS_MODEL3D_
 		void setup(const Model3D *model, const ShaderVarLocation & location);
 #endif
 		void setup(const float *vertices, 
-			int vc, 
+			unsigned int vc, 
 			int fstride, 
 			int posOffs, 
 			int colorOffs, 
 			int normalOffs, 
 			int textureOffs,
+#ifdef __GLES__
+			short *indices, 
+#else
 			const unsigned int *indices, 
+#endif
 			int idx_size, 
 			const ShaderVarLocation &location);
 

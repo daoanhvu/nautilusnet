@@ -14,6 +14,11 @@
     #include <GL/gl.h>
 #endif
 
+enum BUFFER_TYPE {
+    ONE_BUFFER,
+    POSITION_NORMAL_AND_COLOR
+};
+
 typedef struct tagLocation {
     GLuint positionLocation;
     GLuint normalLocation;
