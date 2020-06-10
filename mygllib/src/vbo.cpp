@@ -3,7 +3,7 @@
 #include <glm/gtx/transform.hpp>
 #include <iostream>
 
-VBO::VBO():drawType(GL_STATIC_DRAW), 
+VBO::VBO(): indexDataType(GL_UNSIGNED_SHORT), drawType(GL_STATIC_DRAW), 
 			positionOffset(-1), 
 			colorOffset(-1), 
 			normalOffset(-1), 
@@ -14,7 +14,9 @@ VBO::VBO():drawType(GL_STATIC_DRAW),
 	rotationMatrix = glm::mat4(1.0f);
 }
 
-VBO::VBO(GLuint primitive_, GLuint drawType_): primitive(primitive_), drawType(drawType_)  {
+VBO::VBO(GLenum _indexDataType, GLuint primitive_, GLuint drawType_): 
+		indexDataType(_indexDataType),
+		primitive(primitive_), drawType(drawType_)  {
 	positionOffset = -1;
 	colorOffset = -1;
 	normalOffset = -1;
@@ -33,6 +35,14 @@ VBO::~VBO() {
 #ifndef __GLES2__
 	glDeleteVertexArrays(1, &vertexArrayId);
 #endif
+}
+
+GLenum VBO::getIndexDataType() {
+	return indexDataType;
+}
+
+void VBO::setIndexDataType(GLenum type) {
+	indexDataType = type;
 }
 
 void VBO::getComponentConfig(float *config) {
@@ -171,10 +181,7 @@ void VBO::setupColor(const float *data, unsigned int dataSize, int stride,
 	glGenVertexArrays(1, &colorVertexArrayId);
 	glBindVertexArray(colorVertexArrayId);
 #endif
-
-	GLuint temp[1];
-	glGenBuffers(1, temp);
-	colorBuffer = temp[0];
+	glGenBuffers(1, &colorBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
 	glBufferData(GL_ARRAY_BUFFER, dataSize * stride_in_byte, data, drawType);
 
@@ -189,7 +196,7 @@ void VBO::setupColor(const float *data, unsigned int dataSize, int stride,
 
 void VBO::setupIndexElements(
 #ifdef __GLES__
-			short *indices, 
+			const unsigned short *indices,
 #else
 			const unsigned int *indices, 
 #endif
@@ -199,7 +206,7 @@ void VBO::setupIndexElements(
 	this->useElementBuffer = false;
 	
 #ifdef __GLES__
-	GLsizeiptr indexDataSize = this->index_size * sizeof(short);
+	GLsizeiptr indexDataSize = this->index_size * sizeof(unsigned short);
 #else
 	GLsizeiptr indexDataSize = this->index_size * sizeof(unsigned int);
 #endif		
@@ -245,11 +252,10 @@ void VBO::setup(const float *vertices, unsigned int vc, int fstride,
 	 	this->colorOffset = colorOffs;
 		glEnableVertexAttribArray(location.colorLocation);
 		glVertexAttribPointer(location.colorLocation, //Attribute index
-			3,  //Number of component per vertex
+			4,  //Number of component per vertex
 			GL_FLOAT,
 			GL_FALSE,
 			stride_in_byte,
-			// (void*)(uintptr_t)colorOffset);
 			reinterpret_cast<void*>(colorOffset));
 	}
 
@@ -261,7 +267,6 @@ void VBO::setup(const float *vertices, unsigned int vc, int fstride,
 					GL_FLOAT,
 					GL_FALSE,
 					stride_in_byte,
-					// (void*)(uintptr_t)normalOffset);
 					reinterpret_cast<void*>(normalOffset));
 	}
 
@@ -273,7 +278,6 @@ void VBO::setup(const float *vertices, unsigned int vc, int fstride,
 					GL_FLOAT,
 					GL_FALSE,
 					stride_in_byte,
-					// (void*)(uintptr_t)normalOffset);
 					reinterpret_cast<void*>(textureOffset));
 	}
 }
@@ -299,19 +303,21 @@ void VBO::drawElements(const ShaderVarLocation &shaderVarLocation,
 				const glm::mat4 &projectionMatrix, 
 				const glm::mat4 &viewMatrix) {
 
-	// glm::vec3 object_center = glm::vec3(0.0f, 0.0f, 0.0f);
-	// translationMatrix = glm::translate(glm::mat4(), object_center);
-	// glm::mat4 invertTranslationMatrix = glm::translate(glm::mat4(), - object_center);
-	// glm::mat4 scalingMatrix = glm::mat4();
-	// modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
-	// //Apply global rotation to this object
-	// modelMatrix = modelMatrix * global_rotation_matrix;
-	// glm::mat4 MVP = projectionMatrix * viewMatrix * modelMatrix;
-	// // Send our transformation to the currently bound shader,
-	// // in the "MVP" uniform
-	// glUniformMatrix4fv(shaderVarLocation.mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
-	// glUniformMatrix4fv(shaderVarLocation.modelMatrixId, 1, GL_FALSE, &modelMatrix[0][0]);
-	// glUniformMatrix4fv(shaderVarLocation.viewMatrixId, 1, GL_FALSE, &viewMatrix[0][0]);
+//	 glm::vec3 objectCenter = glm::vec3(0.0f, 0.0f, 0.0f);
+//	 translationMatrix = glm::translate(glm::mat4(), objectCenter);
+//	 glm::mat4 invertTranslationMatrix = glm::translate(glm::mat4(), -objectCenter);
+//	 glm::mat4 scalingMatrix = glm::mat4();
+//	 modelMatrix = translationMatrix * rotationMatrix * invertTranslationMatrix * scalingMatrix;
+//	 /* Apply global rotation to this object */
+//	 modelMatrix = modelMatrix * global_rotation_matrix;
+//	 glm::mat4 modelView = viewMatrix * modelMatrix;
+//	 glm::mat4 MVP = projectionMatrix * modelView;
+//	 /* Send our transformation to the currently bound shader,
+//	 	in the "MVP" uniform
+//	 */
+//	 glUniformMatrix4fv(shaderVarLocation.mvpMatrixId, 1, GL_FALSE, &MVP[0][0]);
+//	 glUniformMatrix4fv(shaderVarLocation.modelViewMatrixId, 1, GL_FALSE, &modelView[0][0]);
+
 
 	auto stride_in_byte = 6 * sizeof(float);
 	glBindBuffer(GL_ARRAY_BUFFER, buffer);
@@ -345,7 +351,7 @@ void VBO::drawElements(const ShaderVarLocation &shaderVarLocation,
 	glDrawElements(
 			primitive,      // mode
 			index_size,    // count
-			GL_UNSIGNED_INT,   // type
+			indexDataType,   // type
 			NULL);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -392,7 +398,7 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 		glDrawElements(
 				primitive,      // mode
 				index_size,    // count
-				GL_UNSIGNED_INT,   // type
+				this->indexDataType,   // type
 				reinterpret_cast<void*>(0)
 			);
 

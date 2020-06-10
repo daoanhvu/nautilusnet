@@ -26,13 +26,14 @@ typedef struct tagLocation {
     GLuint textureLocation;
     
     //uniform variables
-    GLuint mvpMatrixId;
+    GLint mvpMatrixId;
     GLuint viewMatrixId;
     GLuint modelMatrixId;
+	GLint modelViewMatrixId;
     GLuint useNormalLocation;
     GLuint useLightingLocation;
     GLuint pointSizeLocation;
-    GLuint lightPos1ID;
+    GLint lightPos1ID;
     GLuint lightPos2ID;
     GLuint lightColor1ID;
     GLuint lightColor2ID;

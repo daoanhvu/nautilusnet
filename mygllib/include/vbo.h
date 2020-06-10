@@ -43,6 +43,9 @@ class VBO {
 		unsigned int vertex_count;
 		unsigned int index_size;
 
+		//Must be one of GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT, or GL_UNSIGNED_INT
+		GLenum indexDataType;
+
 		int floatStride;
 		int colorOffset;
 		int positionOffset;
@@ -55,7 +58,7 @@ class VBO {
 
 	public:
 		VBO();
-		VBO(GLuint primitive_, GLuint drawType_);
+		VBO(GLenum _indexDataType, GLuint primitive_, GLuint drawType_);
 		virtual ~VBO();
 
 		void releaseBuffer();
@@ -73,15 +76,18 @@ class VBO {
 		unsigned int getIndexSize();
 
 		GLuint getPrimitive();
-
 		void setPrimitive(GLuint dp);
+
+		GLenum getIndexDataType();
+		void setIndexDataType(GLenum type);
+
 		void setupColor(const float *data, unsigned int dataSize, int stride, int offset, int colorLocation);
 #ifdef _HAS_MODEL3D_
 		void setup(const Model3D *model, const ShaderVarLocation & location);
 #endif
 		void setupIndexElements(
 #ifdef __GLES__
-			short *indices, 
+			const unsigned short *indices, 
 #else
 			const unsigned int *indices, 
 #endif

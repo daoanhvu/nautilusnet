@@ -7,9 +7,22 @@
                 "${workspaceFolder}/cap3d/**",
                 "${workspaceFolder}/mygllib/include"
             ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/cap3d",
+                    "${workspaceFolder}/mygllib/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
             "compilerPath": "/usr/bin/clang++",
             "cStandard": "c11",
-            "cppStandard": "c++11"
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
         }
     ]
 }
