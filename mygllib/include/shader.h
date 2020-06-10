@@ -1,6 +1,24 @@
 #ifndef SHADER_HPP
 #define SHADER_HPP
 
+#ifdef __ANDROID__
+	#include "EGL/egl.h"
+	#ifdef __GLES2__
+		#include "GLES2/gl2.h"
+		#include "GLES2/gl2ext.h"
+	#else
+		#include "GLES3/gl3.h"
+		#include "GLES3/gl3ext.h"
+	#endif
+#else
+    #include <GL/gl.h>
+#endif
+
+enum BUFFER_TYPE {
+    ONE_BUFFER,
+    POSITION_NORMAL_AND_COLOR
+};
+
 typedef struct tagLocation {
     GLuint positionLocation;
     GLuint normalLocation;
@@ -8,13 +26,14 @@ typedef struct tagLocation {
     GLuint textureLocation;
     
     //uniform variables
-    GLuint mvpMatrixId;
+    GLint mvpMatrixId;
     GLuint viewMatrixId;
     GLuint modelMatrixId;
+	GLuint modelViewMatrixId;
     GLuint useNormalLocation;
     GLuint useLightingLocation;
     GLuint pointSizeLocation;
-    GLuint lightPos1ID;
+    GLint lightPos1ID;
     GLuint lightPos2ID;
     GLuint lightColor1ID;
     GLuint lightColor2ID;
