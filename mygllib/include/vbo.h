@@ -42,6 +42,7 @@ class VBO {
 		bool useElementBuffer;
 		unsigned int vertex_count;
 		unsigned int index_size;
+		GLenum indexDataType;
 
 		int floatStride;
 		int colorOffset;
@@ -55,7 +56,7 @@ class VBO {
 
 	public:
 		VBO();
-		VBO(GLuint primitive_, GLuint drawType_);
+		VBO(GLenum indexDataType_, GLuint primitive_, GLuint drawType_);
 		virtual ~VBO();
 
 		void releaseBuffer();
@@ -81,7 +82,7 @@ class VBO {
 #endif
 		void setupIndexElements(
 #ifdef __GLES__
-			short *indices, 
+			unsigned short *indices,
 #else
 			const unsigned int *indices, 
 #endif
