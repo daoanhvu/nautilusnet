@@ -14,8 +14,8 @@ VBO::VBO(): indexDataType(GL_UNSIGNED_SHORT), drawType(GL_STATIC_DRAW),
 	rotationMatrix = glm::mat4(1.0f);
 }
 
-VBO::VBO(GLenum _indexDataType, GLuint primitive_, GLuint drawType_): 
-		indexDataType(_indexDataType),
+
+VBO::VBO(GLenum indexDataType_, GLuint primitive_, GLuint drawType_): indexDataType(indexDataType_), 
 		primitive(primitive_), drawType(drawType_)  {
 	positionOffset = -1;
 	colorOffset = -1;
@@ -398,7 +398,7 @@ void VBO::draw(const ShaderVarLocation &shaderVarLocation,
 		glDrawElements(
 				primitive,      // mode
 				index_size,    // count
-				this->indexDataType,   // type
+				indexDataType,   // type
 				reinterpret_cast<void*>(0)
 			);
 

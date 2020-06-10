@@ -29,7 +29,7 @@ typedef struct tagLocation {
     GLint mvpMatrixId;
     GLuint viewMatrixId;
     GLuint modelMatrixId;
-	GLint modelViewMatrixId;
+	GLuint modelViewMatrixId;
     GLuint useNormalLocation;
     GLuint useLightingLocation;
     GLuint pointSizeLocation;

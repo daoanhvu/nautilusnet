@@ -42,7 +42,6 @@ class VBO {
 		bool useElementBuffer;
 		unsigned int vertex_count;
 		unsigned int index_size;
-
 		//Must be one of GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT, or GL_UNSIGNED_INT
 		GLenum indexDataType;
 
@@ -58,7 +57,7 @@ class VBO {
 
 	public:
 		VBO();
-		VBO(GLenum _indexDataType, GLuint primitive_, GLuint drawType_);
+		VBO(GLenum indexDataType_, GLuint primitive_, GLuint drawType_);
 		virtual ~VBO();
 
 		void releaseBuffer();
