@@ -1,3 +1,4 @@
-# John Lambert, Matt Vilim, Konstantine Buhler
-# CS 229 Course Project
-# "You Only Look Once" YOLO Detection
+import tensorflow as tf
+
+def read_image(path):
+    pass
