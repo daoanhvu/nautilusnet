@@ -1,0 +1,12 @@
+https://www.kaggle.com/soumikrakshit/yolo-v3-using-tensorflow-2-0
+
+YOLO version 3
+https://towardsdatascience.com/yolo-v3-object-detection-53fb7d3bfe6b
+https://jonathan-hui.medium.com/real-time-object-detection-with-yolo-yolov2-28b1b93e2088
+
+https://github.com/zzh8829/yolov3-tf2
+
+codingcompetitions.withgoogle.com
+
+
+mAP: (mean Average Precision)
