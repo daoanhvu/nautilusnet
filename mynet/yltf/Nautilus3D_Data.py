@@ -39,7 +39,7 @@ class BBox:
 class Image:
 	def __init__(self, imgpath):
 		self.image_path = imgpath
-		self.bounding_boxes = [];
+		self.bounding_boxes = []
 
 
 def getData(textdatapath):
