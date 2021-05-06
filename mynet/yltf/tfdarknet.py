@@ -12,7 +12,7 @@ from mynet.yltf.batch_normal import BatchNormalization
 
 # https://www.kaggle.com/soumikrakshit/yolo-v3-using-tensorflow-2-0
 
-class SimpleNet:
+class TFDarkNet:
     pass
 
     def add_conv_layer(self, x, filters, ksize, strides=1, downsample = False, batch_normal=True):

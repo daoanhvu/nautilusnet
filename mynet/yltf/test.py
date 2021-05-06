@@ -7,13 +7,6 @@ print(image)
 input_arr = tf.keras.preprocessing.image.img_to_array(image)
 # print(input_arr)
 
-x_in = np.array([[
-  [[2], [1], [2], [0], [1]],
-  [[1], [3], [2], [2], [3]],
-  [[1], [1], [3], [3], [0]],
-  [[2], [2], [0], [1], [1]],
-  [[0], [0], [3], [1], [2]], ]])
-
 # Convert the image into a batch
 input_arr = np.array([input_arr])
 kernel_in = np.array([ 
@@ -21,7 +14,6 @@ kernel_in = np.array([
                         [[[0, 0.3, 1, 1]], [[1, 1, 0.4, 1]]] 
                       ])
 
-# x = tf.constant(x_in, dtype=tf.float32)
 x = tf.constant(input_arr, dtype=tf.float32)
 kernel = tf.constant(kernel_in, dtype=tf.float32)
 
