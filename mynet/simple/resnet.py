@@ -1,11 +1,13 @@
 import tensorflow as tf
 
-from residual_block import residual_block
+from residual_block import make_basic_block_layer, make_bottleneck_layer
 
 
 class ResNetTypeI(tf.keras.Model):
     def __init__(self, num_classes, layer_params):
         super(ResNetTypeI, self).__init__()
+
+        self.img_normalization = tf.keras.layers.experimental.preprocessing.Rescaling(1./255)
 
         self.conv1 = tf.keras.layers.Conv2D(filters=64,
                                             kernel_size=(7, 7),
@@ -32,7 +34,8 @@ class ResNetTypeI(tf.keras.Model):
         self.fc = tf.keras.layers.Dense(units=num_classes, activation=tf.keras.activations.softmax)
 
     def call(self, inputs, training=None, mask=None):
-        x = self.conv1(inputs)
+        x = self.img_normalization(inputs)
+        x = self.conv1(x)
         x = self.bn1(x, training=training)
         x = tf.nn.relu(x)
         x = self.pool1(x)
