@@ -6,7 +6,7 @@ from PIL import Image
 import numpy as np
 import argparse
 
-from data_utils import __list_to_csv, xml_to_csv
+from data_utils import __list_to_csv, xml_to_csv, create_tf_example
 
 lambda_rpn_regr = 1.0
 lambda_rpn_class = 1.0
@@ -95,7 +95,24 @@ def build_rpn_model(rpn_input, anchor_count):
     return tf.keras.Model(inputs=rpn_input, outputs=[rpn_reg_output, rpn_cls_output], name='rpn_model')
 
 
+def parse_record(serialized):
+    features = {
+        
+    }
+    pass
+
 def train(img_size, channels, anchor_count, training_config):
+
+    epochs = training_config['epochs']
+    batch_size = training_config['batch_size']
+
+    # Read dataset
+    dataset = tf.data.TFRecordDataset(training_config["data_file"])
+    dataset = dataset.map(parse_record)
+    dataset = dataset.repeat(4)
+    dataset = dataset.batch(batch_size)
+    iterator = dataset.make_one_shot_iterator()
+
     # This is the base model, its used for classification, the default activation of this network is softmax
     # and default output classes if 1000
     base_model = tf.keras.applications.VGG16(include_top=False, input_shape=(img_size, img_size, channels))
@@ -110,14 +127,12 @@ def train(img_size, channels, anchor_count, training_config):
     rpn_model.compile(optimizer=tf.optimizers.Adam(learning_rate=1e-5),
                   loss=[regression_loss, rpn_classification_loss])
 
-    epochs = training_config['epochs']
-    batch_size = training_config['batch_size']
-
     for epoch in range(epochs):
         print('Start epoch %s' % epoch)
 
-        # for step, (x_batch_train, y_batch_train) in enumerate(train_ds):
-        #     pass
+        for step, (x_batch_train, y_batch_train) in enumerate(dataset):
+            print("    batch!")
+            pass
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(
@@ -142,12 +157,17 @@ if __name__=='__main__':
     args = parser.parse_args()
 
     if args.c == 'pd':
-      xml_to_csv(args.i, args.o)
+        #   xml_to_csv(args.i, args.o)
+        writer = tf.io.TFRecordWriter(args.o)
+        examples = create_tf_example(args.i)
+        for example in examples:
+            writer.write(example.SerializeToString())
     elif args.c == 'train':
         image_size = 224
         channels = 3
         anchor_count = 9
         training_config = {
+            "data_file": args.i,
             "epochs": 8,
             "batch_size": 4
         }
