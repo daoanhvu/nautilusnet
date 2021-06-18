@@ -162,6 +162,7 @@ if __name__=='__main__':
         examples = create_tf_example(args.i)
         for example in examples:
             writer.write(example.SerializeToString())
+        writer.close()
     elif args.c == 'train':
         image_size = 224
         channels = 3

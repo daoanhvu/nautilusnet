@@ -1,0 +1,30 @@
+Step 1: Installing object_detection
+
+
+Download model:
+wget http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8.tar.gz
+
+python3 ./data_prep.py --xml /Users/vdao/projects/ml/Faster-R-CNN-main/data/xml \
+--img /Users/vdao/projects/ml/Faster-R-CNN-main/data/images \
+--lp /Users/vdao/projects/ml/Faster-R-CNN-main/data/labelMap_duck_chicken.pbtxt \
+--o /Users/vdao/projects/ml/Faster-R-CNN-main/data/duck_chicken.tfrecord
+
+Test data:
+python3 ./data_prep.py --xml /Users/vdao/projects/ml/Faster-R-CNN-main/data/test/test_xml \
+--img /Users/vdao/projects/ml/Faster-R-CNN-main/data/test/duck_chicken \
+--lp /Users/vdao/projects/ml/Faster-R-CNN-main/data/labelMap_duck_chicken.pbtxt \
+--o /Users/vdao/projects/ml/Faster-R-CNN-main/data/test_duck_chicken.tfrecord
+
+Train the data:
+python3 model_main_tf2.py --model_dir=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8 \
+--pipeline_config_path=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/pipeline.config
+
+Evaluate the model:
+python3 model_main_tf2.py --model_dir=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8 \
+--pipeline_config_path=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/pipeline.config \
+--checkpoint_dir=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8
+
+python3 detect.py --image=data/test/duck_chicken/test001.jpeg \
+--p=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/pipeline.config \
+--m=checkpoint --checkpoint=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/ckpt-1 \
+--label=/Users/vdao/projects/ml/Faster-R-CNN-main/data/labelMap_duck_chicken.pbtxt

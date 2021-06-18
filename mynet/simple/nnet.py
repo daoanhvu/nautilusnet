@@ -53,6 +53,7 @@ def main():
     trainds = trainds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
     valds = valds.cache().prefetch(buffer_size=tf.data.AUTOTUNE)
 
+    # Create a model
     model = ResNetTypeI(NUM_CLASSES, layer_params=[2, 2, 2, 2])
     model.build(input_shape=(None, image_height, image_width, channels))
     model.summary()
