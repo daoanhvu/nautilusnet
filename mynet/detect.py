@@ -18,28 +18,23 @@ warnings.filterwarnings('ignore')   # Suppress Matplotlib warnings
 def load_image_into_np_array(path):
     return np.array(Image.open(path))
 
-def detect_with_saved_model():
+def detect_with_saved_model(saved_model_path, label_map_path, images_path):
     tf.get_logger().setLevel('ERROR')
-    print(tf.__version__)
-    current_dir = str(os.getcwd())
-    IMAGES_PATH = current_dir + '/TensorFlow/models/research/object_detection/test_images'
-    print(IMAGES_PATH)
-    file_names = ['image1.jpg', 'image2.jpg']
+    # file_names = ['image1.jpg', 'image2.jpg']
+    file_names = ['image1.jpg']
     image_paths = []
 
     for filename in file_names:
-        image_paths.append(IMAGES_PATH + '/' + filename)
+        image_paths.append(images_path + '/' + filename)
 
-    PATH_TO_LABELS = current_dir + '/TensorFlow/models/research/object_detection/data/mscoco_label_map.pbtxt'
-    category_index = label_map_util.create_category_index_from_labelmap(PATH_TO_LABELS,
+    label_map_path = os.path.join(label_map_path, 'mscoco_label_map.pbtxt')
+    category_index = label_map_util.create_category_index_from_labelmap(label_map_path,
                                                                     use_display_name=True)
 
-    PATH_TO_SAVED_MODEL = "TensorFlow/ssd_mobilenet_v2_fpnlite_320x320_coco17_tpu-8/saved_model"
-    detect_fn = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    detect_fn = tf.saved_model.load(os.path.join(saved_model_path, 'saved_model'))
 
     for img_path in image_paths:
         image_np = load_image_into_np_array(img_path)
-        print(img_path)
         # The input needs to be a tensor, convert it using `tf.convert_to_tensor`.
         input_tensor = tf.convert_to_tensor(image_np)
         # The model expects a batch of images, so add an axis with `tf.newaxis`.
@@ -53,7 +48,6 @@ def detect_with_saved_model():
         num_detections = int(detections.pop('num_detections'))
         detections = {key: value[0, :num_detections].numpy()
                     for key, value in detections.items()}
-        print(detections)
         detections['num_detections'] = num_detections
 
         # detection_classes should be ints.
@@ -72,10 +66,12 @@ def detect_with_saved_model():
           min_score_thresh=.50,
           agnostic_mode=False)
 
-        plt.figure()
-        plt.imshow(image_np_with_detections)
-        print('Done')
-    plt.show()
+        # plt.figure()
+        # plt.imshow(image_np_with_detections)
+        # print('Done')
+        cv2.imshow('test', image_np_with_detections)
+        # plt.show()
+        cv2.waitKey(0)
 
 def detect_with_checkpoint(pipeline_path, chkpt_path, labelmap_path, image):
     configs = config_util.get_configs_from_pipeline_file(pipeline_path)
@@ -147,11 +143,14 @@ if __name__=='__main__':
        'Detect object using saved_mnode or load from checkpoint',
        formatter_class=argparse.RawDescriptionHelpFormatter)
     
-    parser.add_argument('--m', type=str, required=True,
+    parser.add_argument('--method', type=str, required=True,
        help='Method to use saved_model or checkpoint')
 
     parser.add_argument('--image', type=str,
        help='Method to use saved_model or checkpoint')
+
+    parser.add_argument('--model', type=str,
+       help='Path to saved model')
 
     parser.add_argument('--label', type=str,
        help='Method to use saved_model or checkpoint')
@@ -159,19 +158,19 @@ if __name__=='__main__':
     parser.add_argument('--checkpoint', type=str,
        help='Method to use saved_model or checkpoint')
 
-    parser.add_argument('--p', type=str,
-       help='Method to use saved_model or checkpoint')
+    parser.add_argument('--config', type=str,
+       help='Path to pipeline configuration file')
 
     args = parser.parse_args()
 
-    if args.m == 'saved_model':
-        detect_with_saved_model()
-    elif args.m == 'checkpoint':
+    if args.method == 'saved_model':
+        detect_with_saved_model(args.model, args.label, args.image)
+    elif args.method == 'checkpoint':
         image_path = args.image
         image = cv2.imread(image_path)
         image, _ = detect_with_checkpoint(args.p, args.checkpoint, args.label, image)
-        # cv2.imwrite('corner_test.png', image)
-        # cv2.imshow('test', image)
-        # cv2.waitKey(0)
+        cv2.imwrite('corner_test.png', image)
+        cv2.imshow('test', image)
+        cv2.waitKey(0)
     else:
         print('Wrong method!')

@@ -1,8 +1,24 @@
+Step 0: Install TensorFlow 2
+
+Step 0.1: Re-install CV2
+https://linuxize.com/post/how-to-install-opencv-on-ubuntu-20-04/
+https://www.geeksforgeeks.org/python-opencv-capture-video-from-camera/
+
+sudo pip3 uninstall opencv-python
+sudo pip3 install opencv-python
+
+check if opencv-contrib-python is installed by pip
+
+python -c "import tensorflow as tf;print(tf.reduce_sum(tf.random.normal([1000, 1000])))"
+
 Step 1: Installing object_detection
+
+
 
 
 Download model:
 wget http://download.tensorflow.org/models/object_detection/tf2/20200711/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8.tar.gz
+wget http://download.tensorflow.org/models/object_detection/tf2/20200711/faster_rcnn_resnet50_v1_640x640_coco17_tpu-8.tar.gz
 
 python3 ./data_prep.py --xml /Users/vdao/projects/ml/Faster-R-CNN-main/data/xml \
 --img /Users/vdao/projects/ml/Faster-R-CNN-main/data/images \
@@ -24,7 +40,18 @@ python3 model_main_tf2.py --model_dir=TensorFlow/ssd_resnet50_v1_fpn_640x640_coc
 --pipeline_config_path=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/pipeline.config \
 --checkpoint_dir=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8
 
+python detect.py --image=/home/vudao/projects/TensorFlow/models/research/object_detection/test_images \
+--config=/home/vudao/projects/TensorFlow/saved_models/faster_rcnn_resnet50_v1_640x640_coco17_tpu-8/pipeline.config \
+--method=saved_model \
+--model=/home/vudao/projects/TensorFlow/saved_models/faster_rcnn_resnet50_v1_640x640_coco17_tpu-8 \
+--checkpoint=/home/vudao/projects/TensorFlow/saved_models/faster_rcnn_resnet50_v1_640x640_coco17_tpu-8/checkpoint0/ckpt-0 \
+--label=/home/vudao/projects/TensorFlow/models/research/object_detection/data
+
 python3 detect.py --image=data/test/duck_chicken/test001.jpeg \
 --p=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/pipeline.config \
 --m=checkpoint --checkpoint=TensorFlow/ssd_resnet50_v1_fpn_640x640_coco17_tpu-8/ckpt-1 \
 --label=/Users/vdao/projects/ml/Faster-R-CNN-main/data/labelMap_duck_chicken.pbtxt
+
+
+/home/vudao/projects/TensorFlow/saved_models/faster_rcnn_resnet50_v1_640x640_coco17_tpu-8
+/home/vudao/projects/TensorFlow/saved_model/faster_rcnn_resnet50_v1_640x640_coco17_tpu-8
