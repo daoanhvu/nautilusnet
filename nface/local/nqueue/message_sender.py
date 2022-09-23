@@ -14,12 +14,17 @@ class MessageSender(object):
         self._channel = self._connection.channel()
         # self._channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
         # self._channel.queue_declare(queue=queue_name)
-        headers = {}
+        headers = {
+            
+        }
         self._properties = pika.BasicProperties(app_id='nface-publisher',
-                                          content_type='application/json',
+                                          content_type='text/plain',
+                                          content_encoding='UTF-8',
                                           headers=headers)
 
 
-    def publish_message(self, message):
+    def publish_message(self, message: dict):
+        str_message = json.dumps(message)
         self._channel.basic_publish(self._exchange, self._queue_name,
-                                    json.dumps(message, ensure_ascii=False), self._properties)
+                                    str_message, self._properties)
+

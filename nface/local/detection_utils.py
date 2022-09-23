@@ -54,7 +54,7 @@ def detect_and_recognize_faces(detector: MTCNN, vgg_model: VGGFace, img: cv2.Mat
                 prediction = vgg_model.predict(face_image)
                 max_class_idx = np.argmax(prediction)
                 prediction_result = {
-                    'score': prediction,
+                    'score': prediction[0][max_class_idx],
                     'class_index': max_class_idx,
                     'box': (x1, y1, w1, h1)
                 }

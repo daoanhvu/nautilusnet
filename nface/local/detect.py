@@ -9,15 +9,18 @@ from nqueue.message_sender import MessageSender
 
 async def send_message(sender: MessageSender, class_index: int, class_name: str):
     message = {
-        'classIndex': class_index,
+        'actionCommand': 'PUNCH_INOUT_CMD',
+        'orgId': 1,
+        'classIndex': int(class_index),
         'className': class_name,
+        'device': 0,
         'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     sender.publish_message(message=message)
 
 
 def capture_camera():
-    project_path = 'D:\\projects\\nface'
+    project_path = 'D:\\projects\\nautilusnet\\nface'
     class_dictionary = {}
     with open("{}\\data\\classes.json".format(project_path)) as classes_file:
         class_dictionary = json.load(classes_file)

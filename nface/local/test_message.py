@@ -7,6 +7,6 @@ if __name__=='__main__':
     message_sender = MessageSender(host='localhost', exchange='amq.topic', exchange_type='topic',
         queue_name='nface_messages', topic='nface_detection')
     message = {
-        'text': "This is a test message"
+        "text": "This is a test message from Vu"
     }
     message_sender.publish_message(message=message)

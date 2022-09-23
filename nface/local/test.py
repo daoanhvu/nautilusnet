@@ -32,7 +32,7 @@ def detect_faces(detector: MTCNN, image_path: str, vgg_model: VGGFace, class_dic
                 prediction = vgg_model.predict(face_image)
                 max_class_idx = np.argmax(prediction)
                 prediction_result = {
-                    'score': prediction,
+                    'score': prediction[0][max_class_idx],
                     'class_index': max_class_idx,
                     'box': (x1, y1, w1, h1)
                 }
@@ -42,8 +42,10 @@ def detect_faces(detector: MTCNN, image_path: str, vgg_model: VGGFace, class_dic
         x_dr, y_dr, w_dr, h_dr = pred['box']
         x_dr, y_dr, w_dr, h_dr = int(x_dr), int(y_dr), int(w_dr), int(h_dr)
         class_name = class_dictionary.get(str(pred['class_index']))
+        # print(pred['score'][0][pred['class_index']])
+        caption = "{} score={}".format(class_name, pred['score'])
         cv2.rectangle(img, (x_dr,y_dr), (x_dr+w_dr,y_dr+h_dr), (0,255,0), 2)
-        img = cv2.putText(img, class_name, (x_dr, y_dr), font, fontScale, (119,1,133), 1, cv2.LINE_AA)
+        img = cv2.putText(img, caption, (x_dr, y_dr), font, fontScale, (119,1,133), 1, cv2.LINE_AA)
     while True:
         cv2.imshow("Result", img)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -51,7 +53,7 @@ def detect_faces(detector: MTCNN, image_path: str, vgg_model: VGGFace, class_dic
 
 
 if __name__=='__main__':
-    project_path = 'D:\\projects\\nface'
+    project_path = 'D:\\projects\\nautilusnet\\nface'
     image_path = 'D:\\data\\images\\185329_10150271303542906_7648119_n.jpg'
     class_dictionary = {}
     with open("{}\\data\\classes.json".format(project_path)) as classes_file:
