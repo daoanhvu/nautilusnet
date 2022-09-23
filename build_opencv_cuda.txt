@@ -1,0 +1,88 @@
+1. Check environment variables
+	C:\Users\welcome\.conda\envs\py37;C:\Users\welcome\.conda\envs\py37\DLLs;C:\Users\welcome\.conda\envs\py37\Scripts;C:\Users\welcome\.conda\envs\py37\Lib\site-packages
+	
+	D:\opencv\opencv-4.5.5\build\install\x64\vc16\bin;D:\opencv\opencv-4.5.5\build2\install\x64\vc16\lib;D:\opencv\opencv-4.5.5\build2\lib\python3\Release;
+
+CUDA include:
+	C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\include;C:\programs\cudnn-10.1\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\extras\CUPTI\include;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\bin;C:\programs\cudnn-10.1\lib\x64;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\lib\x64
+	C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1,C:\programs\cudnn-10.1,C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.1\extras\CUPTI
+
+2. 
+
+	BUILD_opencv_python2: no
+	BUILD_opencv_python3: yes
+	PYTHON2_ : NOTFOUND
+	PYTHON2_INCLUDE_DIR-NOTFOUND
+	PYTHON3_EXECUTABLE
+	PYTHON3_LIBRARY
+	PYTHON_EXECUTABLE
+	PYTHON_LIBRARY
+	WITH_CUDA
+	CUDNN_INCLUDE_DIR
+	CUDNN_LIBRARY
+	WITH_CUDNN
+	BUILD_SHARED_LIBS=OFF
+
+====================================================================================================================
+	
+cmake -DCMAKE_CONFIGURATION_TYPES=Release -DOPENCV_EXTRA_MODULES_PATH=D:\opencv\opencv_contrib-4.6.0\modules ^
+-DWITH_CUDA=ON -DOPENCV_DNN_CUDA=ON -DWITH_CUDNN=ON -DCUDNN_VERSION=7.6.2 ^
+-DENABLE_FAST_MATH=ON ^
+-DCUDA_FAST_MATH=ON ^
+-DWITH_CUBLAS=ON ^
+-DWITH_NGRAPH=OFF ^
+-DBUILD_EXAMPLES=OFF ^
+-DBUILD_PERF_TESTS=OFF ^
+-DCUDNN_INCLUDE_DIR=C:\programs\cudnn-10.1\include ^
+-DCUDNN_LIBRARY=C:\programs\cudnn-10.1\lib\x64\cudnn.lib ^
+-DBUILD_opencv_python2=OFF  ^
+-DBUILD_opencv_python3=ON  ^
+-DBUILD_SHARED_LIBS=OFF ^
+-DPYTHON3_EXECUTABLE=C:\Users\welcome\.conda\envs\cv\python.exe ^
+-DPYTHON3_LIBRARY=C:/Users/welcome/.conda/envs/cv/libs/python39.lib ^
+-DPYTHON3_NUMPY_INCLUDE_DIR=C:\Users\welcome\.conda\envs\cv\Lib\site-packages\numpy\core\include ^
+-DOPENCV_SKIP_PYTHON_LOADER=ON ^
+-DBUILD_opencv_world=ON ^
+-DBUILD_opencv_cudaarithm=OFF -DBUILD_opencv_cudabgsegm=OFF -DBUILD_opencv_cudafeatures2d=OFF -DBUILD_opencv_cudafilters=OFF ^
+-DBUILD_opencv_cudaimgproc=OFF -DBUILD_opencv_cudalegacy=OFF -DBUILD_opencv_cudaobjdetect=OFF -DBUILD_opencv_cudaoptflow=OFF ^
+-DBUILD_opencv_cudastereo=OFF -DBUILD_opencv_cudawarping=OFF -DBUILD_opencv_cudacodec=OFF ^
+-DCUDA_nvToolsExt_LIBRARY="C:\Program Files\NVIDIA Corporation\NvToolsExt\lib\x64\nvToolsExt64_1.lib" ..
+
+
+TF_CUDA_COMPUTE_CAPABILITY Computation ability: GeForce GTX 1070	6.1
+====================================================================================================================
+Linux/MacOS:
+export 
+
+Windows:
+
+SET CUDNN_INSTALL_PATH=C:/programs/cudnn-10.1
+
+SET PATH=%PATH%;C:/programs/cudnn-10.1/bin;C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.1/bin;C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v10.1/extras/CUPTI/libx64
+
+SET PATH="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/bin:PATH"
+export PATH="/c/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.0/extras/CUPTI/libx64:$PATH"
+export PATH="/c/tools/cuda/bin:$PATH"
+
+SET PATH=C:\Users\welcome\AppData\Local\Programs\Python\Python37;C:\programs\Anaconda3;D:\opencv\opencv-4.6.0\build\install\x64\vc16\bin;D:\opencv\opencv-4.6.0\build\install\x64\vc16\lib;D:\opencv\opencv-4.6.0\build\lib\Release;D:\opencv\opencv-4.6.0\build\bin\Release;%PATH%
+SET PYTHONPATH=D:\opencv\opencv-4.6.0\build\install\x64\vc16\bin;C:\programs\Anaconda3;D:\opencv\opencv-4.6.0\build\install\x64\vc16\lib;C:\Users\welcome\AppData\Local\Programs\Python\Python37;%PYTHONPATH%
+SET OPENCV_VIDEOIO_PRIORITY_LIST=DSHOW
+
+SET PYTHONPATH=C:\programs\cudnn-10.1\bin;%PYTHONPATH%
+SET PATH=C:\programs\cudnn-10.1\bin;%PATH%
+
+
+dumpbin /dependent C:\Users\welcome\.conda\envs\cv\Lib\site-packages\cv2\python-3.9\cv2.cp39-win_amd64.pyd
+
+Troubleshoot:
+	https://github.com/opencv/opencv/issues/17632
+	https://github.com/opencv/opencv/issues/19972
+	https://jamesbowley.co.uk/accelerate-opencv-4-5-0-on-windows-build-with-cuda-and-python-bindings/
+	
+	
+	
+	bazel build --config=opt --config=cuda --define=no_tensorflow_py_deps=true //tensorflow/tools/pip_package:build_pip_package
+	
+	
+	
+	conda install -c conda-forge cudatoolkit=10.1 cudnn=7.6.2

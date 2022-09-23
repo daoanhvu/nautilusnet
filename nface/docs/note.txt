@@ -1,0 +1,45 @@
+INSTALL:
+    pip install mtcnn
+    pip install keras_vggface
+    pip install keras-applications
+    pip install keras.engine
+
+
+If you got issue about keras.engine.topoloy not found:
+    Solve changing the import from
+
+    from keras.engine.topology import get_source_inputs
+    to
+    from keras.utils.layer_utils import get_source_inputs
+    in usr/local/lib/python3.7/dist-packages/keras_vggface/models.py
+
+
+
+
+Build and install tensorflow from source:
+    https://www.tensorflow.org/install/source_windows
+
+
+MTCNN output:
+    # [
+    #     {
+    #         'box': [277, 90, 48, 63],
+    #         'keypoints':
+    #         {
+    #             'nose': (303, 131),
+    #             'mouth_right': (313, 141),
+    #             'right_eye': (314, 114),
+    #             'left_eye': (291, 117),
+    #             'mouth_left': (296, 143)
+    #         },
+    #         'confidence': 0.99851983785629272
+    #     }
+    # ]
+
+https://www.codemag.com/Article/2205081/Implementing-Face-Recognition-Using-Deep-Learning-and-Support-Vector-Machines
+https://www.linkedin.com/pulse/face-recognition-using-transfer-learning-vgg16-rohit-mittal/
+https://www.linkedin.com/pulse/face-detection-using-mtcnn-guide-extraction-focus-speed-justin-g%C3%BCse/?articleId=6706149444922040320
+https://sefiks.com/2020/09/09/deep-face-detection-with-mtcnn-in-python/
+
+
+https://machinelearningmastery.com/how-to-make-classification-and-regression-predictions-for-deep-learning-models-in-keras/
