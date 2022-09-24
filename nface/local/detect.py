@@ -4,19 +4,41 @@ import cv2
 from detection_utils import detect_and_recognize_faces
 from tensorflow.keras.models import load_model
 from datetime import datetime
+import time
 from nqueue.message_sender import MessageSender
 
 
-async def send_message(sender: MessageSender, class_index: int, class_name: str):
-    message = {
-        'actionCommand': 'PUNCH_INOUT_CMD',
-        'orgId': 1,
-        'classIndex': int(class_index),
-        'className': class_name,
-        'device': 0,
-        'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    }
-    sender.publish_message(message=message)
+SENT_MAP = {}
+
+
+def send_message(sender: MessageSender, class_index: int, class_name: str):
+    previous_check_time = SENT_MAP.get(class_name)
+    if previous_check_time is None:
+        message = {
+            'actionCommand': 'PUNCH_INOUT_CMD',
+            'orgId': 1,
+            'classIndex': int(class_index),
+            'className': class_name,
+            'device': 1,
+            'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        sender.publish_message(message=message)
+        SENT_MAP[class_name] = time.time()
+    else:
+        prev_time = SENT_MAP.get(class_name)
+        curr_time = time.time()
+        if curr_time - prev_time > 60:
+            message = {
+                'actionCommand': 'PUNCH_INOUT_CMD',
+                'orgId': 1,
+                'classIndex': int(class_index),
+                'className': class_name,
+                'device': 1,
+                'datetime': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            sender.publish_message(message=message)
+            SENT_MAP[class_name] = curr_time
+
 
 
 def capture_camera():
