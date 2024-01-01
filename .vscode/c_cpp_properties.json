@@ -5,7 +5,8 @@
             "name": "mygl",
             "includePath": [
                 "${workspaceFolder}/cap3d/**",
-                "${workspaceFolder}/mygllib/include"
+                "${workspaceFolder}/mygllib/include",
+                "~/programs/libtorch/include"
             ],
             "browse": {
                 "path": [

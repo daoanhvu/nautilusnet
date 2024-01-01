@@ -13,6 +13,8 @@
 #define MAX_DEV_NAME 1024
 #define TS 8       // The square-root of the 2D tile-size (== work-group dims)
 
+using namespace std;
+
 void checkError(cl_int error, int line);
 void mul(int n, int m, int r, const float *a, const float *b, float *c);
 char* readKernelFile(const char* filename, long* size);
@@ -111,7 +113,7 @@ void mul(int M, int N, int K, const float *A, const float *B, float *C) {
   ret = clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &binSize, NULL);
   unsigned char *bin = (unsigned char *)malloc(binSize);
   ret = clGetProgramInfo(program, CL_PROGRAM_BINARIES, sizeof(unsigned char), &bin, NULL);
-  FILE *binF = fopen("/home/vdao/data/ptx_opencl.bin", "wb");
+  FILE *binF = fopen("/home/ddao/data/ptx_opencl.bin", "wb");
   if(binF == NULL) {
     std::cout << "Cannot open ptx_opencl.bin" << std::endl;
   }
