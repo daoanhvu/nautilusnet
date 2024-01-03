@@ -3,3 +3,5 @@ nface/data/test/
 nface/data/train/
 nface/local/__pycache__/
 nface/local/nqueue/__pycache__/
+mynet/rcnn/torch/build
+glm/

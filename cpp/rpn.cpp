@@ -2,7 +2,7 @@
 #include <torch/script.h>
 #include <iostream>
 
-struct VGG16 : torch::nn::Module {
+struct VGG16: torch::nn::Module {
     // VGG-16 Layers
     torch::nn::Sequential layer1;
     torch::nn::Sequential layer2;
