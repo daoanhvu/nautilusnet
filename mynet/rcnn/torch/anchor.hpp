@@ -1,8 +1,6 @@
-#ifndef __RPN_HPP__
-#define __RPN_HPP__
+#ifndef __ANCHOR_HPP__
+#define __ANCHOR_HPP__
 
-#include <tuple>
-#include <vector>
 #include <torch/torch.h>
 
 namespace rcnn {
@@ -12,6 +10,15 @@ namespace rcnn {
         public:
             AnchorGeneratorImpl() {
                 
+            }
+
+            std::vector<torch::Tensor> getAnchors(const std::vector<std::vector<int64_t>> gridSizes) {
+                
+            }
+            
+            // number of base anchors
+            int numAnchors() {
+                return 0;
             }
     };
 
