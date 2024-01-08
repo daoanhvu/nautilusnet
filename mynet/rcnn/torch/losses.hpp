@@ -11,7 +11,7 @@ namespace rcnn {
             }
     };
 
-    class GIoULoss: Loss {
+    class GIoULoss: public Loss {
         private:
             float lossWeight;
 
@@ -29,9 +29,9 @@ namespace rcnn {
             }
 
 
-    }
+    };
 
-    class L1Loss: Loss {
+    class L1Loss: public Loss {
         private:
             float lossWeight;
 
@@ -43,7 +43,7 @@ namespace rcnn {
             }
 
 
-    }
+    };
 
     std::shared_ptr<Loss> buildLoss(std::string type, float lossWeight) {
         if(type == "l1_loss") {

@@ -94,57 +94,7 @@ namespace rcnn {
     TORCH_MODULE(SimpleNet);
 }
 
-int test_fpn() {
-
-    auto model = std::make_shared<rcnn::SimpleNetImpl>();
-
-    std::vector<int> featChannels = {64, 128, 256, 512, 512};
-    torch::Tensor x = torch::rand({1, 3, 244, 244});
-    std::cout << "Input shape: " << x.sizes() << std::endl;
-    std::vector<torch::Tensor> outputs = model->forward(x);
-
-    torch::nn::ModuleList lateralConvs = torch::nn::ModuleList();
-    torch::nn::ModuleList fpnConvs = torch::nn::ModuleList();
-    int mOutChannels = 512;
-    for(auto i=0; i<featChannels.size(); ++i) {
-        int featChannel = featChannels[i];
-        torch::nn::Conv2d lateralConv = torch::nn::Conv2d(torch::nn::Conv2dOptions(featChannel, mOutChannels, 1));
-        torch::nn::init::xavier_uniform_(lateralConv->weight);
-        torch::nn::init::constant_(lateralConv->bias, 0);
-        lateralConvs->push_back(lateralConv);
-        fpnConvs->push_back(torch::nn::Conv2d(torch::nn::Conv2dOptions(mOutChannels, mOutChannels, 3).padding(1)));
-    }
-    std::cout << "Finished defining FPN" << std::endl;
-
-    //forward
-    std::vector<torch::Tensor> lateralOuts;
-    for(int i=0; i<featChannels.size(); ++i) {
-        torch::Tensor lateralOut = lateralConvs[i]->as<torch::nn::Conv2d>()->forward(outputs[i]);
-        std::cout << "Lateral out " << i << ": " << lateralOut.sizes() << std::endl;
-        lateralOuts.push_back(lateralOut);
-    }
-
-    std::vector<torch::Tensor> upsampleOuts({lateralOuts.back()});
-    std::cout << outputs.size() << std::endl;
-    for(int i = outputs.size()-2; i>=0; i--) {
-        auto upSizes = lateralOuts[i].sizes();
-        std::cout << "Up size: (" << upSizes[2] << ", " << upSizes[3] << ")" << std::endl;
-        auto interOpts = torch::nn::functional::InterpolateFuncOptions().mode(torch::kNearest);
-        interOpts.size(std::vector<int64_t>({upSizes[2], upSizes[3]}));
-        upsampleOuts.push_back(torch::nn::functional::interpolate(upsampleOuts.back(), interOpts) + lateralOuts[i]);
-    }
-
-    std::reverse(upsampleOuts.begin(), upsampleOuts.end());
-    std::vector<torch::Tensor> outs;
-    for(int i=0; i<outputs.size(); i++) {
-        outs.push_back(fpnConvs[i]->as<torch::nn::Conv2d>()->forward(upsampleOuts[i]));
-    }
-
-    std::cout << "Done testing" << std::endl;
-    return 0;
-}
-
-int main(int argc, char** args) {
+int test(int argc, char** args) {
     // Step 1: Defining a backbone network
     auto backbone = std::make_shared<rcnn::SimpleNetImpl>();
     // Assume that we have a input image
@@ -180,5 +130,12 @@ int main(int argc, char** args) {
     }
 
     std::cout << "Done testing" << std::endl;
+    return 0;
+}
+
+int main(int argc, char** args) {
+    torch::Tensor x = torch::rand({1, 64, 244, 244});
+    torch::Tensor x1 = x.view({-1, 4});
+    std::cout << x1.sizes() << std::endl;
     return 0;
 }

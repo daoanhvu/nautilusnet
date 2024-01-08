@@ -22,13 +22,21 @@ namespace rcnn {
         }
     };
 
+    struct AnchorInputData {
+        std::vector<float> scales;
+        std::vector<float> ratios;
+        std::vector<float> strides;
+    };
+
     class RPNHeadImpl: torch::nn::Module {
         private:
             int mClassChannels{1};
             int mInChannels;
             int mFeatureChannels;
 
-            int mNumOfAnchors;
+            // for generating anchors
+            int mAnchorScale;
+            int mAnchorRatio;
     
             torch::nn::Conv2d mConv{nullptr};
             torch::nn::Conv2d mClassifier{nullptr};
@@ -45,17 +53,25 @@ namespace rcnn {
                 return gridSizes;
             }
 
-            void getAnchors() {
+            void initializeAnchors(const AnchorInputData& anchorData) {
+
+            }
+
+            void getAnchors(std::vector<GridSize> gridSizes) {
 
             }
 
         public:
-            RPNHeadImpl(int inChannels, int featChannels, int numAnchor)
-            : mInChannels(inChannels), mFeatureChannels(featChannels), mNumOfAnchors(numAnchor)  {
+            RPNHeadImpl(int inChannels, int featChannels, const AnchorInputData& anchorData)
+            : mInChannels(inChannels), mFeatureChannels(featChannels)  {
+
+                int numAnchor = anchorData.scales.size() * anchorData.ratios.size();
+                initializeAnchors(anchorData);
+
                 mConv = torch::nn::Conv2d(torch::nn::Conv2dOptions(mInChannels, mFeatureChannels, 3).stride(1).padding(1));
-                mClassifier = torch::nn::Conv2d(torch::nn::Conv2dOptions(mFeatureChannels, mNumOfAnchors * mClassChannels, 1));
-                mRegressor = torch::nn::Conv2d(torch::nn::Conv2dOptions(mFeatureChannels, mNumOfAnchors * 4, 1));
-                mLossCls  = buildLoss("l1_loss", 1.0f);
+                mClassifier = torch::nn::Conv2d(torch::nn::Conv2dOptions(mFeatureChannels, numAnchor * mClassChannels, 1));
+                mRegressor = torch::nn::Conv2d(torch::nn::Conv2dOptions(mFeatureChannels, numAnchor * 4, 1));
+                // mLossCls  = buildLoss("l1_loss", 1.0f);
                 // _loss_bbox = buildLoss(loss_bbox_opts);
                 
                 register_module("conv", mConv);
