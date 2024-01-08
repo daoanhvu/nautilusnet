@@ -11,7 +11,6 @@ namespace rcnn {
         torch::nn::Sequential layer3;
         torch::nn::Sequential layer4;
         torch::nn::Sequential layer5;
-        torch::nn::Sequential output;
 
         SimpleNetImpl() {
             layer1 = torch::nn::Sequential(
@@ -65,21 +64,11 @@ namespace rcnn {
                 torch::nn::MaxPool2d(torch::nn::MaxPool2dOptions(2).stride(2))
             );
 
-            output = torch::nn::Sequential(
-                torch::nn::Linear(7*7*512, 2048),
-                torch::nn::ReLU(torch::nn::ReLUOptions().inplace(true)),
-                torch::nn::Dropout(0.45f),
-                torch::nn::Linear(2048, 2048),
-                torch::nn::ReLU(torch::nn::ReLUOptions().inplace(true)),
-                torch::nn::Linear(2048, 1000)
-            );
-
             register_module("layer1", layer1);
             register_module("layer2", layer2);
             register_module("layer3", layer3);
             register_module("layer4", layer4);
             register_module("layer5", layer5);
-            register_module("output", output);
         }
 
         /**
@@ -98,8 +87,6 @@ namespace rcnn {
             outputs.push_back(out4);
             torch::Tensor out5 = layer5->forward(out4);
             outputs.push_back(out5);
-            torch::Tensor lastOutput = output->forward(out5.reshape({out5.size(0), -1}));
-            outputs.push_back(lastOutput);
             return outputs;
         }
     };
@@ -115,11 +102,6 @@ int test_fpn() {
     torch::Tensor x = torch::rand({1, 3, 244, 244});
     std::cout << "Input shape: " << x.sizes() << std::endl;
     std::vector<torch::Tensor> outputs = model->forward(x);
-
-    // For FPN, we need features from convolutional layers only
-    // so we will take out the last output.
-    torch::Tensor lastOutput = outputs.back();
-    outputs.pop_back();
 
     torch::nn::ModuleList lateralConvs = torch::nn::ModuleList();
     torch::nn::ModuleList fpnConvs = torch::nn::ModuleList();
@@ -163,32 +145,34 @@ int test_fpn() {
 }
 
 int main(int argc, char** args) {
+    // Step 1: Defining a backbone network
     auto backbone = std::make_shared<rcnn::SimpleNetImpl>();
-    std::vector<int> featChannels = {64, 128, 256, 512, 512};
+    // Assume that we have a input image
     torch::Tensor x = torch::rand({1, 3, 244, 244});
+    // Step 2: Input the image into backbone network to get feature map at multiple scale level
+    std::vector<torch::Tensor> outputs = backbone->forward(x);
 
-    // Define FPN
+    std::vector<int> featChannels;
+    for(int i=0; i<outputs.size(); ++i) {
+        featChannels.push_back(outputs[i].size(1));
+        std::cout << "Feature map (" << i << ")" << outputs[i].size(1) << std::endl;    
+    }
+
+    // Step 3: Defining a FPN network to process the feature map at multiple scale level
+    
     int fpnOutChannels = 256;
     auto fpn = std::make_shared<rcnn::FPNImpl>(fpnOutChannels, featChannels, featChannels.size());
     std::cout << "Finished defining FPN" << std::endl;
-    // put feature map to FPN
-
-    std::vector<torch::Tensor> outputs = backbone->forward(x);
-
-    // For FPN, we need features from convolutional layers only
-    // so we will take out the last output.
-    torch::Tensor lastOutput = outputs.back();
-    outputs.pop_back();
-
+    
+    // Step 4: put feature map to FPN
     auto outputFpn = fpn->forward(outputs);
     std::cout << "Number of FPN outputs: " << outputFpn.size() << std::endl;
     for(int i=0; i<outputFpn.size(); ++i) {
         std::cout << "P(" << i << ") shape: " << outputFpn[i].sizes() << std::endl;
     }
 
-    //Now, feed these feature maps to RPN
-    rcnn::AnchorGenerator anchorGenerator = rcnn::AnchorGenerator();
-    rcnn::RPNHead rpn = rcnn::RPNHead(anchorGenerator, fpnOutChannels, 512);
+    // Step 5: Now, feed these feature maps to RPN
+    rcnn::RPNHead rpn = rcnn::RPNHead(fpnOutChannels, 512, 9);
     auto rpnFeatOuts = rpn->forward(outputFpn);
     std::cout << "RPN size: " << rpnFeatOuts.size() << std::endl;
     for(int i=0; i<rpnFeatOuts.size(); ++i) {
