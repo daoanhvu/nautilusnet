@@ -122,7 +122,10 @@ int test(int argc, char** args) {
     }
 
     // Step 5: Now, feed these feature maps to RPN
-    rcnn::RPNHead rpn = rcnn::RPNHead(fpnOutChannels, 512, 9);
+    // Step 5.1: Prepair AnchorGeneration info
+    rcnn::AnchorInputData anchorInput;
+    anchorInput.ratios = {0.5f, 1.0f, 2.0f};
+    rcnn::RPNHead rpn = rcnn::RPNHead(fpnOutChannels, 512, anchorInput);
     auto rpnFeatOuts = rpn->forward(outputFpn);
     std::cout << "RPN size: " << rpnFeatOuts.size() << std::endl;
     for(int i=0; i<rpnFeatOuts.size(); ++i) {
