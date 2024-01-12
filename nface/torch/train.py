@@ -6,33 +6,39 @@ from facenet_pytorch import InceptionResnetV1
 
 # Refer here https://github.com/lucagessi/facerecognition/blob/master/face_reco_1_class.py
 
-data_transforms = {
-    'train': transforms.Compose([
-        transforms.RandomResizedCrop(299),
-        #transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ]),
-    'val': transforms.Compose([
-        transforms.Resize(299),
-        transforms.CenterCrop(299),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-}
+def load_data(data_dir):
+    data_transforms = {
+        'train': transforms.Compose([
+            transforms.RandomResizedCrop(299),
+            #transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ]),
+        'val': transforms.Compose([
+            transforms.Resize(299),
+            transforms.CenterCrop(299),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+    }
 
-data_dir = './dataset/'
-image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
+    image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x),
                                           data_transforms[x]) for x in ['train', 'val']}
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4,
-                                             shuffle=True, num_workers=4)
-              for x in ['train', 'val']}
-dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
-print(dataset_sizes)
-class_names = image_datasets['train'].classes
-print(dataloaders['train'])
+    dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=4, shuffle=True, num_workers=4)
+                for x in ['train', 'val']}
+    dataset_sizes = {x: len(image_datasets[x]) for x in ['train', 'val']}
+    print(dataset_sizes)
+    class_names = image_datasets['train'].classes
+    print(dataloaders['train'])
+    return {
+            dataloaders,
+            image_datasets,
+            dataset_sizes, 
+            class_names
+        }
 
-def train_model(model, criterion, optimizer, scheduler, num_epochs=24, dataloaders, device):
+
+def train_model(model, criterion, optimizer, optim_function, scheduler, num_epochs=24, data_info, device):
 
     for epoch in range(num_epochs):
         for phase in ['train', 'val']:
@@ -44,19 +50,42 @@ def train_model(model, criterion, optimizer, scheduler, num_epochs=24, dataloade
             
             running_loss = 0.0
             running_corrects = 0
-            for inputs, labels in dataloaders[phase]:
+            for inputs, labels in data_info.dataloaders[phase]:
                 inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                # zero the parameter gradients
+                optimizer.zero_grad()
+
+                with torch.set_grad_enabled(phase == 'train'):
+                    outputs = model(inputs)
+                    preds = optim_function(outputs[:, 0]) > 0.5
+                    preds = preds.float()
+                    loss = criterion(outputs[:, 0], labels.float())
+                    if phase == 'train':
+                        loss.backward()
+                        optimizer.step()
+
+                running_loss += loss.item() * inputs.size()
+                running_corrects += torch.sum(preds=labels.data)
+            
+            if phase == 'train':
+                scheduler.step()
+
+            epoch_loss = running_loss / data_info.dataset_sizes[phase]
 
     return model
 
 
 if __name__ == '__main__':
+    data_dir = './dataset/'
+    data_info = load_data(data_dir=data_dir)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     sigmoid_fun = torch.nn.Sigmoid()
 
-    model = InceptionResnetV1(pretrained='vggface2', 
-        device=device, classify=True, num_classes=4)
+    model = InceptionResnetV1(pretrained='vggface2', device=device, classify=True, num_classes=4)
     model.to(device=device)
 
     criterion = torch.nn.BCEWithLogitsLoss
@@ -67,8 +96,14 @@ if __name__ == '__main__':
     # Decay Learning Rate by a factor of 0.1 every 7 epochs
     exp_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer=optimizer, step_size=7, gamma=0.1)
 
-    trained_model = train_model(model=model, criterion=criterion, optimizer=optimizer,
-                                scheduler=exp_lr_scheduler, num_epochs=1)
+    trained_model = train_model(model=model, 
+                                criterion=criterion, 
+                                optimizer=optimizer,
+                                optim_function=sigmoid_fun,
+                                scheduler=exp_lr_scheduler, 
+                                num_epochs=1, 
+                                data_info=data_info, 
+                                device=device)
     
     model_path = "../models/resnet_vggface.pt"
     torch.save(trained_model.state_dict(), model_path)
