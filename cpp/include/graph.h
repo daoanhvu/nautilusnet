@@ -5,8 +5,6 @@
 #include <vector>
 #include <string>
 
-#include <opencv2/core.hpp>
-
 typedef struct tagLocation {
 	int x;
 	int y;
@@ -27,8 +25,6 @@ typedef struct tagEdge {
 
 class Graph {
 	private:
-		cv::Mat image;
-
 		std::vector<Edge> edges;
 		std::vector<Vertex> vertices;
 
@@ -50,10 +46,8 @@ class Graph {
 
 		bool loadFromFile(std::string filename);
 
-
 		friend std::ostream& operator <<(std::ostream& o, const Graph& g) {
-			o << "Graph:" << std::endl; 
-			o << "    Image size: (" << g.image.size().width << ", " << g.image.size().height << ")" << std::endl;
+			o << "Graph:" << std::endl;
 			o << "    Vertex count: " << g.vertices.size() << std::endl;
 			o << "    Edge count: " << g.edges.size() << std::endl;
 			return o;
