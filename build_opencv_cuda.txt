@@ -25,28 +25,31 @@ CUDA include:
 
 ====================================================================================================================
 	
-cmake -DCMAKE_CONFIGURATION_TYPES=Release -DOPENCV_EXTRA_MODULES_PATH=D:\opencv\opencv_contrib-4.6.0\modules ^
--DWITH_CUDA=ON -DOPENCV_DNN_CUDA=ON -DWITH_CUDNN=ON -DCUDNN_VERSION=7.6.2 ^
+cmake -DCMAKE_CONFIGURATION_TYPES=Release ^
+-DOPENCV_EXTRA_MODULES_PATH="D:/projects/opencv_contrib-4.9.0/modules" ^
+-DWITH_CUDA=ON -DOPENCV_DNN_CUDA=ON -DWITH_CUDNN=ON ^
 -DENABLE_FAST_MATH=ON ^
 -DCUDA_FAST_MATH=ON ^
 -DWITH_CUBLAS=ON ^
+-DBLAS_LIBRARIES="C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.6/lib/x64/cublas.lib" ^
+-DOPENCV_PYTHON3_INSTALL_PATH="C:/ProgramData/Anaconda3/Lib/site-packages" ^
+-DPYTHON3_EXECUTABLE="C:/ProgramData/Anaconda3/python.exe" ^
+-DPYTHON3_LIBRARY="C:/ProgramData/Anaconda3/libs/python39.lib" ^
+-DPYTHON3_NUMPY_INCLUDE_DIR="C:/ProgramData/Anaconda3/Lib/site-packages/numpy/core/include" ^
 -DWITH_NGRAPH=OFF ^
--DBUILD_EXAMPLES=OFF ^
+-DBUILD_EXAMPLES=ON ^
+-DINSTALL_C_EXAMPLES=ON ^
 -DBUILD_PERF_TESTS=OFF ^
--DCUDNN_INCLUDE_DIR=C:\programs\cudnn-10.1\include ^
--DCUDNN_LIBRARY=C:\programs\cudnn-10.1\lib\x64\cudnn.lib ^
+-DCUDNN_INCLUDE_DIR="C:/programs/cudnn11/include" ^
+-DCUDNN_LIBRARY="C:/programs/cudnn11/lib/x64/cudnn.lib" ^
 -DBUILD_opencv_python2=OFF  ^
 -DBUILD_opencv_python3=ON  ^
 -DBUILD_SHARED_LIBS=OFF ^
--DPYTHON3_EXECUTABLE=C:\Users\welcome\.conda\envs\cv\python.exe ^
--DPYTHON3_LIBRARY=C:/Users/welcome/.conda/envs/cv/libs/python39.lib ^
--DPYTHON3_NUMPY_INCLUDE_DIR=C:\Users\welcome\.conda\envs\cv\Lib\site-packages\numpy\core\include ^
--DOPENCV_SKIP_PYTHON_LOADER=ON ^
 -DBUILD_opencv_world=ON ^
 -DBUILD_opencv_cudaarithm=OFF -DBUILD_opencv_cudabgsegm=OFF -DBUILD_opencv_cudafeatures2d=OFF -DBUILD_opencv_cudafilters=OFF ^
 -DBUILD_opencv_cudaimgproc=OFF -DBUILD_opencv_cudalegacy=OFF -DBUILD_opencv_cudaobjdetect=OFF -DBUILD_opencv_cudaoptflow=OFF ^
 -DBUILD_opencv_cudastereo=OFF -DBUILD_opencv_cudawarping=OFF -DBUILD_opencv_cudacodec=OFF ^
--DCUDA_nvToolsExt_LIBRARY="C:\Program Files\NVIDIA Corporation\NvToolsExt\lib\x64\nvToolsExt64_1.lib" ..
+-DCUDA_nvToolsExt_LIBRARY="C:/Program Files/NVIDIA Corporation/NvToolsExt/lib/x64/nvToolsExt64_1.lib" ..
 
 
 TF_CUDA_COMPUTE_CAPABILITY Computation ability: GeForce GTX 1070	6.1
