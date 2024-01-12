@@ -136,9 +136,78 @@ int test(int argc, char** args) {
     return 0;
 }
 
+
+std::vector<torch::Tensor> get_anchors(torch::Tensor baseAnchors, const std::vector<rcnn::GridSize> grid_sizes) {
+    std::vector<torch::Tensor> anchors;
+    std::vector<int> anchor_strides = {4, 8, 16, 32, 64};
+
+    for(int i=0; i<grid_sizes.size(); i++) {
+      auto grid_size = grid_sizes[i];
+      auto stride = anchor_strides[i];
+      auto base_anchor = baseAnchors[i]; // [num_scales, num_ratios, 4]
+      auto grid_x = grid_size.width;
+      auto grid_y = grid_size.height;
+      auto x_offset = torch::arange(grid_x, base_anchor.device()) * stride; // [grid_x]
+      auto y_offset = torch::arange(grid_y, base_anchor.device()) * stride; // [grid_y]
+      
+      auto anchor = base_anchor.repeat({grid_y, grid_x, 1, 1, 1}); // [grid_y, grid_x, num_scales, num_ratios, 4]
+      auto shape = anchor.sizes().vec();
+      // from [grid_y, grid_x, num_scales, num_ratios, 4] 
+      // to   [grid_y, grid_x, num_scales, num_ratios, 2, 2]
+      // so that we can add offset to the last dim
+      shape.pop_back(); shape.push_back(2); shape.push_back(2); // can't find an easier way
+      anchor = anchor.view(shape);
+      // move x by x_offset and y by y_offset
+      anchor.index_put_({"...", 1}, y_offset.view({-1, 1, 1, 1, 1})+anchor.index({"...", 1}));
+      anchor.index_put_({"...", 0}, x_offset.view({-1, 1, 1, 1})+anchor.index({"...", 0}));
+      // from [grid_y, grid_x, num_scales, num_ratios, 2, 2] 
+      // to   [grid_y, grid_x, num_scales, num_ratios, 4] 
+      shape.pop_back(); shape.pop_back(); shape.push_back(4);
+      anchor = anchor.view(shape);
+      // the shape of anchor for current stride is [grid_y, grid_x, num_scales, num_ratios, 4]
+      anchors.push_back(anchor);
+    }
+    return anchors;
+  }
+
 int main(int argc, char** args) {
-    torch::Tensor x = torch::rand({1, 64, 244, 244});
-    torch::Tensor x1 = x.view({-1, 4});
-    std::cout << x1.sizes() << std::endl;
+    std::vector<float> anchor_scales = {0.5f, 1.0f, 2.0f};
+    std::vector<float> anchor_ratios = {0.5f, 1.0f, 2.0f};
+    std::vector<int> anchor_strides = {4, 8, 16, 32, 64};
+
+    //torch::Tensor scales = torch::tensor({0.5f, 1.0f, 2.0f}, torch::kFloat32);
+    torch::Tensor scales = torch::tensor({0.5f, 1.0f, 2.0f}, torch::kFloat32);
+    torch::Tensor ratios = torch::tensor({0.5f, 1.0f, 2.0f}, torch::kFloat32);
+    torch::Tensor strides = torch::tensor({4, 8, 16, 32, 64}, torch::kFloat32);
+
+    torch::Tensor stridesV = strides.view({-1, 1});
+    std::cout << "Stride view: " << stridesV.sizes() << std::endl;
+    scales = stridesV * scales;
+    std::cout << "Before unzqueeze: " << scales.sizes() << std::endl;
+    std::cout << scales << std::endl;
+    scales = scales.unsqueeze(-1);
+    std::cout << "After unzqueeze: " << scales.sizes() << std::endl;
+    std::cout << scales << std::endl;
+
+    auto w = scales / ratios.sqrt();
+    auto h = scales * ratios.sqrt();
+
+    auto baseAnchors = torch::stack({-w/2, -h/2, w/2, h/2}, -1); 
+    // move center by offset
+    baseAnchors += strides.view({-1, 1, 1, 1}) * 0.0;
+
+    std::vector<rcnn::GridSize> gridSizes;
+    gridSizes.emplace_back(7, 7);
+    gridSizes.emplace_back(15, 15);
+
+    std::vector<torch::Tensor> anchors = get_anchors(baseAnchors, gridSizes);
+
+    std::cout << "Number of anchors: " << anchors.size() << std::endl;
+    // for(torch::Tensor& a: anchors) {
+    //     std::cout << "Anchor: " << std::endl << a << std::endl;
+    // }
+
+    std::cout << "Finish testing" << std::endl;
+
     return 0;
 }

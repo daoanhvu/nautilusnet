@@ -5,3 +5,10 @@ nface/local/__pycache__/
 nface/local/nqueue/__pycache__/
 mynet/rcnn/torch/build
 glm/
+glm-master.zip
+glutdlls37beta.zip
+cap3d/*.obj
+cap3d/*.pdb
+libs/*.lib
+libs/*.dll
+libs/*.h
