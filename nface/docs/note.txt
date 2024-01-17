@@ -43,3 +43,7 @@ https://sefiks.com/2020/09/09/deep-face-detection-with-mtcnn-in-python/
 
 
 https://machinelearningmastery.com/how-to-make-classification-and-regression-predictions-for-deep-learning-models-in-keras/
+
+
+Test with Pytorch
+python train.py --test True --image "D:\projects\nautilusnet\nface\torch\dataset\val\ThuHuong\thuhuong3.PNG"
