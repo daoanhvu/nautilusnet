@@ -1,0 +1,46 @@
+{
+    "env": {
+        "myIncludePath": [
+            "${workspaceFolder}/include",
+            "${workspaceFolder}/",
+            "${workspaceFolder}/common",
+            "${workspaceFolder}/reader",
+            "${workspaceFolder}/util",
+            "/home/ddao/programs/glm-0.9.9.8/glm" 
+        ]
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "compilerPath": "/usr/bin/gcc",
+            "compilerArgs": [
+                "-m32"
+            ],
+            "intelliSenseMode": "linux-gcc-x86",
+            "includePath": [
+                "${myIncludePath}",
+                "/usr/include"
+            ],
+            "defines": [
+                "${myDefines}"
+            ],
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "mergeConfigurations": true,
+            "customConfigurationVariables": {
+                "myVar": "myvalue"
+            },
+            "browse": {
+                "path": [
+                    "${myIncludePath}",
+                    "/usr/include",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+            }
+        }
+    ],
+    "version": 4
+}
