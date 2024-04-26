@@ -52,6 +52,10 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 // Function to handle mouse input
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS) {
+        return;
+    }
+
     if (firstMouse) {
         lastX = xpos;
         lastY = ypos;

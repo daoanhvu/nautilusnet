@@ -1,6 +1,7 @@
 cpp/build
 nface/data/test/
 nface/data/train/
+nface/torch/dataset/
 nface/local/__pycache__/
 nface/local/nqueue/__pycache__/
 mynet/rcnn/torch/build
