@@ -51,6 +51,11 @@ glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 // Camera up vector
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
+// At the top with other global variables
+float mouseSpeed = 0.003f; // Reduced for smoother rotation
+bool isDragging = false;
+glm::mat4 rotationMatrix = glm::mat4(1.0f); // Initialize as identity matrix
+
 // Function to handle mouse input
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     if (firstMouse) {
@@ -89,6 +94,44 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+// Function to handle mouse button events
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        if (action == GLFW_PRESS) {
+            isDragging = true;
+            glfwGetCursorPos(window, &last_xpos, &last_ypos);
+        } else if (action == GLFW_RELEASE) {
+            isDragging = false;
+        }
+    }
+}
+
+// In your main rendering loop
+void handleRotation(GLFWwindow* window) {
+    if (!isDragging) return;
+    
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    
+    // Calculate rotation angles based on mouse movement
+    float deltaX = float(xpos - last_xpos);
+    float deltaY = float(ypos - last_ypos);
+    
+    // Convert mouse movement to rotation angles
+    float verticalAngle = -mouseSpeed * deltaX;
+    float horizontalAngle = -mouseSpeed * deltaY;
+    
+    // Apply rotation around current local axes
+    glm::vec4 xAxis = glm::inverse(rotationMatrix) * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    rotationMatrix = glm::rotate(rotationMatrix, horizontalAngle, glm::vec3(xAxis));
+    
+    glm::vec4 yAxis = glm::inverse(rotationMatrix) * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    rotationMatrix = glm::rotate(rotationMatrix, verticalAngle, glm::vec3(yAxis));
+    
+    last_xpos = xpos;
+    last_ypos = ypos;
+}
+
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
@@ -115,6 +158,7 @@ int main() {
     // Set the callback functions
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
     // Initialize GLEW
     if (glewInit() != GLEW_OK) {
@@ -196,6 +240,8 @@ int main() {
 
     // Render loop
     while (!glfwWindowShouldClose(window)) {
+        handleRotation(window);
+        
         // Process events
         glfwPollEvents();
 
@@ -218,9 +264,7 @@ int main() {
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         // Create a rotation matrix based on mouse movement
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 model = rotationMatrix;
 
         // Pass the model matrix to the shader
         GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
