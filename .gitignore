@@ -13,3 +13,4 @@ cap3d/*.pdb
 libs/*.lib
 libs/*.dll
 libs/*.h
+cap3d/.vscode/browse.vc.db
