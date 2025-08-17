@@ -14,3 +14,9 @@ libs/*.lib
 libs/*.dll
 libs/*.h
 cap3d/.vscode/browse.vc.db
+invoice_extractor/data/
+invoice_extractor/core/__pycache__/
+invoice_extractor/models/__pycache__/
+invoice_extractor/ocr/__pycache__/
+invoice_extractor/scripts/__pycache__/
+invoice_extractor/utils/__pycache__/
