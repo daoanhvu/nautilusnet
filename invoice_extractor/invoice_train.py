@@ -49,5 +49,6 @@ def table_extraction(image):
 
 
 if __name__ == '__main__':
-    image = Image.open("./data/invoice-003.png").convert("RGB")
+    image = Image.open(
+        "/Users/vudao/projects/data/invoices/invoice-001.png").convert("RGB")
     table_extraction(image=image)

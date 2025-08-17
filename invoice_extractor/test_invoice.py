@@ -12,7 +12,7 @@ pipe = pipeline("document-question-answering",
 # You can replace this with any path to your local invoice image.
 try:
     # Replace with your actual image path
-    local_image_path = "./data/invoice-001.png"
+    local_image_path = "/Users/vudao/projects/data/invoices/invoice-ssum.png"
     # Create a dummy image for demonstration if 'my_invoice.png' doesn't exist
     try:
         Image.new('RGB', (600, 800), color='white').save(local_image_path)
