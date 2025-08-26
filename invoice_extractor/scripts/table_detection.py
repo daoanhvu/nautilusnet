@@ -1,4 +1,4 @@
-# scripts/detect_tables.py
+# scripts/table_detection.py
 import argparse
 from pathlib import Path
 from tqdm import tqdm
