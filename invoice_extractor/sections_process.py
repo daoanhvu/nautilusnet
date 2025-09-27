@@ -112,7 +112,8 @@ def plot_boxes(pil_image, scores, labels, boxes):
 
 if __name__ == "__main__":
     # Example usage
-    image_path = "/Users/vudao/projects/data/invoices/invoice-001.png"
+    # image_path = "/Users/vudao/projects/data/invoices/invoice-001.png"
+    image_path = "./data/invoice-002.png"
     pil_image = Image.open(image_path).convert("RGB")
 
     process_image(pil_image)

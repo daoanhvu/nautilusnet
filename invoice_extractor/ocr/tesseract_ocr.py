@@ -14,10 +14,10 @@ class OCR:
                  tesseract_cmd: Optional[str] = None):
         if tesseract_cmd:
             pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
-            self.lang = lang
-            self.psm = psm
-            self.oem = oem
-            self.do_preprocess = do_preprocess
+        self.lang = lang
+        self.psm = psm
+        self.oem = oem
+        self.do_preprocess = do_preprocess
 
     def _preprocess(self, image: Image.Image) -> np.ndarray:
         img = np.array(image.convert("RGB"))
@@ -29,7 +29,7 @@ class OCR:
                                    cv2.THRESH_BINARY, 35, 15)
 
         kernel = np.ones((1, 1), np.uint8)
-        th = cv2.dilate(th, kernel, iteractions=1)
+        th = cv2.dilate(th, kernel, iterations=1)
 
         return th
 
@@ -52,9 +52,9 @@ class OCR:
             conf_str = data.get("conf", ["-1"]*n)[i]
             try:
                 conf = float(conf_str)
-            except Exception:
+            except ValueError:
                 conf = -1.0
-            
+
             # Only keep valid words
             if not txt or conf < 0:
                 continue
@@ -62,3 +62,5 @@ class OCR:
             x, y, w, h = data["left"][i], data["top"][i], data["width"][i], data["height"][i]
             box = [float(x), float(y), float(x+w), float(y+h)]
             out.append({"text": txt, "conf": conf / 100.0, "box": box})
+
+        return out
