@@ -8,10 +8,12 @@ from transformers import AutoImageProcessor, DetrImageProcessor, TableTransforme
 
 class TableRegionDetector:
     """
+    Wrapper around Microsoft's Table Transformer (DETR-based) for table region detection.
+    Model hub id:
+      - "microsoft/table-transformer-detection"
     """
 
-    def __init__(self, model_id: str = "microsoft/table-transformer-detection",
-                 device: str | None = None, score_threshold: float = 0.6):
+    def __init__(self, model_id: str = "microsoft/table-transformer-detection", device: str | None = None, score_threshold: float = 0.6):
         self.processor = AutoImageProcessor.from_pretrained(model_id)
         # self.processor = DetrImageProcessor()
         self.model = TableTransformerForObjectDetection.from_pretrained(

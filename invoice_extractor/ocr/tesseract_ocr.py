@@ -64,3 +64,10 @@ class OCR:
             out.append({"text": txt, "conf": conf / 100.0, "box": box})
 
         return out
+
+    def estimate_rotation(self, image: Image.Image) -> int:
+        osd = pytesseract.image_to_osd(image)
+        import re
+        m = re.search(r"Rotate (\d+)", osd)
+        deg = int(m.group(1)) if m else 0
+        return deg
