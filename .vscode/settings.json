@@ -4,5 +4,8 @@
         "vector": "cpp",
         "iostream": "cpp"
     },
-    "python.pythonPath": "~/venv/bin/python"
+    "python.pythonPath": "~/venv/bin/python",
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": []
 }

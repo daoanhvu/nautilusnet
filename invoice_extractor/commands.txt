@@ -1,0 +1,1 @@
+python scripts/extract_tables_pipeline.py --inputs data/invoice-001.png --outdir data/outputs --lang eng --psm 6 --header-rows 1 --row-gap 18 --locale en_US
